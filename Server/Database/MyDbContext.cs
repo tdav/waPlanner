@@ -8,8 +8,6 @@ namespace waPlanner.Database
 {
     public partial class MyDbContext : DbContext
     {
-        //private readonly IHttpContextAccessor accessor;
-        //private readonly IConfiguration config;
 
         #region dbSet
         public DbSet<spCategory> spCategories { get; set; }
@@ -18,24 +16,16 @@ namespace waPlanner.Database
         public DbSet<tbUser> tbUsers { get; set; }
         #endregion
 
-        public MyDbContext(DbContextOptions options) : base(options)//IHttpContextAccessor _accessor,, IConfiguration _config
-        {
-            // accessor = _accessor;
-            // config = _config;
-            // this.ChangeTracker.LazyLoadingEnabled = false;
-        }
+        public MyDbContext(DbContextOptions options) : base(options) { }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
             //if (!options.IsConfigured)
             {
-                //var connectionString = "Host=127.0.0.1;Database=planner_db;Username=postgres;Password=1;Pooling=true;";
-                //options.UseNpgsql(connectionString,
-                //            b => b.EnableDetailedErrors()
-                //                  .EnableSensitiveDataLogging()
-                //                  .UseSnakeCaseNamingConvention()
-                //                  .EnableServiceProviderCaching());
-
+                var connectionString = "Host=127.0.0.1;Database=planner_db;Username=postgres;Password=1;Pooling=true;";
+                
+                options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention();
+                options.EnableDetailedErrors();
             }
         }
 
@@ -107,9 +97,6 @@ namespace waPlanner.Database
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.HasPostgresExtension("postgis");
-
-            //modelBuilder.Seed();
             modelBuilder.BuildIndexesFromAnnotations();
 
             foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
@@ -122,6 +109,5 @@ namespace waPlanner.Database
         {
             return Database.GetDbConnection();
         }
-
     }
 }
