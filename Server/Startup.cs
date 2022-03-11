@@ -15,6 +15,7 @@ using System.IO.Compression;
 using System.Linq;
 using waPlanner.Extensions;
 using waPlanner.ModelViews;
+using waPlanner.Services;
 using ZNetCS.AspNetCore.Compression;
 using ZNetCS.AspNetCore.Compression.Compressors;
 
@@ -55,6 +56,9 @@ namespace waPlanner
             services.AddMySwagger();
             services.ApiMyVersion();
             services.AddHttpContextAccessor();
+
+
+            services.AddScoped<ICategoryService, CategoryService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
