@@ -4,12 +4,19 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Exceptions;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
+using Telegram.Bot;
+using Telegram.Bot.Extensions.Polling;
+using Telegram.Bot.Types;
+using waPlanner.TelegramBot.handlers;
 
 namespace waPlanner
 {
     public class Program
     {
+        public static Dictionary<long, object> Cache = new Dictionary<long, object>();
         public static void Main(string[] args)
         {
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -30,6 +37,11 @@ namespace waPlanner
 
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
+            TelegramBotClient? Bot = new TelegramBotClient(Config.TOKEN);
+            using var cts = new CancellationTokenSource();
+            ReceiverOptions options = new() { AllowedUpdates = { } };
+            Bot.StartReceiving(Handlers.HandleUpdateAsync, Handlers.HandleErrorAsync, options, cts.Token);
+
             return Host.CreateDefaultBuilder(args)
                       .ConfigureWebHostDefaults(webBuilder =>
                       {
@@ -46,6 +58,7 @@ namespace waPlanner
 
         private static void ConfigureLogging()
         {
+            
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)

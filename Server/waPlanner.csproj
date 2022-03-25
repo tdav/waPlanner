@@ -27,6 +27,8 @@
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="Telegram.Bot" Version="17.0.0" />
+		<PackageReference Include="Telegram.Bot.Extensions.Polling" Version="1.0.2" />
 		<PackageReference Include="ZNetCS.AspNetCore.Compression" Version="6.0.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.3" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.0.0" />
@@ -54,10 +56,6 @@
 		<Content Update="wwwroot\index.html">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-	</ItemGroup>
-	
-	<ItemGroup>
-		<Folder Include="ModelViews\" />
 	</ItemGroup>
 
 </Project>
