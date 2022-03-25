@@ -10,7 +10,7 @@ namespace waPlanner.Controllers.v1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/[controller]")]
-    [SwaggerTag("Катигория")]
+    [SwaggerTag("Категория")]
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryService service;
@@ -54,14 +54,6 @@ namespace waPlanner.Controllers.v1
         public async Task Update([FromBody] spCategory value)
         {
             await service.UpdateAsync(value);
-        }
-
-
-
-        [HttpGet("t1")]
-        public string T1()
-        {
-            return service.T1();
         }
     }
 }

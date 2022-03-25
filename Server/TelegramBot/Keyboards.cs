@@ -4,7 +4,7 @@ using waPlanner.ModelViews;
 
 namespace waPlanner.TelegramBot
 {
-    public class ReplyKeyboards
+    public class Keyboards
     {
         public static List<List<KeyboardButton>> SendKeyboards(List<IdValue> items, int columns = 2)
         {
@@ -28,4 +28,5 @@ namespace waPlanner.TelegramBot
             return keyboards;
         }
     }
+    public static 
 }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
@@ -15,8 +14,6 @@ namespace waPlanner.Services
         void Delete(int id);
         Task<spCategory[]> GetAllAsync();
         Task<spCategory> GetAsync(int id);
-
-        string T1();
     }
 
     public class CategoryService : ICategoryService
@@ -61,11 +58,6 @@ namespace waPlanner.Services
         {
             myDb.spCategories.Update(value);
             await myDb.SaveChangesAsync();
-        }
-
-        public string T1()
-        {
-            return DateTime.Now.ToString();
         }
     }
 }
