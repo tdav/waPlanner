@@ -10,6 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using waPlanner.ModelViews;
 using waPlanner.TelegramBot.Utils;
+using System.Collections.Generic;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace waPlanner.TelegramBot.handlers
 {
@@ -48,19 +50,50 @@ namespace waPlanner.TelegramBot.handlers
 
             long chat_id = message.Chat.Id;
             string msg = message.Text;
+            string message_for_user = "";
+            List<IdValue> menu = new();
 
             using var db = new MyDbContextFactory().CreateDbContext(null);
 
             if (Program.Cache.TryGetValue(chat_id, out object obj))
             {
-                var docs = DbManipulations.GetStuffBySpec(db, msg);
-                await OnStateChanged.OnMenuAction(docs, chat_id, bot, msg, obj as TelegramBotValuesModel);
+                var value = obj as TelegramBotValuesModel;
+                switch (value.State)
+                {
+                    case PlannerStates.CATEGORY:
+                        {
+                            value.State = PlannerStates.DOCTORS;
+                            value.Category = msg;
+                            Program.Cache[chat_id] = value;
+                            message_for_user = "Выберите врача";
+                            menu = DbManipulations.GetStuffBySpec(db, msg);
+                            break;
+                        }
+                    case PlannerStates.DOCTORS:
+                        {
+                            value.State = PlannerStates.CHOOSE_TIME;
+                            va
+                            break;
+                        }
+                    default:
+                        break;
+                }
             }
             else
             {
-                var cat = DbManipulations.GetAllCategories(db);
-                await OnStateChanged.OnMenuAction(cat, chat_id, bot, msg, new TelegramBotValuesModel());
+                var value = new TelegramBotValuesModel
+                {
+                    State = PlannerStates.CATEGORY,
+                    Category = msg
+                    
+                };
+                menu = DbManipulations.GetAllCategories(db);
+                Program.Cache[chat_id] = value;
+                message_for_user = "Выберите категорию";
             }
+            ReplyKeyboardMarkup markup = new(Keyboards.SendKeyboards(menu)) { ResizeKeyboard = true };
+            await bot.SendTextMessageAsync(chat_id, message_for_user, replyMarkup: markup);
+
         }
     }
 }

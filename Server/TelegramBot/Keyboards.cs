@@ -27,9 +27,11 @@ namespace waPlanner.TelegramBot
 
             return keyboards;
         }
-        public static InlineKeyboardMarkup GetFreeStuffTime()
+        public static List<List<InlineKeyboardButton>> GetFreeStuffTime()
         {
-            var keyboards = new InlineKeyboardMarkup();
+            var keyboards = new List<List<InlineKeyboardButton>>();
+            var buttons = new List<InlineKeyboardButton>();
+
             return keyboards;
         }
     }
