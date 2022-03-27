@@ -58,8 +58,6 @@ namespace waPlanner.TelegramBot.handlers
 
             if (Program.Cache.TryGetValue(chat_id, out object obj))
             {
-                if (Program.Cache.TryGetValue(message.Chat.Id, out object obj))
-                {
                 var value = obj as TelegramBotValuesModel;
 
                 switch (value.State)
@@ -75,9 +73,11 @@ namespace waPlanner.TelegramBot.handlers
                         }
                     case PlannerStates.DOCTORS:
                         {
-                            value.State = PlannerStates.CHOOSE_TIME;
-                            va
-                            break;
+                            value.State = PlannerStates.CHOOSE_DATE;
+                            var year = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+                            InlineKeyboardMarkup calendar = new(Keyboards.SendCalendar(year, year.Month));
+                            await bot.SendTextMessageAsync(chat_id, "Выберите дату", replyMarkup: calendar);
+                            return;
                         }
                     default:
                         break;
@@ -97,8 +97,7 @@ namespace waPlanner.TelegramBot.handlers
             }
             ReplyKeyboardMarkup markup = new(Keyboards.SendKeyboards(menu)) { ResizeKeyboard = true };
             await bot.SendTextMessageAsync(chat_id, message_for_user, replyMarkup: markup);
-
         }
     }
 }
-}
+
