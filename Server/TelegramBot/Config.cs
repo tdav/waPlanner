@@ -1,7 +1,7 @@
 ﻿namespace waPlanner
 {
-    public class Config
+    public static class Config
     {
-        public static string TOKEN = "5231537864:AAFRgHXRDjJEcsxUc3FFCS0QL0iK2BTF2pY";
+        public static readonly string TOKEN = "5158197873:AAGSj22qq7S8sIs_zEm7_jDMlwiqyib4kq0";
     }
 }

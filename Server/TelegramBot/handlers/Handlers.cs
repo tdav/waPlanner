@@ -8,6 +8,9 @@ using Telegram.Bot.Types.Enums;
 using waPlanner.Database;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using waPlanner.ModelViews;
+using waPlanner.TelegramBot.Utils;
+using System.Collections.Generic;
 using Telegram.Bot.Types.ReplyMarkups;
 using waPlanner.ModelViews;
 
@@ -45,48 +48,57 @@ namespace waPlanner.TelegramBot.handlers
         {
             if (message.Type != MessageType.Text)
                 return;
-            long chat_id = message.Chat.Id;
 
-            using (var db = new MyDbContextFactory().CreateDbContext(null))
+            long chat_id = message.Chat.Id;
+            string msg = message.Text;
+            string message_for_user = "";
+            List<IdValue> menu = new();
+
+            using var db = new MyDbContextFactory().CreateDbContext(null);
+
+            if (Program.Cache.TryGetValue(chat_id, out object obj))
             {
                 if (Program.Cache.TryGetValue(message.Chat.Id, out object obj))
                 {
-                    var value = obj as TelegramBotValuesModel;
+                var value = obj as TelegramBotValuesModel;
 
-                    switch (value.State)
-                    {
-                        case PlannerStates.CATEGORY:
-                            value.State = PlannerStates.DOCTORS;
-                            value.Category = message.Text;
-                            Program.Cache[chat_id] = value;
-
-                            //var docs = db.tbUsers
-                            // .AsNoTracking()
-                            // .Where(x => x.UserTypeId == 1)
-                            // .Select(x => new IdValue { Id = x.Id, Name = $"{x.Surname} {x.Name} {x.Patronymic}" })
-                            // .ToList();
-                            //ReplyKeyboardMarkup markup = new(ReplyKeyboards.SendKeyboards(docs)) { ResizeKeyboard = true };
-                            ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup(new KeyboardButton("test"));
-                            await bot.SendTextMessageAsync(message.Chat.Id, "Выберите Врача", replyMarkup: markup);
-                            break;
-                        case PlannerStates.DOCTORS:
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else
+                switch (value.State)
                 {
-                    var cat = db.spCategories.AsNoTracking().Select(x => new IdValue { Id = x.Id, Name = x.NameUz }).ToList();
-                    ReplyKeyboardMarkup markup = new(ReplyKeyboards.SendKeyboards(cat)) { ResizeKeyboard = true };
-                    await bot.SendTextMessageAsync(message.Chat.Id, "Выберите категорию", replyMarkup: markup);
-                    Program.Cache.TryGetValue(message.Chat.Id, out object first_obj);
-                    var value = first_obj as TelegramBotValuesModel;
-                    value.State = PlannerStates.CATEGORY;
-                    Program.Cache[chat_id] = value;
+                    case PlannerStates.CATEGORY:
+                        {
+                            value.State = PlannerStates.DOCTORS;
+                            value.Category = msg;
+                            Program.Cache[chat_id] = value;
+                            message_for_user = "Выберите врача";
+                            menu = DbManipulations.GetStuffBySpec(db, msg);
+                            break;
+                        }
+                    case PlannerStates.DOCTORS:
+                        {
+                            value.State = PlannerStates.CHOOSE_TIME;
+                            va
+                            break;
+                        }
+                    default:
+                        break;
                 }
-
             }
+            else
+            {
+                var value = new TelegramBotValuesModel
+                {
+                    State = PlannerStates.CATEGORY,
+                    Category = msg
+                    
+                };
+                menu = DbManipulations.GetAllCategories(db);
+                Program.Cache[chat_id] = value;
+                message_for_user = "Выберите категорию";
+            }
+            ReplyKeyboardMarkup markup = new(Keyboards.SendKeyboards(menu)) { ResizeKeyboard = true };
+            await bot.SendTextMessageAsync(chat_id, message_for_user, replyMarkup: markup);
+
         }
     }
+}
 }

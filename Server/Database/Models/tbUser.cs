@@ -43,6 +43,10 @@ namespace waPlanner.Database.Models
         public int UserTypeId { get; set; }
         public virtual spUserType UserType { get; set; }
 
+        [Required]
+        public int? CategoryId { get; set; }
+        public virtual spCategory Category { get; set; }
+
         public long? TelegramId { get; set; }
 
         public bool? Online { get; set; }
