@@ -2,6 +2,7 @@
 {
     public enum PlannerStates
     {
+        NONE = 0,
         CATEGORY = 1,
         STUFF = 2,
         CHOOSE_DATE = 3,

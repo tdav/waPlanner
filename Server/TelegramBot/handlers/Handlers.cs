@@ -62,23 +62,29 @@ namespace waPlanner.TelegramBot.handlers
             using var db = new MyDbContextFactory().CreateDbContext(null);
             if (!Program.Cache.TryGetValue(chat_id, out var obj))
             {
-                Program.Cache[chat_id] = new TelegramBotValuesModel { State = PlannerStates.CATEGORY };
+                Program.Cache[chat_id] = new TelegramBotValuesModel { State = PlannerStates.NONE, };
             }
 
             List<IdValue> menu = null;
             var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
             switch (cache.State)
             {
+                case PlannerStates.NONE: 
+                    {
+                        cache.State = PlannerStates.CATEGORY;
+                        await Bot_.SendTextMessageAsync(chat_id, "TEST", replyMarkup: keyboards.MainMenuKeyboards.MainMenu());
+                        return;
+                    }
                 case PlannerStates.CATEGORY:
                     {
                         menu = DbManipulations.GetAllCategories(db);
-                        cache.Category = msg;
                         cache.State = PlannerStates.STUFF;
                         message_for_user = "Выберите категорию";
                         break;
                     }
                 case PlannerStates.STUFF:
                     {
+                        cache.Category = msg;
                         menu = DbManipulations.GetStuffByCategory(db, msg);
                         cache.State = PlannerStates.CHOOSE_DATE;
                         message_for_user = "Выберите специалиста";
@@ -87,6 +93,7 @@ namespace waPlanner.TelegramBot.handlers
                 case PlannerStates.CHOOSE_DATE:
                     {
                         if (!DbManipulations.CheckStuffByCategory(db, cache.Category, msg)) return;
+
                         cache.Stuff = msg;
                         int month = DateTime.Now.Month;
                         var date = new DateTime(DateTime.Now.Year, month, 1);
@@ -100,13 +107,15 @@ namespace waPlanner.TelegramBot.handlers
 
             var buttons = keyboards.ReplyKeyboards.SendKeyboards(menu);
             if (cache.State == PlannerStates.CHOOSE_DATE) buttons.Add(new List<KeyboardButton> { new KeyboardButton("⬅️Назад") });
-            ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup(buttons) { ResizeKeyboard = true };
+            ReplyKeyboardMarkup markup = new (buttons) { ResizeKeyboard = true };
             await Bot_.SendTextMessageAsync(chat_id, message_for_user, replyMarkup: markup);
         }
         public static async Task BotOnCallbackQueryReceived(CallbackQuery call)
         {
-            ReplyKeyboardMarkup back = new ReplyKeyboardMarkup(new[] { new KeyboardButton("⬅️Назад") }) { ResizeKeyboard = true };
+            ReplyKeyboardMarkup back = new (new[] { new KeyboardButton("⬅️Назад") }) { ResizeKeyboard = true };
             await keyboards.CalendarKeyboards.OnCalendarProcess(call, back);
+
+            Console.WriteLine(call.Data);
         }
     }
 }

@@ -16,12 +16,10 @@ namespace waPlanner.TelegramBot.keyboards
             string[] daysWeek = { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" };
             string IGNORE = "i";
 
-            DateTime now = DateTime.Now;
             var keyboards = new List<List<InlineKeyboardButton>>();
             var buttons = new List<InlineKeyboardButton>();
 
             ////first row for days
-            buttons = new List<InlineKeyboardButton>();
             foreach (string weekDay in daysWeek)
             {
                 buttons.Add(InlineKeyboardButton.WithCallbackData(weekDay.ToString(), IGNORE));
@@ -96,15 +94,13 @@ namespace waPlanner.TelegramBot.keyboards
                     }
                 case "DAY":
                     {
-                        var selectedDate = new DateTime(int.Parse(data[2]), int.Parse(data[1]), int.Parse(data[3]));
-                        Console.WriteLine(selectedDate);
-                        var value = new TelegramBotValuesModel
-                        {
-                            State = PlannerStates.CHOOSE_TIME,
-                            Calendar = selectedDate
-                        };
-                        Program.Cache[chat_id] = value;
-                        await bot.SendTextMessageAsync(chat_id, $"Выбрана дата: {selectedDate}", replyMarkup: back);
+                        DateTime selectedDate = new(int.Parse(data[2]), int.Parse(data[1]), int.Parse(data[3]));
+                        var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
+                        cache.State = PlannerStates.CHOOSE_TIME;
+                        cache.Calendar = selectedDate;
+       
+                        await bot.SendTextMessageAsync(chat_id, $"Выбрана дата: {selectedDate.ToShortDateString()}", replyMarkup: back);
+                        await bot.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: TimeKeyboards.SendTimeKeyboards());
                         break;
                     }
                 case "i":
