@@ -18,6 +18,8 @@ namespace waPlanner.TelegramBot.handlers
 {
     public class Handlers
     {
+        public static ITelegramBotClient Bot_;
+
         public static Task HandleErrorAsync(ITelegramBotClient bot, Exception exception, CancellationToken cancellationToken)
         {
             var ErrorMessage = exception switch
@@ -30,9 +32,11 @@ namespace waPlanner.TelegramBot.handlers
         }
         public static async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken cancellationToken)
         {
+            Bot_ = bot;
             var handler = update.Type switch
             {
-                UpdateType.Message => BotOnMessageReceived(bot, update.Message!),
+                UpdateType.Message => BotOnMessageReceived(update.Message!),
+                UpdateType.CallbackQuery => BotOnCallbackQueryReceived(update.CallbackQuery!),
             };
 
             try
@@ -44,7 +48,7 @@ namespace waPlanner.TelegramBot.handlers
                 await HandleErrorAsync(bot, exception, cancellationToken);
             }
         }
-        private static async Task BotOnMessageReceived(ITelegramBotClient bot, Message message)
+        private static async Task BotOnMessageReceived(Message message)
         {
             if (message.Type != MessageType.Text)
                 return;
@@ -52,51 +56,57 @@ namespace waPlanner.TelegramBot.handlers
             long chat_id = message.Chat.Id;
             string msg = message.Text;
             string message_for_user = "";
-            List<IdValue> menu = new();
+
+            ReplyKeyboardMarkup back = new(new[] { new KeyboardButton[] { "⬅️Назад" } }) { ResizeKeyboard = true };
 
             using var db = new MyDbContextFactory().CreateDbContext(null);
-
-            if (Program.Cache.TryGetValue(chat_id, out object obj))
+            if (!Program.Cache.TryGetValue(chat_id, out var obj))
             {
-                var value = obj as TelegramBotValuesModel;
+                Program.Cache[chat_id] = new TelegramBotValuesModel { State = PlannerStates.CATEGORY };
+            }
 
-                switch (value.State)
-                {
-                    case PlannerStates.CATEGORY:
-                        {
-                            value.State = PlannerStates.DOCTORS;
-                            value.Category = msg;
-                            Program.Cache[chat_id] = value;
-                            message_for_user = "Выберите врача";
-                            menu = DbManipulations.GetStuffBySpec(db, msg);
-                            break;
-                        }
-                    case PlannerStates.DOCTORS:
-                        {
-                            value.State = PlannerStates.CHOOSE_DATE;
-                            var year = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-                            InlineKeyboardMarkup calendar = new(Keyboards.SendCalendar(year, year.Month));
-                            await bot.SendTextMessageAsync(chat_id, "Выберите дату", replyMarkup: calendar);
-                            return;
-                        }
-                    default:
+            List<IdValue> menu = null;
+            var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
+            switch (cache.State)
+            {
+                case PlannerStates.CATEGORY:
+                    {
+                        menu = DbManipulations.GetAllCategories(db);
+                        cache.Category = msg;
+                        cache.State = PlannerStates.STUFF;
+                        message_for_user = "Выберите категорию";
                         break;
-                }
+                    }
+                case PlannerStates.STUFF:
+                    {
+                        menu = DbManipulations.GetStuffByCategory(db, msg);
+                        cache.State = PlannerStates.CHOOSE_DATE;
+                        message_for_user = "Выберите специалиста";
+                        break;
+                    }
+                case PlannerStates.CHOOSE_DATE:
+                    {
+                        if (!DbManipulations.CheckStuffByCategory(db, cache.Category, msg)) return;
+                        cache.Stuff = msg;
+                        int month = DateTime.Now.Month;
+                        var date = new DateTime(DateTime.Now.Year, month, 1);
+                        await Bot_.SendTextMessageAsync(chat_id, "Выберите удобное для вас число.", replyMarkup: back);
+                        await Bot_.SendTextMessageAsync(chat_id, "Календарь", replyMarkup: keyboards.CalendarKeyboards.SendCalendar(date, month));
+                        return;
+                    }
+                default:
+                    break;
             }
-            else
-            {
-                var value = new TelegramBotValuesModel
-                {
-                    State = PlannerStates.CATEGORY,
-                    Category = msg
-                    
-                };
-                menu = DbManipulations.GetAllCategories(db);
-                Program.Cache[chat_id] = value;
-                message_for_user = "Выберите категорию";
-            }
-            ReplyKeyboardMarkup markup = new(Keyboards.SendKeyboards(menu)) { ResizeKeyboard = true };
-            await bot.SendTextMessageAsync(chat_id, message_for_user, replyMarkup: markup);
+
+            var buttons = keyboards.ReplyKeyboards.SendKeyboards(menu);
+            if (cache.State == PlannerStates.CHOOSE_DATE) buttons.Add(new List<KeyboardButton> { new KeyboardButton("⬅️Назад") });
+            ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup(buttons) { ResizeKeyboard = true };
+            await Bot_.SendTextMessageAsync(chat_id, message_for_user, replyMarkup: markup);
+        }
+        public static async Task BotOnCallbackQueryReceived(CallbackQuery call)
+        {
+            ReplyKeyboardMarkup back = new ReplyKeyboardMarkup(new[] { new KeyboardButton("⬅️Назад") }) { ResizeKeyboard = true };
+            await keyboards.CalendarKeyboards.OnCalendarProcess(call, back);
         }
     }
 }
