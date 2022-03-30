@@ -6,19 +6,19 @@ using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using waPlanner.Database;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using waPlanner.ModelViews;
 using waPlanner.TelegramBot.Utils;
 using System.Collections.Generic;
 using Telegram.Bot.Types.ReplyMarkups;
-using waPlanner.ModelViews;
+using System.Text.RegularExpressions;
+
 
 namespace waPlanner.TelegramBot.handlers
 {
     public class Handlers
     {
         public static ITelegramBotClient Bot_;
+        private static ReplyKeyboardMarkup back = new(new[] { new KeyboardButton("⬅️Назад") }) { ResizeKeyboard = true };
 
         public static Task HandleErrorAsync(ITelegramBotClient bot, Exception exception, CancellationToken cancellationToken)
         {
@@ -50,15 +50,10 @@ namespace waPlanner.TelegramBot.handlers
         }
         private static async Task BotOnMessageReceived(Message message)
         {
-            if (message.Type != MessageType.Text)
-                return;
-
             long chat_id = message.Chat.Id;
             string msg = message.Text;
             string message_for_user = "";
-
-            ReplyKeyboardMarkup back = new(new[] { new KeyboardButton[] { "⬅️Назад" } }) { ResizeKeyboard = true };
-
+            
             using var db = new MyDbContextFactory().CreateDbContext(null);
             if (!Program.Cache.TryGetValue(chat_id, out var obj))
             {
@@ -67,12 +62,13 @@ namespace waPlanner.TelegramBot.handlers
 
             List<IdValue> menu = null;
             var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
+            
             switch (cache.State)
             {
                 case PlannerStates.NONE: 
                     {
                         cache.State = PlannerStates.CATEGORY;
-                        await Bot_.SendTextMessageAsync(chat_id, "TEST", replyMarkup: keyboards.MainMenuKeyboards.MainMenu());
+                        await Bot_.SendTextMessageAsync(chat_id, "TEST", replyMarkup: keyboards.ReplyKeyboards.MainMenu());
                         return;
                     }
                 case PlannerStates.CATEGORY:
@@ -101,21 +97,50 @@ namespace waPlanner.TelegramBot.handlers
                         await Bot_.SendTextMessageAsync(chat_id, "Календарь", replyMarkup: keyboards.CalendarKeyboards.SendCalendar(date, month));
                         return;
                     }
+                case PlannerStates.PHONE:
+                    {
+                        string phoneNumber = "";
+                        if (message.Contact is not null)
+                        {
+                            phoneNumber = message.Contact.PhoneNumber;                                    
+                        }
+                        
+                        if (!string.IsNullOrEmpty(msg))
+                        {
+                            string pattern = @"^\+\d{12}$";
+                            Regex regex = new Regex(pattern, RegexOptions.IgnorePatternWhitespace);
+                            if(regex.IsMatch(msg))
+                                phoneNumber = msg;
+                            else
+                            {
+                                return;
+                            }
+                        }
+                        cache.Phone = phoneNumber;
+                        cache.State = PlannerStates.USERNAME;
+                        Console.WriteLine(cache.Phone);
+                        await Bot_.SendTextMessageAsync(chat_id, "Введите ваше Ф.И.О", replyMarkup: back);
+                        return;
+                    }
+                case PlannerStates.USERNAME:
+                    {
+                        
+                        await Bot_.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора", replyMarkup: keyboards.ReplyKeyboards.MainMenu());
+                        break;
+                    }
                 default:
                     break;
             }
 
             var buttons = keyboards.ReplyKeyboards.SendKeyboards(menu);
-            if (cache.State == PlannerStates.CHOOSE_DATE) buttons.Add(new List<KeyboardButton> { new KeyboardButton("⬅️Назад") });
             ReplyKeyboardMarkup markup = new (buttons) { ResizeKeyboard = true };
             await Bot_.SendTextMessageAsync(chat_id, message_for_user, replyMarkup: markup);
         }
         public static async Task BotOnCallbackQueryReceived(CallbackQuery call)
         {
-            ReplyKeyboardMarkup back = new (new[] { new KeyboardButton("⬅️Назад") }) { ResizeKeyboard = true };
+            
             await keyboards.CalendarKeyboards.OnCalendarProcess(call, back);
-
-            Console.WriteLine(call.Data);
+            await keyboards.TimeKeyboards.OnTimeProcess(call, Bot_);
         }
     }
 }

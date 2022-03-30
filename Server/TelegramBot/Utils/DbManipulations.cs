@@ -31,5 +31,6 @@ namespace waPlanner.TelegramBot.Utils
         {
             return db.spCategories.AsNoTracking().Select(x => new IdValue { Id = x.Id, Name = x.NameUz }).ToList();
         }
+
     }
 }

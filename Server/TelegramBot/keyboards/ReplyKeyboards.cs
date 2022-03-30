@@ -24,8 +24,41 @@ namespace waPlanner.TelegramBot.keyboards
 
             if (keyboards.Count != 0)
                 keyboards.Add(buttons);
-
+            buttons = new List<KeyboardButton>();
+            buttons.Add(new KeyboardButton("⬅️Назад"));
+            keyboards.Add(buttons);
             return keyboards;
+        }
+        public static ReplyKeyboardMarkup MainMenu()
+        {
+            ReplyKeyboardMarkup markup = new(
+                new[]
+                {
+                        new KeyboardButton[] { "Main", "Test" },
+                        new KeyboardButton[] { "Test", "Test" },
+                })
+            {
+                ResizeKeyboard = true
+            };
+
+            return markup;
+        }
+        public static ReplyKeyboardMarkup SendContactKeyboard()
+        {
+            ReplyKeyboardMarkup markup = new(
+                new[]
+                {
+                    new[]
+                    {
+                        KeyboardButton.WithRequestContact("Отправить номер телефона📞")
+                    },
+                    new[]
+                    {
+                        new KeyboardButton("⬅️Назад")
+                    }
+                })
+            { ResizeKeyboard = true};
+            return markup;
         }
     }
 }

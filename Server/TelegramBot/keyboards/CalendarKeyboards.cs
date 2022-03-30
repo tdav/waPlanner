@@ -94,13 +94,26 @@ namespace waPlanner.TelegramBot.keyboards
                     }
                 case "DAY":
                     {
-                        DateTime selectedDate = new(int.Parse(data[2]), int.Parse(data[1]), int.Parse(data[3]));
-                        var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
-                        cache.State = PlannerStates.CHOOSE_TIME;
-                        cache.Calendar = selectedDate;
-       
-                        await bot.SendTextMessageAsync(chat_id, $"Выбрана дата: {selectedDate.ToShortDateString()}", replyMarkup: back);
-                        await bot.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: TimeKeyboards.SendTimeKeyboards());
+                        int day = int.Parse(data[3]);
+                        if (day >= DateTime.Now.Day)
+                        {
+                            DateTime selectedDate = new(int.Parse(data[2]), int.Parse(data[1]), day);
+                            var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
+                            cache.State = PlannerStates.CHOOSE_TIME;
+                            cache.Calendar = selectedDate;
+                            try
+                            {
+                                await bot.DeleteMessageAsync(chat_id, call.Message.MessageId);
+                            }
+                            catch
+                            {
+                                
+                            }
+                            await bot.SendTextMessageAsync(chat_id, $"Выбрана дата: {selectedDate.ToShortDateString()}", replyMarkup: back);
+                            await bot.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: TimeKeyboards.SendTimeKeyboards());
+                            return;
+                        }
+                        await bot.AnswerCallbackQueryAsync(call.Id, "Нельзя выбирать старую дату!", true);
                         break;
                     }
                 case "i":

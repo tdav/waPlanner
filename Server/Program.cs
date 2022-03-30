@@ -6,11 +6,7 @@ using Serilog.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Threading;
-using Telegram.Bot;
-using Telegram.Bot.Extensions.Polling;
-using Telegram.Bot.Types;
-using waPlanner.TelegramBot.handlers;
+using waPlanner.TelegramBot;
 
 namespace waPlanner
 {
@@ -38,11 +34,7 @@ namespace waPlanner
 
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
-            TelegramBotClient? Bot = new TelegramBotClient(Config.TOKEN);
-            using var cts = new CancellationTokenSource();
-            ReceiverOptions options = new() { AllowedUpdates = { } };
-            Bot.StartReceiving(Handlers.HandleUpdateAsync, Handlers.HandleErrorAsync, options, cts.Token);
-
+            StartBot.BotStart();
             return Host.CreateDefaultBuilder(args)
                       .ConfigureWebHostDefaults(webBuilder =>
                       {
