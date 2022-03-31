@@ -38,12 +38,12 @@ namespace waPlanner.Database.Models
         [Required]
         [StringLength(50)]
         public string? Password { get; set; }
+        public DateTime? BirthDay { get; set; }
 
         [Required]
         public int UserTypeId { get; set; }
         public virtual spUserType UserType { get; set; }
 
-        [Required]
         public int? CategoryId { get; set; }
         public virtual spCategory Category { get; set; }
 

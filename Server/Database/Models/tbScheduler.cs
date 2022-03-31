@@ -18,5 +18,7 @@ namespace waPlanner.Database.Models
 
         [StringLength(200)]
         public string Symptoms { get; set; }
+        public int CategoryId { get; set; }
+        public virtual spCategory Category { get; set; }
     }
 }

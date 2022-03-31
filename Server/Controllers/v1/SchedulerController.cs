@@ -9,7 +9,7 @@ namespace waPlanner.Controllers.v1
     [Route("api/[controller]")]
     [ApiController]
     [ApiVersion("1.0")]
-    [SwaggerTag("Пользователи")]
+    [SwaggerTag("Расписание")]
     public class SchedulerController: ControllerBase
     {
         private readonly ISchedulerService service;

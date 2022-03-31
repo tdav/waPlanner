@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using waPlanner.Database;
@@ -11,9 +12,10 @@ using waPlanner.Database;
 namespace waPlanner.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    partial class MyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220330125254_tbscheduler_category")]
+    partial class tbscheduler_category
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -204,11 +206,8 @@ namespace waPlanner.Migrations
                         .HasColumnType("integer[]")
                         .HasColumnName("availability");
 
-                    b.Property<DateTime?>("BirthDay")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("birth_day");
-
                     b.Property<int?>("CategoryId")
+                        .IsRequired()
                         .HasColumnType("integer")
                         .HasColumnName("category_id");
 
@@ -331,6 +330,7 @@ namespace waPlanner.Migrations
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
                         .HasConstraintName("fk_tb_users_sp_categories_category_id");
 
                     b.HasOne("waPlanner.Database.Models.spUserType", "UserType")

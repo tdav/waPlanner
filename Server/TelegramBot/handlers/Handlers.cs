@@ -62,7 +62,48 @@ namespace waPlanner.TelegramBot.handlers
 
             List<IdValue> menu = null;
             var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
-            
+
+            if (msg == "⬅️Назад")
+            {
+                switch (cache.State)
+                {
+                    case PlannerStates.CATEGORY:
+                        {
+                            cache.State = PlannerStates.NONE;
+                            await Bot_.SendTextMessageAsync(chat_id, "TEST", replyMarkup: keyboards.ReplyKeyboards.MainMenu());
+                            return;
+                        }
+                    case PlannerStates.STUFF:
+                        {
+                            Console.WriteLine("back in stuff");
+                            cache.State = PlannerStates.NONE;
+                            break;
+                        }
+                    case PlannerStates.CHOOSE_DATE:
+                        {
+                            cache.State = PlannerStates.CATEGORY;
+                            break;
+                        }
+                    case PlannerStates.CHOOSE_TIME:
+                        {
+                            cache.State = PlannerStates.STUFF;
+                            break;
+                        }
+                    case PlannerStates.PHONE:
+                        {
+                            cache.State = PlannerStates.STUFF;
+                            break;
+                        }
+                    case PlannerStates.USERNAME:
+                        {
+                            cache.State = PlannerStates.STUFF;
+                            break;
+                        }
+                    default:
+                        break;
+                }
+            }
+
             switch (cache.State)
             {
                 case PlannerStates.NONE: 
@@ -80,8 +121,10 @@ namespace waPlanner.TelegramBot.handlers
                     }
                 case PlannerStates.STUFF:
                     {
-                        cache.Category = msg;
-                        menu = DbManipulations.GetStuffByCategory(db, msg);
+                        Console.WriteLine(cache.State + " state in stuff state");
+
+                        cache.Category = cache.Category is null ? msg : cache.Category;
+                        menu = DbManipulations.GetStuffByCategory(db, cache.Category);
                         cache.State = PlannerStates.CHOOSE_DATE;
                         message_for_user = "Выберите специалиста";
                         break;
@@ -90,7 +133,7 @@ namespace waPlanner.TelegramBot.handlers
                     {
                         if (!DbManipulations.CheckStuffByCategory(db, cache.Category, msg)) return;
 
-                        cache.Stuff = msg;
+                        cache.Stuff = cache.Stuff is null ? msg : cache.Stuff;
                         int month = DateTime.Now.Month;
                         var date = new DateTime(DateTime.Now.Year, month, 1);
                         await Bot_.SendTextMessageAsync(chat_id, "Выберите удобное для вас число.", replyMarkup: back);
@@ -114,33 +157,35 @@ namespace waPlanner.TelegramBot.handlers
                             else
                             {
                                 return;
-                            }
+                            } 
                         }
                         cache.Phone = phoneNumber;
                         cache.State = PlannerStates.USERNAME;
-                        Console.WriteLine(cache.Phone);
                         await Bot_.SendTextMessageAsync(chat_id, "Введите ваше Ф.И.О", replyMarkup: back);
                         return;
                     }
                 case PlannerStates.USERNAME:
                     {
-                        
+                        cache.UserName = msg;
+                        int stuffId = DbManipulations.GetStuffIdByNameAsync(db, cache.Stuff);
+                        int categoryId = DbManipulations.GetCategoryIdByName(db, cache.Category);
                         await Bot_.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора", replyMarkup: keyboards.ReplyKeyboards.MainMenu());
-                        break;
+                        cache.State = PlannerStates.NONE;
+                        await DbManipulations.FinishProcessAsync(chat_id, cache, db);
+                        return;
                     }
                 default:
                     break;
             }
-
             var buttons = keyboards.ReplyKeyboards.SendKeyboards(menu);
             ReplyKeyboardMarkup markup = new (buttons) { ResizeKeyboard = true };
             await Bot_.SendTextMessageAsync(chat_id, message_for_user, replyMarkup: markup);
         }
         public static async Task BotOnCallbackQueryReceived(CallbackQuery call)
         {
-            
+            using var db = new MyDbContextFactory().CreateDbContext(null);
             await keyboards.CalendarKeyboards.OnCalendarProcess(call, back);
-            await keyboards.TimeKeyboards.OnTimeProcess(call, Bot_);
+            await keyboards.TimeKeyboards.OnTimeProcess(call, Bot_, db);
         }
     }
 }

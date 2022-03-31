@@ -78,51 +78,54 @@ namespace waPlanner.TelegramBot.keyboards
             string[] data = SeparateCallbackData(call.Data);
             string action = data[0];
             var bot = handlers.Handlers.Bot_;
-            switch (action)
+            var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
+            if (cache.State == PlannerStates.CHOOSE_DATE)
             {
-                case "NEXT-MONTH":
-                    {
-                        DateTime date = new DateTime(DateTime.Now.Year, int.Parse(data[1]) + 1, 1);
-                        await bot.EditMessageReplyMarkupAsync(chat_id, call.Message.MessageId, SendCalendar(date, int.Parse(data[1]) + 1));
-                        break;
-                    }
-                case "PREV-MONTH":
-                    {
-                        DateTime date = new DateTime(DateTime.Now.Year, int.Parse(data[1]) - 1, 1);
-                        await bot.EditMessageReplyMarkupAsync(chat_id, call.Message.MessageId, SendCalendar(date, int.Parse(data[1]) - 1));
-                        break;
-                    }
-                case "DAY":
-                    {
-                        int day = int.Parse(data[3]);
-                        if (day >= DateTime.Now.Day)
+                switch (action)
+                {
+                    case "NEXT-MONTH":
                         {
-                            DateTime selectedDate = new(int.Parse(data[2]), int.Parse(data[1]), day);
-                            var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
-                            cache.State = PlannerStates.CHOOSE_TIME;
-                            cache.Calendar = selectedDate;
-                            try
-                            {
-                                await bot.DeleteMessageAsync(chat_id, call.Message.MessageId);
-                            }
-                            catch
-                            {
-                                
-                            }
-                            await bot.SendTextMessageAsync(chat_id, $"Выбрана дата: {selectedDate.ToShortDateString()}", replyMarkup: back);
-                            await bot.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: TimeKeyboards.SendTimeKeyboards());
-                            return;
+                            DateTime date = new DateTime(DateTime.Now.Year, int.Parse(data[1]) + 1, 1);
+                            await bot.EditMessageReplyMarkupAsync(chat_id, call.Message.MessageId, SendCalendar(date, int.Parse(data[1]) + 1));
+                            break;
                         }
-                        await bot.AnswerCallbackQueryAsync(call.Id, "Нельзя выбирать старую дату!", true);
+                    case "PREV-MONTH":
+                        {
+                            DateTime date = new DateTime(DateTime.Now.Year, int.Parse(data[1]) - 1, 1);
+                            await bot.EditMessageReplyMarkupAsync(chat_id, call.Message.MessageId, SendCalendar(date, int.Parse(data[1]) - 1));
+                            break;
+                        }
+                    case "DAY":
+                        {
+                            int day = int.Parse(data[3]);
+                            if (day >= DateTime.Now.Day)
+                            {
+                                DateTime selectedDate = new(int.Parse(data[2]), int.Parse(data[1]), day);
+                                cache.State = PlannerStates.CHOOSE_TIME;
+                                cache.Calendar = selectedDate;
+                                try
+                                {
+                                    await bot.DeleteMessageAsync(chat_id, call.Message.MessageId);
+                                }
+                                catch
+                                {
+                                
+                                }
+                                await bot.SendTextMessageAsync(chat_id, $"Выбрана дата: {selectedDate.ToShortDateString()}", replyMarkup: back);
+                                await bot.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: TimeKeyboards.SendTimeKeyboards());
+                                return;
+                            }
+                            await bot.AnswerCallbackQueryAsync(call.Id, "Нельзя выбирать старую дату!", true);
+                            break;
+                        }
+                    case "i":
+                        {
+                            await bot.AnswerCallbackQueryAsync(call.Id);
+                            break;
+                        }
+                    default:
                         break;
-                    }
-                case "i":
-                    {
-                        await bot.AnswerCallbackQueryAsync(call.Id);
-                        break;
-                    }
-                default:
-                    break;
+                }
             }
         }
     }
