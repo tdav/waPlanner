@@ -75,7 +75,6 @@ namespace waPlanner.TelegramBot.handlers
                         }
                     case PlannerStates.STUFF:
                         {
-                            Console.WriteLine("back in stuff");
                             cache.State = PlannerStates.NONE;
                             break;
                         }
@@ -121,8 +120,6 @@ namespace waPlanner.TelegramBot.handlers
                     }
                 case PlannerStates.STUFF:
                     {
-                        Console.WriteLine(cache.State + " state in stuff state");
-
                         cache.Category = cache.Category is null ? msg : cache.Category;
                         menu = DbManipulations.GetStuffByCategory(db, cache.Category);
                         cache.State = PlannerStates.CHOOSE_DATE;
@@ -151,7 +148,7 @@ namespace waPlanner.TelegramBot.handlers
                         if (!string.IsNullOrEmpty(msg))
                         {
                             string pattern = @"^\+\d{12}$";
-                            Regex regex = new Regex(pattern, RegexOptions.IgnorePatternWhitespace);
+                            Regex regex = new (pattern, RegexOptions.IgnorePatternWhitespace);
                             if(regex.IsMatch(msg))
                                 phoneNumber = msg;
                             else
@@ -167,11 +164,10 @@ namespace waPlanner.TelegramBot.handlers
                 case PlannerStates.USERNAME:
                     {
                         cache.UserName = msg;
-                        int stuffId = DbManipulations.GetStuffIdByNameAsync(db, cache.Stuff);
-                        int categoryId = DbManipulations.GetCategoryIdByName(db, cache.Category);
                         await Bot_.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора", replyMarkup: keyboards.ReplyKeyboards.MainMenu());
                         cache.State = PlannerStates.NONE;
                         await DbManipulations.FinishProcessAsync(chat_id, cache, db);
+                        await DbManipulations.RegistrateUserPlanner(chat_id, cache, db);
                         return;
                     }
                 default:

@@ -11,6 +11,31 @@ namespace waPlanner.TelegramBot.Utils
 {
     public class DbManipulations
     {
+        public static async Task RegistrateUserPlanner(long chat_id, TelegramBotValuesModel value, MyDbContext db)
+        {
+            int stuffId = GetStuffIdByNameAsync(db, value.Stuff);
+            int categoryId = GetCategoryIdByName(db, value.Category);
+            int userId = GetUserId(chat_id, db);
+            string[] userSelectedTime = value.Time.Split(":");
+            DateTime plannerDate = value.Calendar
+                .AddHours(int.Parse(userSelectedTime[0]))
+                .AddMinutes(int.Parse(userSelectedTime[1]));
+
+            var planner = new tbScheduler
+            {
+                UserId = userId,
+                DoctorId = stuffId,
+                AppointmentDateTime = plannerDate,
+                CategoryId = categoryId,
+            };
+
+            await db.tbSchedulers.AddAsync(planner);
+            await db.SaveChangesAsync();
+        }
+        private static int GetUserId(long chat_id, MyDbContext db)
+        {
+            return db.tbUsers.AsNoTracking().First(x => x.TelegramId == chat_id).Id;
+        }
         public static async Task FinishProcessAsync(long chat_id, TelegramBotValuesModel value, MyDbContext db)
         {
             var telegramUser = new tbUser
@@ -34,7 +59,6 @@ namespace waPlanner.TelegramBot.Utils
                 .FirstOrDefault(x => x.TelegramId == chat_id);
             if (result != null)
                 return true;
-            Console.WriteLine("sdada");
             return false;
         }
         public static int GetCategoryIdByName(MyDbContext db, string name)

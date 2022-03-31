@@ -48,6 +48,7 @@ namespace waPlanner.TelegramBot.keyboards
                     if (DbManipulations.CheckUser(chat_id, db))
                     {
                         await bot.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора", replyMarkup: ReplyKeyboards.MainMenu());
+                        await DbManipulations.RegistrateUserPlanner(chat_id, cache, db);
                         cache.State = PlannerStates.NONE;
                         return;
                     }

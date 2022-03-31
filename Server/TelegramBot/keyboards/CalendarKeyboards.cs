@@ -98,9 +98,11 @@ namespace waPlanner.TelegramBot.keyboards
                     case "DAY":
                         {
                             int day = int.Parse(data[3]);
-                            if (day >= DateTime.Now.Day)
+                            DateTime selectedDate = new(int.Parse(data[2]), int.Parse(data[1]), day);
+                            Console.WriteLine(selectedDate);
+                            Console.WriteLine(DateTime.Now);
+                            if (DateTime.Now <= selectedDate)
                             {
-                                DateTime selectedDate = new(int.Parse(data[2]), int.Parse(data[1]), day);
                                 cache.State = PlannerStates.CHOOSE_TIME;
                                 cache.Calendar = selectedDate;
                                 try
