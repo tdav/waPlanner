@@ -11,7 +11,7 @@ using waPlanner.TelegramBot.Utils;
 using System.Collections.Generic;
 using Telegram.Bot.Types.ReplyMarkups;
 using System.Text.RegularExpressions;
-
+using waPlanner.TelegramBot.keyboards;
 
 namespace waPlanner.TelegramBot.handlers
 {
@@ -53,129 +53,136 @@ namespace waPlanner.TelegramBot.handlers
             long chat_id = message.Chat.Id;
             string msg = message.Text;
             string message_for_user = "";
-            
-            using var db = new MyDbContextFactory().CreateDbContext(null);
-            if (!Program.Cache.TryGetValue(chat_id, out var obj))
-            {
-                Program.Cache[chat_id] = new TelegramBotValuesModel { State = PlannerStates.NONE, };
-            }
 
-            List<IdValue> menu = null;
-            var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
-
-            if (msg == "⬅️Назад")
+            using (var db = new MyDbContextFactory().CreateDbContext(null))
             {
+                if (!Program.Cache.TryGetValue(chat_id, out var obj))
+                {
+                    Program.Cache[chat_id] = new TelegramBotValuesModel { State = PlannerStates.NONE, };
+                }
+
+                List<IdValue> menu = null;
+                var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
+
+                if(msg == "⬅️Назад")
+                {
+                    switch (cache.State)
+                    {
+                        case PlannerStates.STUFF:
+                            {
+                                cache.State = PlannerStates.NONE;
+                                break;
+                            }
+                        case PlannerStates.CHOOSE_DATE:
+                            {
+                                cache.State = PlannerStates.CATEGORY;
+                                break;
+                            }
+                        case PlannerStates.CHOOSE_TIME:
+                            {
+                                cache.State = PlannerStates.CATEGORY;
+                                break;
+                            }
+                        case PlannerStates.PHONE:
+                            {
+                                cache.State = PlannerStates.CATEGORY;
+                                break;
+                            }
+                        case PlannerStates.USERNAME:
+                            {
+                                cache.State = PlannerStates.CATEGORY;
+                                break;
+                            }
+                        default:
+                            break;
+                    }
+                }
+
                 switch (cache.State)
                 {
+                    case PlannerStates.NONE:
+                        {
+                            cache.State = PlannerStates.CATEGORY;
+                            await Bot_.SendTextMessageAsync(chat_id, "TEST", replyMarkup: ReplyKeyboards.MainMenu());
+                            return;
+                        }
                     case PlannerStates.CATEGORY:
                         {
-                            cache.State = PlannerStates.NONE;
-                            await Bot_.SendTextMessageAsync(chat_id, "TEST", replyMarkup: keyboards.ReplyKeyboards.MainMenu());
-                            return;
+                            menu = DbManipulations.GetAllCategories(db);
+                            cache.State = PlannerStates.STUFF;
+                            message_for_user = "Выберите категорию";
+                            break;
                         }
                     case PlannerStates.STUFF:
                         {
-                            cache.State = PlannerStates.NONE;
+                            if (!DbManipulations.CheckCategory(db).Contains(msg) && msg != "⬅️Назад") return;
+
+                            cache.Category = DbManipulations.CheckCategory(db).Contains(msg)? msg : cache.Category;
+                            menu = DbManipulations.GetStuffByCategory(db, cache.Category);
+                            cache.State = msg != "⬅️Назад"? PlannerStates.CHOOSE_DATE: cache.State;
+                            message_for_user = "Выберите специалиста";
+                            Console.WriteLine("PlannerStates.STUFF");
                             break;
                         }
                     case PlannerStates.CHOOSE_DATE:
                         {
-                            cache.State = PlannerStates.CATEGORY;
-                            break;
-                        }
-                    case PlannerStates.CHOOSE_TIME:
-                        {
-                            cache.State = PlannerStates.STUFF;
-                            break;
+                            if (!DbManipulations.CheckStuffByCategory(db, cache.Category, msg) && msg != "⬅️Назад") return;
+
+                            cache.Stuff =  msg != "⬅️Назад"? msg: cache.Stuff;
+                            Console.WriteLine(cache.Stuff);
+                            int month = DateTime.Now.Month;
+                            var date = new DateTime(DateTime.Now.Year, month, 1);
+                            await Bot_.SendTextMessageAsync(chat_id, "Выберите удобное для вас число.", replyMarkup: back);
+                            await Bot_.SendTextMessageAsync(chat_id, "Календарь", replyMarkup: CalendarKeyboards.SendCalendar(date, month));
+                            return;
                         }
                     case PlannerStates.PHONE:
                         {
-                            cache.State = PlannerStates.STUFF;
-                            break;
+                            string phoneNumber = "";
+                            if (message.Contact is not null)
+                            {
+                                phoneNumber = message.Contact.PhoneNumber;
+                            }
+
+                            if (!string.IsNullOrEmpty(msg))
+                            {
+                                string pattern = @"^\+\d{12}$";
+                                Regex regex = new(pattern, RegexOptions.IgnorePatternWhitespace);
+                                if (regex.IsMatch(msg))
+                                    phoneNumber = msg;
+                                else
+                                {
+                                    return;
+                                }
+                            }
+                            cache.Phone = phoneNumber;
+                            cache.State = PlannerStates.USERNAME;
+                            await Bot_.SendTextMessageAsync(chat_id, "Введите ваше Ф.И.О", replyMarkup: back);
+                            return;
                         }
                     case PlannerStates.USERNAME:
                         {
-                            cache.State = PlannerStates.STUFF;
-                            break;
+                            cache.UserName = msg;
+                            await Bot_.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора", replyMarkup: ReplyKeyboards.MainMenu());
+                            cache.State = PlannerStates.NONE;
+                            await DbManipulations.FinishProcessAsync(chat_id, cache, db);
+                            await DbManipulations.RegistrateUserPlanner(chat_id, cache, db);
+                            return;
                         }
                     default:
                         break;
                 }
-            }
-
-            switch (cache.State)
-            {
-                case PlannerStates.NONE: 
-                    {
-                        cache.State = PlannerStates.CATEGORY;
-                        await Bot_.SendTextMessageAsync(chat_id, "TEST", replyMarkup: keyboards.ReplyKeyboards.MainMenu());
-                        return;
-                    }
-                case PlannerStates.CATEGORY:
-                    {
-                        menu = DbManipulations.GetAllCategories(db);
-                        cache.State = PlannerStates.STUFF;
-                        message_for_user = "Выберите категорию";
-                        break;
-                    }
-                case PlannerStates.STUFF:
-                    {
-                        cache.Category = cache.Category is null ? msg : cache.Category;
-                        menu = DbManipulations.GetStuffByCategory(db, cache.Category);
-                        cache.State = PlannerStates.CHOOSE_DATE;
-                        message_for_user = "Выберите специалиста";
-                        break;
-                    }
-                case PlannerStates.CHOOSE_DATE:
-                    {
-                        if (!DbManipulations.CheckStuffByCategory(db, cache.Category, msg)) return;
-
-                        cache.Stuff = cache.Stuff is null ? msg : cache.Stuff;
-                        int month = DateTime.Now.Month;
-                        var date = new DateTime(DateTime.Now.Year, month, 1);
-                        await Bot_.SendTextMessageAsync(chat_id, "Выберите удобное для вас число.", replyMarkup: back);
-                        await Bot_.SendTextMessageAsync(chat_id, "Календарь", replyMarkup: keyboards.CalendarKeyboards.SendCalendar(date, month));
-                        return;
-                    }
-                case PlannerStates.PHONE:
-                    {
-                        string phoneNumber = "";
-                        if (message.Contact is not null)
-                        {
-                            phoneNumber = message.Contact.PhoneNumber;                                    
-                        }
-                        
-                        if (!string.IsNullOrEmpty(msg))
-                        {
-                            string pattern = @"^\+\d{12}$";
-                            Regex regex = new (pattern, RegexOptions.IgnorePatternWhitespace);
-                            if(regex.IsMatch(msg))
-                                phoneNumber = msg;
-                            else
-                            {
-                                return;
-                            } 
-                        }
-                        cache.Phone = phoneNumber;
-                        cache.State = PlannerStates.USERNAME;
-                        await Bot_.SendTextMessageAsync(chat_id, "Введите ваше Ф.И.О", replyMarkup: back);
-                        return;
-                    }
-                case PlannerStates.USERNAME:
-                    {
-                        cache.UserName = msg;
-                        await Bot_.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора", replyMarkup: keyboards.ReplyKeyboards.MainMenu());
-                        cache.State = PlannerStates.NONE;
-                        await DbManipulations.FinishProcessAsync(chat_id, cache, db);
-                        await DbManipulations.RegistrateUserPlanner(chat_id, cache, db);
-                        return;
-                    }
-                default:
-                    break;
-            }
-            var buttons = keyboards.ReplyKeyboards.SendKeyboards(menu);
-            ReplyKeyboardMarkup markup = new (buttons) { ResizeKeyboard = true };
-            await Bot_.SendTextMessageAsync(chat_id, message_for_user, replyMarkup: markup);
+                Console.WriteLine(cache.State);
+                if(menu is not null)
+                {
+                    var buttons = ReplyKeyboards.SendKeyboards(menu);
+                    ReplyKeyboardMarkup markup = new(buttons) { ResizeKeyboard = true };
+                    await Bot_.SendTextMessageAsync(chat_id, message_for_user, replyMarkup: markup);
+                    return;
+                }
+                await Bot_.SendTextMessageAsync(chat_id, "Выберайте по кнопкам");
+            };
+            
         }
         public static async Task BotOnCallbackQueryReceived(CallbackQuery call)
         {

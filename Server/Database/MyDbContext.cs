@@ -11,9 +11,12 @@ namespace waPlanner.Database
 
         #region dbSet
         public DbSet<spCategory> spCategories { get; set; }
+        public DbSet<spOrganizationType> spOrganizationTypes { get; set; }
         public DbSet<spUserType> spUserTypes { get; set; }
+        public DbSet<tbOrganization> tbOrganizations { get; set; }
         public DbSet<tbScheduler> tbSchedulers { get; set; }
         public DbSet<tbUser> tbUsers { get; set; }
+        
         #endregion
 
         public MyDbContext(DbContextOptions options) : base(options) { }

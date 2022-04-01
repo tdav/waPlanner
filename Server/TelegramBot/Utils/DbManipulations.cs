@@ -97,6 +97,13 @@ namespace waPlanner.TelegramBot.Utils
                          .ToList();
             return list.Any(x => x.Name == value);
         }
+        public static List<string> CheckCategory(MyDbContext db)
+        {
+            var categories = db.spCategories
+                .AsNoTracking()
+                .Select(x => x.NameUz).ToList();
+            return categories;
+        }
         public static List<IdValue> GetAllCategories(MyDbContext db)
         {
             return db.spCategories.AsNoTracking().Select(x => new IdValue { Id = x.Id, Name = x.NameUz }).ToList();

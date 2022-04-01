@@ -61,6 +61,7 @@ namespace waPlanner
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ISchedulerService, SchedulerService>();
+            services.AddScoped<IOrganizationService, OrganizationService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)

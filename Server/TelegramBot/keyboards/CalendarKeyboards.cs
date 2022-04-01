@@ -81,27 +81,29 @@ namespace waPlanner.TelegramBot.keyboards
             var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
             if (cache.State == PlannerStates.CHOOSE_DATE)
             {
+                int month = int.Parse(data[1]);
                 switch (action)
                 {
                     case "NEXT-MONTH":
                         {
-                            DateTime date = new DateTime(DateTime.Now.Year, int.Parse(data[1]) + 1, 1);
+                            DateTime date = new(DateTime.Now.Year, month + 1, 1);
                             await bot.EditMessageReplyMarkupAsync(chat_id, call.Message.MessageId, SendCalendar(date, int.Parse(data[1]) + 1));
                             break;
                         }
                     case "PREV-MONTH":
                         {
-                            DateTime date = new DateTime(DateTime.Now.Year, int.Parse(data[1]) - 1, 1);
-                            await bot.EditMessageReplyMarkupAsync(chat_id, call.Message.MessageId, SendCalendar(date, int.Parse(data[1]) - 1));
+                            if(int.Parse(data[1]) > DateTime.Now.Month)
+                            {
+
+                            }
+                            DateTime date = new(DateTime.Now.Year, month - 1, 1);
+                            await bot.EditMessageReplyMarkupAsync(chat_id, call.Message.MessageId, SendCalendar(date, month - 1));
                             break;
                         }
                     case "DAY":
                         {
-                            int day = int.Parse(data[3]);
-                            DateTime selectedDate = new(int.Parse(data[2]), int.Parse(data[1]), day);
-                            Console.WriteLine(selectedDate);
-                            Console.WriteLine(DateTime.Now);
-                            if (DateTime.Now <= selectedDate)
+                            DateTime selectedDate = new(int.Parse(data[2]), month, int.Parse(data[3]));
+                            if (selectedDate >= DateTime.Today)
                             {
                                 cache.State = PlannerStates.CHOOSE_TIME;
                                 cache.Calendar = selectedDate;

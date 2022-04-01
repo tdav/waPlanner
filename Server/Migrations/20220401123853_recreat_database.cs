@@ -6,12 +6,33 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace waPlanner.Migrations
 {
-    public partial class t1 : Migration
+    public partial class recreat_database : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
                 name: "sp_categories",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    tip = table.Column<int>(type: "integer", nullable: false),
+                    status = table.Column<int>(type: "integer", nullable: false),
+                    create_user = table.Column<int>(type: "integer", nullable: false),
+                    create_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    update_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    update_user = table.Column<int>(type: "integer", nullable: true),
+                    name_uz = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    name_lt = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    name_ru = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_sp_categories", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "sp_organization_types",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
@@ -27,7 +48,7 @@ namespace waPlanner.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_sp_categories", x => x.id);
+                    table.PrimaryKey("pk_sp_organization_types", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -51,6 +72,34 @@ namespace waPlanner.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "tb_organizations",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    chat_id = table.Column<long>(type: "bigint", nullable: false),
+                    address = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    latitude = table.Column<float>(type: "real", nullable: false),
+                    longitude = table.Column<float>(type: "real", nullable: false),
+                    type_id = table.Column<int>(type: "integer", nullable: false),
+                    status = table.Column<int>(type: "integer", nullable: false),
+                    create_user = table.Column<int>(type: "integer", nullable: false),
+                    create_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    update_user = table.Column<int>(type: "integer", nullable: true),
+                    update_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_tb_organizations", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_tb_organizations_sp_organization_types_type_id",
+                        column: x => x.type_id,
+                        principalTable: "sp_organization_types",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "tb_users",
                 columns: table => new
                 {
@@ -61,7 +110,9 @@ namespace waPlanner.Migrations
                     patronymic = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     phone_num = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
                     password = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    birth_day = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     user_type_id = table.Column<int>(type: "integer", nullable: false),
+                    category_id = table.Column<int>(type: "integer", nullable: true),
                     telegram_id = table.Column<long>(type: "bigint", nullable: true),
                     online = table.Column<bool>(type: "boolean", nullable: true),
                     experience = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -75,6 +126,12 @@ namespace waPlanner.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_tb_users", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_tb_users_sp_categories_category_id",
+                        column: x => x.category_id,
+                        principalTable: "sp_categories",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_tb_users_sp_user_types_user_type_id",
                         column: x => x.user_type_id,
@@ -93,6 +150,7 @@ namespace waPlanner.Migrations
                     doctor_id = table.Column<int>(type: "integer", nullable: false),
                     appointment_date_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     symptoms = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    category_id = table.Column<int>(type: "integer", nullable: false),
                     status = table.Column<int>(type: "integer", nullable: false),
                     create_user = table.Column<int>(type: "integer", nullable: false),
                     create_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -102,6 +160,12 @@ namespace waPlanner.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_tb_schedulers", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_tb_schedulers_sp_categories_category_id",
+                        column: x => x.category_id,
+                        principalTable: "sp_categories",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_tb_schedulers_tb_users_doctor_id",
                         column: x => x.doctor_id,
@@ -117,6 +181,16 @@ namespace waPlanner.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "ix_tb_organizations_type_id",
+                table: "tb_organizations",
+                column: "type_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_tb_schedulers_category_id",
+                table: "tb_schedulers",
+                column: "category_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_tb_schedulers_doctor_id",
                 table: "tb_schedulers",
                 column: "doctor_id");
@@ -125,6 +199,11 @@ namespace waPlanner.Migrations
                 name: "ix_tb_schedulers_user_id",
                 table: "tb_schedulers",
                 column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_tb_users_category_id",
+                table: "tb_users",
+                column: "category_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_tb_users_password",
@@ -145,13 +224,19 @@ namespace waPlanner.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "sp_categories");
+                name: "tb_organizations");
 
             migrationBuilder.DropTable(
                 name: "tb_schedulers");
 
             migrationBuilder.DropTable(
+                name: "sp_organization_types");
+
+            migrationBuilder.DropTable(
                 name: "tb_users");
+
+            migrationBuilder.DropTable(
+                name: "sp_categories");
 
             migrationBuilder.DropTable(
                 name: "sp_user_types");

@@ -24,8 +24,8 @@ namespace waPlanner.TelegramBot.keyboards
 
             if (keyboards.Count != 0)
                 keyboards.Add(buttons);
-            buttons = new List<KeyboardButton>();
-            buttons.Add(new KeyboardButton("⬅️Назад"));
+            //buttons = new List<KeyboardButton>();
+            //buttons.Add(new KeyboardButton("⬅️Назад"));
             keyboards.Add(buttons);
             return keyboards;
         }
