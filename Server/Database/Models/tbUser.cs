@@ -42,7 +42,6 @@ namespace waPlanner.Database.Models
         [Required]
         public int UserTypeId { get; set; }
         public virtual spUserType UserType { get; set; }
-
         public int? CategoryId { get; set; }
         public virtual spCategory Category { get; set; }
 

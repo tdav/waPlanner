@@ -104,6 +104,16 @@ namespace waPlanner.TelegramBot.Utils
                 .Select(x => x.NameUz).ToList();
             return categories;
         }
+        public static List<DateTime> GetStuffBusyTime(int stuff_id, MyDbContext db, TelegramBotValuesModel value)
+        {
+            
+            return db.tbSchedulers
+                .AsNoTracking()
+                .Where(x => x.DoctorId == stuff_id && x.AppointmentDateTime.Date == value.Calendar.Date)
+                .Select(x => x.AppointmentDateTime)
+                .ToList();
+            
+        }
         public static List<IdValue> GetAllCategories(MyDbContext db)
         {
             return db.spCategories.AsNoTracking().Select(x => new IdValue { Id = x.Id, Name = x.NameUz }).ToList();

@@ -1,4 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using waPlanner.ModelViews;
 
@@ -21,11 +25,9 @@ namespace waPlanner.TelegramBot.keyboards
                     buttons = new List<KeyboardButton>();
                 }
             }
-
-            if (keyboards.Count != 0)
-                keyboards.Add(buttons);
-            //buttons = new List<KeyboardButton>();
-            //buttons.Add(new KeyboardButton("⬅️Назад"));
+          
+            if (keyboards.Count != 0 || keyboards.Count % 2 == 0)
+                buttons.Add(new KeyboardButton("⬅️Назад"));
             keyboards.Add(buttons);
             return keyboards;
         }
@@ -43,7 +45,7 @@ namespace waPlanner.TelegramBot.keyboards
 
             return markup;
         }
-        public static ReplyKeyboardMarkup SendContactKeyboard()
+        public static async Task<Message> RequestContactAsync(ITelegramBotClient bot, long chat_id)
         {
             ReplyKeyboardMarkup markup = new(
                 new[]
@@ -58,7 +60,9 @@ namespace waPlanner.TelegramBot.keyboards
                     }
                 })
             { ResizeKeyboard = true};
-            return markup;
+            return await bot.SendTextMessageAsync(chat_id, "Отправьте ваш действительный номер телефона, " +
+                        "нажав на кнопку <b>(Отправить номер телефона📞)</b> или введите в следующем типе: <b>+998 xx xxx xxx xxx</b>",
+                        replyMarkup: markup, parseMode: ParseMode.Html); ;
         }
     }
 }

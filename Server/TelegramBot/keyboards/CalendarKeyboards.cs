@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using Telegram.Bot.Types.Enums;
+using waPlanner.Database;
 using waPlanner.ModelViews;
 
 
@@ -72,7 +74,7 @@ namespace waPlanner.TelegramBot.keyboards
         {
             return data.Split(";");
         }
-        public static async Task OnCalendarProcess(CallbackQuery call, ReplyKeyboardMarkup back)
+        public static async Task OnCalendarProcess(CallbackQuery call, ReplyKeyboardMarkup back, MyDbContext db)
         {
             long chat_id = call.Message.Chat.Id;
             string[] data = SeparateCallbackData(call.Data);
@@ -115,8 +117,8 @@ namespace waPlanner.TelegramBot.keyboards
                                 {
                                 
                                 }
-                                await bot.SendTextMessageAsync(chat_id, $"Выбрана дата: {selectedDate.ToShortDateString()}", replyMarkup: back);
-                                await bot.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: TimeKeyboards.SendTimeKeyboards());
+                                await bot.SendTextMessageAsync(chat_id, $"Выбрана дата: <b>{selectedDate.ToShortDateString()}</b>", replyMarkup: back, parseMode: ParseMode.Html);
+                                await bot.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: TimeKeyboards.SendTimeKeyboards(db, cache));
                                 return;
                             }
                             await bot.AnswerCallbackQueryAsync(call.Id, "Нельзя выбирать старую дату!", true);
