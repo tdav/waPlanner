@@ -15,11 +15,8 @@ namespace waPlanner.TelegramBot.keyboards
     {
         public static InlineKeyboardMarkup SendTimeKeyboards(MyDbContext db, TelegramBotValuesModel value)
         {
-            int stuffId = DbManipulations.GetStuffIdByNameAsync(db, value.Stuff);
-            var doctorsDate = DbManipulations.GetStuffBusyTime(stuffId, db, value);
+            var doctorsDate = DbManipulations.GetStuffBusyTime(db, value);
 
-            Console.WriteLine(doctorsDate.Count);
-            Console.WriteLine(value.Calendar);
             List<string> appointmentTime = new();
             List<DateTime> appointmentDate = new();
             foreach (var times in doctorsDate)
