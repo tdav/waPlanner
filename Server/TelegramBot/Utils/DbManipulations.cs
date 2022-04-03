@@ -118,5 +118,12 @@ namespace waPlanner.TelegramBot.Utils
         {
             return db.spCategories.AsNoTracking().Select(x => new IdValue { Id = x.Id, Name = x.NameUz }).ToList();
         }
+        public static long GetGroupId(MyDbContext db)
+        {
+            return db.tbOrganizations
+                .AsNoTracking()
+                .First(x => x.TypeId == 1)
+                .ChatId;
+        }
     }
 }

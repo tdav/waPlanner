@@ -13,10 +13,10 @@ namespace waPlanner.TelegramBot.keyboards
 {
     public class CalendarKeyboards
     {
-        public static InlineKeyboardMarkup SendCalendar(DateTime date)
+        public static InlineKeyboardMarkup SendCalendar(ref DateTime date)
         {
             string[] daysWeek = { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" };
-            string IGNORE = $"i;{DateTime.Now}";
+            string IGNORE = $"i;i";
 
             var keyboards = new List<List<InlineKeyboardButton>>();
             var buttons = new List<InlineKeyboardButton>();
@@ -43,11 +43,6 @@ namespace waPlanner.TelegramBot.keyboards
                     continue;
                 }
                 if (currentDate.Month == date.Month)
-                    if(currentDate.Day < DateTime.Today.Day)
-                    {
-                        buttons.Add(InlineKeyboardButton.WithCallbackData($"<s>{currentDate.Day.ToString()}</s>", $"DAY; {currentDate}"));
-                        continue;
-                    }
                     buttons.Add(InlineKeyboardButton.WithCallbackData(currentDate.Day.ToString(), $"DAY; {currentDate}"));
 
                 if (buttons.Count % 7 == 0)
@@ -93,19 +88,19 @@ namespace waPlanner.TelegramBot.keyboards
 
             if (cache.State == PlannerStates.CHOOSE_DATE)
             {
-                DateTime date = DateTime.Parse(data[1]);
+                DateTime.TryParse(data[1], out var date);
                 switch (action)
                 {
                     case "NEXT-MONTH":
                         {
-                            await bot.EditMessageReplyMarkupAsync(chat_id, messageId, SendCalendar(date));
+                            await bot.EditMessageReplyMarkupAsync(chat_id, messageId, SendCalendar(ref date));
                             break;
                         }
                     case "PREV-MONTH":
                         {
                             if(date.Month >= DateTime.Now.Month)
                             {
-                                await bot.EditMessageReplyMarkupAsync(chat_id, messageId, SendCalendar(date));
+                                await bot.EditMessageReplyMarkupAsync(chat_id, messageId, SendCalendar(ref date));
                                 break;
                             }
                             break;

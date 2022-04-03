@@ -73,30 +73,11 @@ namespace waPlanner.TelegramBot.handlers
                                 cache.State = PlannerStates.NONE;
                                 break;
                             }
-                        case PlannerStates.CHOOSE_DATE:
-                            {
-                                cache.State = PlannerStates.CATEGORY;
-                                break;
-                            }
-                        case PlannerStates.CHOOSE_TIME:
-                            {
-                                cache.State = PlannerStates.CATEGORY;
-                                break;
-                            }
-                        case PlannerStates.PHONE:
-                            {
-                                cache.State = PlannerStates.CATEGORY;
-
-                                break;
-                            }
-                        case PlannerStates.USERNAME:
-                            {
-                                cache.State = PlannerStates.PHONE;
-                                await ReplyKeyboards.RequestContactAsync(Bot_, chat_id);
-                                break;
-                            }
                         default:
-                            break;
+                            {
+                                cache.State = PlannerStates.CATEGORY;
+                                break;
+                            }  
                     }
                 }
                 if(msg == "Main")
@@ -107,7 +88,6 @@ namespace waPlanner.TelegramBot.handlers
                 {
                     case PlannerStates.NONE:
                         {
-                            Console.WriteLine("PLANER NONE");
                             await Bot_.SendTextMessageAsync(chat_id, "TEST", replyMarkup: ReplyKeyboards.MainMenu());
                             return;
                         }
@@ -121,11 +101,10 @@ namespace waPlanner.TelegramBot.handlers
                     case PlannerStates.STUFF:
                         {
                             if (!DbManipulations.CheckCategory(db).Contains(msg) && msg != "⬅️Назад") return;
-                            Console.WriteLine(cache.State);
+                            
                             cache.Category = DbManipulations.CheckCategory(db).Contains(msg)? msg : cache.Category;
                             menu = DbManipulations.GetStuffByCategory(db, cache.Category);
                             cache.State = msg != "⬅️Назад"? PlannerStates.CHOOSE_DATE: cache.State;
-                            Console.WriteLine(cache.State);
                             message_for_user = "Выберите специалиста";
                             break;
                         }
@@ -134,11 +113,9 @@ namespace waPlanner.TelegramBot.handlers
                             if (!DbManipulations.CheckStuffByCategory(db, cache.Category, msg) && msg != "⬅️Назад") return;
 
                             cache.Stuff =  msg != "⬅️Назад"? msg: cache.Stuff;
-                            Console.WriteLine(cache.State);
-                            int month = DateTime.Now.Month;
                             var date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
                             await Bot_.SendTextMessageAsync(chat_id, "Выберите удобное для вас число.", replyMarkup: back);
-                            await Bot_.SendTextMessageAsync(chat_id, "Календарь", replyMarkup: CalendarKeyboards.SendCalendar(date));
+                            await Bot_.SendTextMessageAsync(chat_id, "Календарь", replyMarkup: CalendarKeyboards.SendCalendar(ref date));
                             return;
                         }
                     case PlannerStates.PHONE:
@@ -177,7 +154,7 @@ namespace waPlanner.TelegramBot.handlers
                     default:
                         break;
                 }
-                Console.WriteLine(cache.State);
+
                 if(menu is not null)
                 {
                     var buttons = ReplyKeyboards.SendKeyboards(menu);
