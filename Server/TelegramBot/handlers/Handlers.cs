@@ -136,9 +136,9 @@ namespace waPlanner.TelegramBot.handlers
                             cache.Stuff =  msg != "⬅️Назад"? msg: cache.Stuff;
                             Console.WriteLine(cache.State);
                             int month = DateTime.Now.Month;
-                            var date = new DateTime(DateTime.Now.Year, month, 1);
+                            var date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
                             await Bot_.SendTextMessageAsync(chat_id, "Выберите удобное для вас число.", replyMarkup: back);
-                            await Bot_.SendTextMessageAsync(chat_id, "Календарь", replyMarkup: CalendarKeyboards.SendCalendar(date, month));
+                            await Bot_.SendTextMessageAsync(chat_id, "Календарь", replyMarkup: CalendarKeyboards.SendCalendar(date));
                             return;
                         }
                     case PlannerStates.PHONE:

@@ -13,10 +13,10 @@ namespace waPlanner.TelegramBot.keyboards
 {
     public class CalendarKeyboards
     {
-        public static InlineKeyboardMarkup SendCalendar(DateTime date, int month)
+        public static InlineKeyboardMarkup SendCalendar(DateTime date)
         {
             string[] daysWeek = { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" };
-            string IGNORE = "i";
+            string IGNORE = $"i;{DateTime.Now}";
 
             var keyboards = new List<List<InlineKeyboardButton>>();
             var buttons = new List<InlineKeyboardButton>();
@@ -33,7 +33,7 @@ namespace waPlanner.TelegramBot.keyboards
             int padLeftDays = (int)date.DayOfWeek != 0 ? (int)date.DayOfWeek : 7;
             var currentDate = date;
 
-            int iterations = DateTime.DaysInMonth(date.Year, month) + padLeftDays;
+            int iterations = DateTime.DaysInMonth(date.Year, date.Month) + padLeftDays;
 
             for (int i = 1; i <= iterations; i++)
             {
@@ -42,8 +42,13 @@ namespace waPlanner.TelegramBot.keyboards
                     buttons.Add(InlineKeyboardButton.WithCallbackData(" ", IGNORE));
                     continue;
                 }
-                if (currentDate.Month == month)
-                    buttons.Add(InlineKeyboardButton.WithCallbackData(currentDate.Day.ToString(), $"DAY; {currentDate.Month}; {currentDate.Year}; {currentDate.Day}"));
+                if (currentDate.Month == date.Month)
+                    if(currentDate.Day < DateTime.Today.Day)
+                    {
+                        buttons.Add(InlineKeyboardButton.WithCallbackData($"<s>{currentDate.Day.ToString()}</s>", $"DAY; {currentDate}"));
+                        continue;
+                    }
+                    buttons.Add(InlineKeyboardButton.WithCallbackData(currentDate.Day.ToString(), $"DAY; {currentDate}"));
 
                 if (buttons.Count % 7 == 0)
                 {
@@ -53,7 +58,7 @@ namespace waPlanner.TelegramBot.keyboards
 
                 currentDate = currentDate.AddDays(1);
 
-                if ((int)currentDate.DayOfWeek < 7 && currentDate.Month != month && keyboards.Count <= 6)
+                if ((int)currentDate.DayOfWeek < 7 && currentDate.Month != date.Month && keyboards.Count <= 6)
                 {
                     buttons.Add(InlineKeyboardButton.WithCallbackData(" ", IGNORE));
                     iterations++;
@@ -63,9 +68,9 @@ namespace waPlanner.TelegramBot.keyboards
 
             // thirth row for month
             buttons = new List<InlineKeyboardButton>();
-            buttons.Add(InlineKeyboardButton.WithCallbackData("◀", $"PREV-MONTH; {date.Month}"));
-            buttons.Add(InlineKeyboardButton.WithCallbackData(Microsoft.VisualBasic.DateAndTime.MonthName(month), IGNORE));
-            buttons.Add(InlineKeyboardButton.WithCallbackData("▶️", $"NEXT-MONTH; {date.Month}"));
+            buttons.Add(InlineKeyboardButton.WithCallbackData("◀", $"PREV-MONTH; {date.AddMonths(-1)}"));
+            buttons.Add(InlineKeyboardButton.WithCallbackData(Microsoft.VisualBasic.DateAndTime.MonthName(date.Month), IGNORE));
+            buttons.Add(InlineKeyboardButton.WithCallbackData("▶️", $"NEXT-MONTH; {date.AddMonths(1)}"));
             keyboards.Add(buttons);
             InlineKeyboardMarkup calendar = new(keyboards);
             return calendar;
@@ -77,47 +82,50 @@ namespace waPlanner.TelegramBot.keyboards
         public static async Task OnCalendarProcess(CallbackQuery call, ReplyKeyboardMarkup back, MyDbContext db)
         {
             long chat_id = call.Message.Chat.Id;
+            int messageId = call.Message.MessageId;
+
             string[] data = SeparateCallbackData(call.Data);
             string action = data[0];
+            
             var bot = handlers.Handlers.Bot_;
             var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
+            
+
             if (cache.State == PlannerStates.CHOOSE_DATE)
             {
-                int month = int.Parse(data[1]);
+                DateTime date = DateTime.Parse(data[1]);
                 switch (action)
                 {
                     case "NEXT-MONTH":
                         {
-                            DateTime date = new(DateTime.Now.Year, month + 1, 1);
-                            await bot.EditMessageReplyMarkupAsync(chat_id, call.Message.MessageId, SendCalendar(date, int.Parse(data[1]) + 1));
+                            await bot.EditMessageReplyMarkupAsync(chat_id, messageId, SendCalendar(date));
                             break;
                         }
                     case "PREV-MONTH":
                         {
-                            if(int.Parse(data[1]) > DateTime.Now.Month)
+                            if(date.Month >= DateTime.Now.Month)
                             {
-
+                                await bot.EditMessageReplyMarkupAsync(chat_id, messageId, SendCalendar(date));
+                                break;
                             }
-                            DateTime date = new(DateTime.Now.Year, month - 1, 1);
-                            await bot.EditMessageReplyMarkupAsync(chat_id, call.Message.MessageId, SendCalendar(date, month - 1));
                             break;
+                            
                         }
                     case "DAY":
                         {
-                            DateTime selectedDate = new(int.Parse(data[2]), month, int.Parse(data[3]));
-                            if (selectedDate >= DateTime.Today)
+                            if (date >= DateTime.Today)
                             {
                                 cache.State = PlannerStates.CHOOSE_TIME;
-                                cache.Calendar = selectedDate;
+                                cache.Calendar = date;
                                 try
                                 {
-                                    await bot.DeleteMessageAsync(chat_id, call.Message.MessageId);
+                                    await bot.DeleteMessageAsync(chat_id, messageId);
                                 }
                                 catch
                                 {
                                 
                                 }
-                                await bot.SendTextMessageAsync(chat_id, $"Выбрана дата: <b>{selectedDate.ToShortDateString()}</b>", replyMarkup: back, parseMode: ParseMode.Html);
+                                await bot.SendTextMessageAsync(chat_id, $"Выбрана дата: <b>{date.ToShortDateString()}</b>", replyMarkup: back, parseMode: ParseMode.Html);
                                 await bot.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: TimeKeyboards.SendTimeKeyboards(db, cache));
                                 return;
                             }
