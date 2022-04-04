@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using waPlanner.Database;
@@ -11,9 +12,10 @@ using waPlanner.Database;
 namespace waPlanner.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    partial class MyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220404041836_createdb")]
+    partial class createdb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,10 +41,6 @@ namespace waPlanner.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("create_user");
 
-                    b.Property<int?>("GlobalCategoryId")
-                        .HasColumnType("integer")
-                        .HasColumnName("global_category_id");
-
                     b.Property<string>("NameLt")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
@@ -62,9 +60,9 @@ namespace waPlanner.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("status");
 
-                    b.Property<int>("Type")
+                    b.Property<int>("Tip")
                         .HasColumnType("integer")
-                        .HasColumnName("type");
+                        .HasColumnName("tip");
 
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("timestamp with time zone")
@@ -77,64 +75,7 @@ namespace waPlanner.Migrations
                     b.HasKey("Id")
                         .HasName("pk_sp_categories");
 
-                    b.HasIndex("GlobalCategoryId")
-                        .HasDatabaseName("ix_sp_categories_global_category_id");
-
                     b.ToTable("sp_categories", (string)null);
-                });
-
-            modelBuilder.Entity("waPlanner.Database.Models.spGlobalCategory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreateDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("create_date");
-
-                    b.Property<int>("CreateUser")
-                        .HasColumnType("integer")
-                        .HasColumnName("create_user");
-
-                    b.Property<string>("NameLt")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("name_lt");
-
-                    b.Property<string>("NameRu")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("name_ru");
-
-                    b.Property<string>("NameUz")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("name_uz");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
-                        .HasColumnName("status");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("integer")
-                        .HasColumnName("type");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("update_date");
-
-                    b.Property<int?>("UpdateUser")
-                        .HasColumnType("integer")
-                        .HasColumnName("update_user");
-
-                    b.HasKey("Id")
-                        .HasName("pk_sp_global_categories");
-
-                    b.ToTable("sp_global_categories", (string)null);
                 });
 
             modelBuilder.Entity("waPlanner.Database.Models.spOrganizationType", b =>
@@ -466,17 +407,6 @@ namespace waPlanner.Migrations
                     b.ToTable("tb_users", (string)null);
                 });
 
-            modelBuilder.Entity("waPlanner.Database.Models.spCategory", b =>
-                {
-                    b.HasOne("waPlanner.Database.Models.spGlobalCategory", "GlobalCategory")
-                        .WithMany("Categories")
-                        .HasForeignKey("GlobalCategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_sp_categories_sp_global_categories_global_category_id");
-
-                    b.Navigation("GlobalCategory");
-                });
-
             modelBuilder.Entity("waPlanner.Database.Models.tbOrganization", b =>
                 {
                     b.HasOne("waPlanner.Database.Models.spOrganizationType", "Type")
@@ -537,11 +467,6 @@ namespace waPlanner.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("UserType");
-                });
-
-            modelBuilder.Entity("waPlanner.Database.Models.spGlobalCategory", b =>
-                {
-                    b.Navigation("Categories");
                 });
 #pragma warning restore 612, 618
         }

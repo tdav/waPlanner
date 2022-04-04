@@ -27,8 +27,7 @@ namespace waPlanner.TelegramBot.keyboards
             }
           
             if (keyboards.Count != 0 || keyboards.Count % 2 == 0)
-                buttons.Add(new KeyboardButton("⬅️Назад"));
-            keyboards.Add(buttons);
+                keyboards.Add(buttons);
             return keyboards;
         }
         public static ReplyKeyboardMarkup MainMenu()

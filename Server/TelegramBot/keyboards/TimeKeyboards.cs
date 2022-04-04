@@ -21,7 +21,6 @@ namespace waPlanner.TelegramBot.keyboards
             List<DateTime> appointmentDate = new();
             foreach (var times in doctorsDate)
             {
-                Console.WriteLine(times);
                 appointmentTime.Add(times.ToShortTimeString());
                 appointmentDate.Add(times.Date);
             }
@@ -66,14 +65,21 @@ namespace waPlanner.TelegramBot.keyboards
                             await bot.EditMessageTextAsync(chat_id, call.Message.MessageId, $"Выбрано время:<b>{data[1]}</b>", parseMode:ParseMode.Html);
                             if (DbManipulations.CheckUser(chat_id, db))
                             {
-                                await bot.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора", replyMarkup: ReplyKeyboards.MainMenu());
+                                List<IdValue> services = DbManipulations.GetAllGlobalCats(db);
+                                var servicesButtons = ReplyKeyboards.SendKeyboards(services);
+                                ReplyKeyboardMarkup reply = new(servicesButtons) { ResizeKeyboard = true };
+                                await bot.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора", replyMarkup: reply);
                                 await DbManipulations.RegistrateUserPlanner(chat_id, cache, db);
                                 cache.State = PlannerStates.NONE;
-                                return;
+                                break;
                             }
-                            cache.State = PlannerStates.PHONE;
-                            await ReplyKeyboards.RequestContactAsync(bot, chat_id);
-                            break;
+                            else
+                            {
+                                cache.State = PlannerStates.PHONE;
+                                await ReplyKeyboards.RequestContactAsync(bot, chat_id);
+                                break;
+                            }
+                            
                         }
                     default:
                         {

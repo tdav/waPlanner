@@ -16,6 +16,7 @@ namespace waPlanner.Database
         public DbSet<tbOrganization> tbOrganizations { get; set; }
         public DbSet<tbScheduler> tbSchedulers { get; set; }
         public DbSet<tbUser> tbUsers { get; set; }
+        public DbSet<spGlobalCategory> spGlobalCategories { get; set; }
         
         #endregion
 

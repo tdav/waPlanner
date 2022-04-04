@@ -48,7 +48,7 @@ namespace waPlanner.TelegramBot.Utils
                 PhoneNum = value.Phone,
                 Password = "1",
                 CreateDate = DateTime.Now
-            };
+            };  
             await db.tbUsers.AddAsync(telegramUser);
             await db.SaveChangesAsync();
         }
@@ -78,6 +78,10 @@ namespace waPlanner.TelegramBot.Utils
                 .First(x => x.UserTypeId == 1 && x.Surname == snp[0] && x.Name == snp[1] && x.Patronymic == snp[2]);
             return stuff.Id;
         }
+        //public static int GetServicesIdByName(MyDbContext db, string name)
+        //{
+        //    var service = db.spGlobalCategories.AsNoTracking().First(x => x.)
+        //}
         public static List<IdValue> GetStuffByCategory(MyDbContext db, string category)
         {
             return db.tbUsers
@@ -104,6 +108,13 @@ namespace waPlanner.TelegramBot.Utils
                 .Select(x => x.NameUz).ToList();
             return categories;
         }
+        public static List<string> CheckServices(MyDbContext db)
+        {
+            var services = db.spGlobalCategories
+                .AsNoTracking()
+                .Select(x => x.NameUz).ToList();
+            return services;
+        }
         public static List<DateTime> GetStuffBusyTime(MyDbContext db, TelegramBotValuesModel value)
         {
             int stuff_id = GetStuffIdByNameAsync(db, value.Stuff);
@@ -114,9 +125,21 @@ namespace waPlanner.TelegramBot.Utils
                 .ToList();
             
         }
-        public static List<IdValue> GetAllCategories(MyDbContext db)
+        public static int GetGlobalCategoryIdByName(MyDbContext db, string name)
         {
-            return db.spCategories.AsNoTracking().Select(x => new IdValue { Id = x.Id, Name = x.NameUz }).ToList();
+            return db.spGlobalCategories.AsNoTracking().First(x => x.NameUz == name).Id;
+        }
+        public static List<IdValue> GetCategoriesByType(MyDbContext db, string value)
+        {
+            int globalCategory = GetGlobalCategoryIdByName(db, value);
+            return db.spCategories.AsNoTracking()
+                .Where(x => x.GlobalCategoryId == globalCategory)
+                .Select(x => new IdValue { Id = x.Id, Name = x.NameUz })
+                .ToList();
+        }
+        public static List<IdValue> GetAllGlobalCats(MyDbContext db)
+        {
+            return db.spGlobalCategories.AsNoTracking().Select(x => new IdValue { Id = x.Id, Name = x.NameUz}).ToList();
         }
         public static long GetGroupId(MyDbContext db)
         {
