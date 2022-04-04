@@ -17,8 +17,10 @@ namespace waPlanner.Database.Models
         public DateTime AppointmentDateTime { get; set; }
 
         [StringLength(200)]
-        public string Symptoms { get; set; }
+        public string DpInfo { get; set; }
         public int CategoryId { get; set; }
         public virtual spCategory Category { get; set; }
+        public int? OrganizationId { get; set; }
+        public virtual tbOrganization Organization { get; set; }
     }
 }

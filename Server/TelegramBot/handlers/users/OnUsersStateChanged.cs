@@ -80,14 +80,14 @@ namespace waPlanner.TelegramBot.handlers.users
                         if (!DbManipulations.CheckCategory(db).Contains(msg) && msg != "⬅️Назад") return;
                         
                         cache.Category = msg != "⬅️Назад" ? msg : cache.Category;
-                        menu = DbManipulations.GetStuffByCategory(db, cache.Category);
+                        menu = DbManipulations.GetStaffByCategory(db, cache.Category);
                         cache.State = msg != "⬅️Назад" ? PlannerStates.CHOOSE_DATE : cache.State;
                         message_for_user = "Выберите специалиста";
                         break;
                     }
                 case PlannerStates.CHOOSE_DATE:
                     {
-                        if (!DbManipulations.CheckStuffByCategory(db, cache.Category, msg) && msg != "⬅️Назад") return;
+                        if (!DbManipulations.CheckStaffByCategory(db, cache.Category, msg) && msg != "⬅️Назад") return;
 
                         cache.Stuff = msg != "⬅️Назад" ? msg : cache.Stuff;
                         var date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);

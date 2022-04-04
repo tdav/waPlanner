@@ -15,7 +15,7 @@ namespace waPlanner.TelegramBot.keyboards
     {
         public static InlineKeyboardMarkup SendTimeKeyboards(MyDbContext db, TelegramBotValuesModel value)
         {
-            var doctorsDate = DbManipulations.GetStuffBusyTime(db, value);
+            var doctorsDate = DbManipulations.GetStaffBusyTime(db, value);
 
             List<string> appointmentTime = new();
             List<DateTime> appointmentDate = new();

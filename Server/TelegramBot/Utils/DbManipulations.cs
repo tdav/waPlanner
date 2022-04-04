@@ -13,7 +13,7 @@ namespace waPlanner.TelegramBot.Utils
     {
         public static async Task RegistrateUserPlanner(long chat_id, TelegramBotValuesModel value, MyDbContext db)
         {
-            int stuffId = GetStuffIdByNameAsync(db, value.Stuff);
+            int stuffId = GetStaffIdByNameAsync(db, value.Stuff);
             int categoryId = GetCategoryIdByName(db, value.Category);
             int userId = GetUserId(chat_id, db);
             string[] userSelectedTime = value.Time.Split(":");
@@ -70,7 +70,7 @@ namespace waPlanner.TelegramBot.Utils
             
             return category.Id;
         }
-        public static int GetStuffIdByNameAsync(MyDbContext db, string name)
+        public static int GetStaffIdByNameAsync(MyDbContext db, string name)
         {
             var snp = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             var stuff = db.tbUsers
@@ -82,7 +82,7 @@ namespace waPlanner.TelegramBot.Utils
         //{
         //    var service = db.spGlobalCategories.AsNoTracking().First(x => x.)
         //}
-        public static List<IdValue> GetStuffByCategory(MyDbContext db, string category)
+        public static List<IdValue> GetStaffByCategory(MyDbContext db, string category)
         {
             return db.tbUsers
                          .AsNoTracking()
@@ -91,7 +91,7 @@ namespace waPlanner.TelegramBot.Utils
                          .Select(x => new IdValue { Id = x.Id, Name = $"{x.Surname} {x.Name} {x.Patronymic}" })
                          .ToList();
         }
-        public static bool CheckStuffByCategory(MyDbContext db, string category, string value)
+        public static bool CheckStaffByCategory(MyDbContext db, string category, string value)
         {
             var list = db.tbUsers
                          .AsNoTracking()
@@ -115,9 +115,9 @@ namespace waPlanner.TelegramBot.Utils
                 .Select(x => x.NameUz).ToList();
             return services;
         }
-        public static List<DateTime> GetStuffBusyTime(MyDbContext db, TelegramBotValuesModel value)
+        public static List<DateTime> GetStaffBusyTime(MyDbContext db, TelegramBotValuesModel value)
         {
-            int stuff_id = GetStuffIdByNameAsync(db, value.Stuff);
+            int stuff_id = GetStaffIdByNameAsync(db, value.Stuff);
             return db.tbSchedulers
                 .AsNoTracking()
                 .Where(x => x.DoctorId == stuff_id && x.AppointmentDateTime.Date == value.Calendar.Date)
