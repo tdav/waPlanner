@@ -20,5 +20,7 @@ namespace waPlanner.Database.Models
         [Required]
         public int TypeId { get; set; }
         public virtual spOrganizationType Type { get; set; }
+        [StringLength(150)]
+        public string Name { get; set; }
     }
 }

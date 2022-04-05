@@ -121,7 +121,7 @@ namespace waPlanner.TelegramBot.keyboards
                                 
                                 }
                                 await bot.SendTextMessageAsync(chat_id, $"Выбрана дата: <b>{date.ToShortDateString()}</b>", replyMarkup: back, parseMode: ParseMode.Html);
-                                await bot.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: TimeKeyboards.SendTimeKeyboards(db, cache));
+                                await bot.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
                                 return;
                             }
                             await bot.AnswerCallbackQueryAsync(call.Id, "Нельзя выбирать старую дату!", true);

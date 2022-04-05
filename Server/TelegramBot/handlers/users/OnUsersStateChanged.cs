@@ -39,7 +39,7 @@ namespace waPlanner.TelegramBot.handlers.users
                         {
                             cache.State = PlannerStates.CHOOSE_TIME;
                             await Bot_.SendTextMessageAsync(chat_id, msg, replyMarkup: back);
-                            await Bot_.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: TimeKeyboards.SendTimeKeyboards(db, cache));
+                            await Bot_.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
                             return;
                         }
                     case PlannerStates.USERNAME:
@@ -59,7 +59,7 @@ namespace waPlanner.TelegramBot.handlers.users
             {
                 case PlannerStates.NONE:
                     {
-                        List<IdValue> services = DbManipulations.GetAllGlobalCats(db);
+                        List<IdValue> services = await DbManipulations.GetAllGlobalCats(db);
                         var servicesButtons = ReplyKeyboards.SendKeyboards(services);
                         ReplyKeyboardMarkup reply = new(servicesButtons) { ResizeKeyboard = true };
                         await Bot_.SendTextMessageAsync(chat_id, "Выберите услугу", replyMarkup: reply);
@@ -68,26 +68,28 @@ namespace waPlanner.TelegramBot.handlers.users
                     }
                 case PlannerStates.CATEGORY:
                     {
-                        if (!DbManipulations.CheckServices(db).Contains(msg) && msg != "⬅️Назад") return;
+                        var check_services = await DbManipulations.CheckServices(db);
+                        if (!check_services.Contains(msg) && msg != "⬅️Назад") return;
                         cache.Service = msg != "⬅️Назад" ? msg : cache.Service;
-                        menu = DbManipulations.GetCategoriesByType(db, cache.Service);
+                        menu = await DbManipulations.GetCategoriesByType(db, cache.Service);
                         cache.State = PlannerStates.STUFF;
                         message_for_user = "Выберите категорию";
                         break;
                     }
                 case PlannerStates.STUFF:
                     {
-                        if (!DbManipulations.CheckCategory(db).Contains(msg) && msg != "⬅️Назад") return;
-                        
+                        var check_category = await DbManipulations.CheckCategory(db);
+                        if (!check_category.Contains(msg) && msg != "⬅️Назад") return;
+
                         cache.Category = msg != "⬅️Назад" ? msg : cache.Category;
-                        menu = DbManipulations.GetStaffByCategory(db, cache.Category);
+                        menu = await DbManipulations.GetStaffByCategory(db, cache.Category);
                         cache.State = msg != "⬅️Назад" ? PlannerStates.CHOOSE_DATE : cache.State;
                         message_for_user = "Выберите специалиста";
                         break;
                     }
                 case PlannerStates.CHOOSE_DATE:
                     {
-                        if (!DbManipulations.CheckStaffByCategory(db, cache.Category, msg) && msg != "⬅️Назад") return;
+                        if (!await DbManipulations.CheckStaffByCategory(db, cache.Category, msg) && msg != "⬅️Назад") return;
 
                         cache.Stuff = msg != "⬅️Назад" ? msg : cache.Stuff;
                         var date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
@@ -124,7 +126,7 @@ namespace waPlanner.TelegramBot.handlers.users
                     {
                         cache.UserName = msg;
                         await Bot_.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора");
-                        menu = DbManipulations.GetAllGlobalCats(db);
+                        menu = await DbManipulations.GetAllGlobalCats(db);
                         cache.State = PlannerStates.NONE;
                         message_for_user = "Выберите услугу";
                         await DbManipulations.FinishProcessAsync(chat_id, cache, db);

@@ -15,7 +15,7 @@ namespace waPlanner.TelegramBot.handlers
 {
     public class Handlers
     {
-        public static ITelegramBotClient Bot_;
+        public static TelegramBotClient Bot_ = StartBot.Bot;
         private static ReplyKeyboardMarkup back = new(new[] { new KeyboardButton("⬅️Назад") }) { ResizeKeyboard = true };
 
         public static Task HandleErrorAsync(ITelegramBotClient bot, Exception exception, CancellationToken cancellationToken)
@@ -30,7 +30,6 @@ namespace waPlanner.TelegramBot.handlers
         }
         public static async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken cancellationToken)
         {
-            Bot_ = bot;
             var handler = update.Type switch
             {
                 UpdateType.Message => BotOnMessageReceived(update.Message!),

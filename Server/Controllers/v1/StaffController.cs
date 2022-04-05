@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using waPlanner.Database.Models;
+using waPlanner.ModelViews;
 using waPlanner.Services;
 
 
@@ -13,10 +15,15 @@ namespace waPlanner.Controllers.v1
     [SwaggerTag("Персонал")]
     public class StaffController: ControllerBase
     {
-        private readonly StaffService service;
-        public async Task<tbUser> GetStuffById(int id)
+        private readonly IStaffService service;
+        public StaffController(IStaffService service)
         {
-            return await service.GetStaffById(id);
+            this.service = service;
+        }
+        [HttpGet("GetStuffById/{organization_id}")]
+        public  Task<List<viUser>> GetStuffById( int organization_id)
+        {
+            return service.GetStaffById(organization_id);
         }
     }
     

@@ -44,9 +44,9 @@ namespace waPlanner.Database.Models
         public virtual spUserType UserType { get; set; }
         public int? CategoryId { get; set; }
         public virtual spCategory Category { get; set; }
-
+        public int? OrganizationId { get; set; }
+        public virtual tbOrganization Organization { get; set; }
         public long? TelegramId { get; set; }
-
         public bool? Online { get; set; }
         public DateTime? Experience { get; set; }
         public int[] Availability { get; set; }

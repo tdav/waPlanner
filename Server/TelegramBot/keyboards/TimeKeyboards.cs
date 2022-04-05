@@ -13,9 +13,9 @@ namespace waPlanner.TelegramBot.keyboards
 {
     public class TimeKeyboards
     {
-        public static InlineKeyboardMarkup SendTimeKeyboards(MyDbContext db, TelegramBotValuesModel value)
+        public static async Task<InlineKeyboardMarkup> SendTimeKeyboards(MyDbContext db, TelegramBotValuesModel value)
         {
-            var doctorsDate = DbManipulations.GetStaffBusyTime(db, value);
+            var doctorsDate = await DbManipulations.GetStaffBusyTime(db, value);
 
             List<string> appointmentTime = new();
             List<DateTime> appointmentDate = new();
@@ -63,9 +63,9 @@ namespace waPlanner.TelegramBot.keyboards
                         {
                             cache.Time = data[1];
                             await bot.EditMessageTextAsync(chat_id, call.Message.MessageId, $"Выбрано время:<b>{data[1]}</b>", parseMode:ParseMode.Html);
-                            if (DbManipulations.CheckUser(chat_id, db))
+                            if (await DbManipulations.CheckUser(chat_id, db))
                             {
-                                List<IdValue> services = DbManipulations.GetAllGlobalCats(db);
+                                List<IdValue> services = await DbManipulations.GetAllGlobalCats(db);
                                 var servicesButtons = ReplyKeyboards.SendKeyboards(services);
                                 ReplyKeyboardMarkup reply = new(servicesButtons) { ResizeKeyboard = true };
                                 await bot.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора", replyMarkup: reply);

@@ -1,4 +1,4 @@
-﻿using Arch.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,9 +13,9 @@ namespace waPlanner.TelegramBot.Utils
     {
         public static async Task RegistrateUserPlanner(long chat_id, TelegramBotValuesModel value, MyDbContext db)
         {
-            int stuffId = GetStaffIdByNameAsync(db, value.Stuff);
-            int categoryId = GetCategoryIdByName(db, value.Category);
-            int userId = GetUserId(chat_id, db);
+            int stuffId = await GetStaffIdByNameAsync(db, value.Stuff);
+            int categoryId = await GetCategoryIdByName(db, value.Category);
+            int userId = await GetUserId(chat_id, db);
             string[] userSelectedTime = value.Time.Split(":");
             DateTime plannerDate = value.Calendar
                 .AddHours(int.Parse(userSelectedTime[0]))
@@ -32,9 +32,10 @@ namespace waPlanner.TelegramBot.Utils
             await db.tbSchedulers.AddAsync(planner);
             await db.SaveChangesAsync();
         }
-        private static int GetUserId(long chat_id, MyDbContext db)
+        private static async Task<int> GetUserId(long chat_id, MyDbContext db)
         {
-            return db.tbUsers.AsNoTracking().First(x => x.TelegramId == chat_id).Id;
+            var user_id = await db.tbUsers.AsNoTracking().FirstAsync(x => x.TelegramId == chat_id);
+            return user_id.Id;
         }
         public static async Task FinishProcessAsync(long chat_id, TelegramBotValuesModel value, MyDbContext db)
         {
@@ -52,101 +53,96 @@ namespace waPlanner.TelegramBot.Utils
             await db.tbUsers.AddAsync(telegramUser);
             await db.SaveChangesAsync();
         }
-        public static bool CheckUser(long chat_id, MyDbContext db)
+        public static async Task<bool> CheckUser(long chat_id, MyDbContext db)
         {
             var result = db.tbUsers
                 .AsNoTracking()
-                .FirstOrDefault(x => x.TelegramId == chat_id);
+                .FirstOrDefaultAsync(x => x.TelegramId == chat_id);
             if (result != null)
                 return true;
             return false;
         }
-        public static int GetCategoryIdByName(MyDbContext db, string name)
+        public static async Task<int> GetCategoryIdByName(MyDbContext db, string name)
         {
             // todo async qarap ko'rish kk
             var category = db.spCategories
                 .AsNoTracking()
-                .First(x => x.NameUz == name);
+                .FirstAsync(x => x.NameUz == name);
             
             return category.Id;
         }
-        public static int GetStaffIdByNameAsync(MyDbContext db, string name)
+        public static async Task<int> GetStaffIdByNameAsync(MyDbContext db, string name)
         {
             var snp = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             var stuff = db.tbUsers
                 .AsNoTracking()
-                .First(x => x.UserTypeId == 1 && x.Surname == snp[0] && x.Name == snp[1] && x.Patronymic == snp[2]);
+                .FirstAsync(x => x.UserTypeId == 1 && x.Surname == snp[0] && x.Name == snp[1] && x.Patronymic == snp[2]);
             return stuff.Id;
         }
-        //public static int GetServicesIdByName(MyDbContext db, string name)
-        //{
-        //    var service = db.spGlobalCategories.AsNoTracking().First(x => x.)
-        //}
-        public static List<IdValue> GetStaffByCategory(MyDbContext db, string category)
+        public static async Task<List<IdValue>> GetStaffByCategory(MyDbContext db, string category)
         {
-            return db.tbUsers
+            return await db.tbUsers
                          .AsNoTracking()
                          .Include(i => i.Category)
                          .Where(x => x.UserTypeId == 1 && x.Category.NameUz == category)
                          .Select(x => new IdValue { Id = x.Id, Name = $"{x.Surname} {x.Name} {x.Patronymic}" })
-                         .ToList();
+                         .ToListAsync();
         }
-        public static bool CheckStaffByCategory(MyDbContext db, string category, string value)
+        public static async Task<bool> CheckStaffByCategory(MyDbContext db, string category, string value)
         {
-            var list = db.tbUsers
+            var list = await db.tbUsers
                          .AsNoTracking()
                          .Include(i => i.Category)
                          .Where(x => x.UserTypeId == 1 && x.Category.NameUz == category)
                          .Select(x => new IdValue { Id = x.Id, Name = $"{x.Surname} {x.Name} {x.Patronymic}" })
-                         .ToList();
+                         .ToListAsync();
             return list.Any(x => x.Name == value);
         }
-        public static List<string> CheckCategory(MyDbContext db)
+        public static async Task<List<string>> CheckCategory(MyDbContext db)
         {
-            var categories = db.spCategories
+            return await db.spCategories
                 .AsNoTracking()
-                .Select(x => x.NameUz).ToList();
-            return categories;
+                .Select(x => x.NameUz).ToListAsync();
         }
-        public static List<string> CheckServices(MyDbContext db)
+        public static async Task<List<string>> CheckServices(MyDbContext db)
         {
-            var services = db.spGlobalCategories
+            return await db.spGlobalCategories
                 .AsNoTracking()
-                .Select(x => x.NameUz).ToList();
-            return services;
+                .Select(x => x.NameUz).ToListAsync();
         }
-        public static List<DateTime> GetStaffBusyTime(MyDbContext db, TelegramBotValuesModel value)
+        public static async Task<List<DateTime>> GetStaffBusyTime(MyDbContext db, TelegramBotValuesModel value)
         {
-            int stuff_id = GetStaffIdByNameAsync(db, value.Stuff);
-            return db.tbSchedulers
+            int stuff_id = await GetStaffIdByNameAsync(db, value.Stuff);
+            return await db.tbSchedulers
                 .AsNoTracking()
                 .Where(x => x.DoctorId == stuff_id && x.AppointmentDateTime.Date == value.Calendar.Date)
                 .Select(x => x.AppointmentDateTime)
-                .ToList();
+                .ToListAsync();
             
         }
-        public static int GetGlobalCategoryIdByName(MyDbContext db, string name)
+        public static async Task<int> GetGlobalCategoryIdByName(MyDbContext db, string name)
         {
-            return db.spGlobalCategories.AsNoTracking().First(x => x.NameUz == name).Id;
+            var global_category = await db.spGlobalCategories.AsNoTracking().FirstAsync(x => x.NameUz == name);
+            return global_category.Id;
         }
-        public static List<IdValue> GetCategoriesByType(MyDbContext db, string value)
+        public static async Task<List<IdValue>> GetCategoriesByType(MyDbContext db, string value)
         {
-            int globalCategory = GetGlobalCategoryIdByName(db, value);
-            return db.spCategories.AsNoTracking()
+            int globalCategory = await GetGlobalCategoryIdByName(db, value);
+            return await db.spCategories.AsNoTracking()
                 .Where(x => x.GlobalCategoryId == globalCategory)
                 .Select(x => new IdValue { Id = x.Id, Name = x.NameUz })
-                .ToList();
+                .ToListAsync();
         }
-        public static List<IdValue> GetAllGlobalCats(MyDbContext db)
+        public static async Task<List<IdValue>> GetAllGlobalCats(MyDbContext db)
         {
-            return db.spGlobalCategories.AsNoTracking().Select(x => new IdValue { Id = x.Id, Name = x.NameUz}).ToList();
+            return await db.spGlobalCategories.AsNoTracking().Select(x => new IdValue { Id = x.Id, Name = x.NameUz}).ToListAsync();
         }
-        public static long GetGroupId(MyDbContext db)
+        public static async Task<long> GetGroupId(MyDbContext db)
         {
-            return db.tbOrganizations
+            var chat = await db.tbOrganizations
                 .AsNoTracking()
-                .First(x => x.TypeId == 1)
-                .ChatId;
+                .FirstAsync(x => x.TypeId == 1);
+            return chat.Id;
         }
     }
 }
