@@ -64,7 +64,7 @@ namespace waPlanner.Extensions
         {
             var info = new OpenApiInfo()
             {
-                Title = "Marketplace тизими",
+                Title = "Universal Planner system",
                 Version = description.ApiVersion.ToString()
             };
 
