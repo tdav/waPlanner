@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using waPlanner.Database;
-using waPlanner.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Collections.Generic;
@@ -22,6 +21,7 @@ namespace waPlanner.Services
         public async Task<List<viUser>> GetStaffById(int organization_id)
         {
             return await db.tbUsers
+                .AsNoTracking()
                 .Include(s => s.Organization)
                 .Include(s => s.Category)
                 .Include(s => s.UserType)
@@ -47,7 +47,6 @@ namespace waPlanner.Services
 
                 }
                 ).ToListAsync();
-            
         }
     }
 }

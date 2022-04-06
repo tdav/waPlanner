@@ -2,7 +2,6 @@
 using Swashbuckle.AspNetCore.Annotations;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using waPlanner.Database.Models;
 using waPlanner.ModelViews;
 using waPlanner.Services;
 
@@ -21,7 +20,7 @@ namespace waPlanner.Controllers.v1
             this.service = service;
         }
         [HttpGet("GetStuffById/{organization_id}")]
-        public  Task<List<viUser>> GetStuffById( int organization_id)
+        public  Task<List<viUser>> GetStuffById(int organization_id)
         {
             return service.GetStaffById(organization_id);
         }

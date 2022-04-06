@@ -27,11 +27,6 @@ namespace waPlanner.Controllers.v1
         {
             await service.UpdateAsync(scheduler);
         }
-        [HttpDelete]
-        public void Delete([FromBody] tbScheduler scheduler)
-        {
-            service.Delete(scheduler);
-        }
         [HttpDelete("id")]
         public void Delete(int id)
         {

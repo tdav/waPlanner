@@ -1,4 +1,5 @@
 ﻿using Arch.EntityFrameworkCore;
+using System;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
@@ -9,7 +10,6 @@ namespace waPlanner.Services
     {
         Task InsertAsync(tbOrganization organization);
         Task UpdateAsync(tbOrganization organization);
-        void Delete(tbOrganization organization);
         void Delete(int id);
         Task<tbOrganization> GetOrgByIdAsync(int id);
         Task<tbOrganization[]> GetAllOrgsAsync();
@@ -23,18 +23,18 @@ namespace waPlanner.Services
         }
         public async Task InsertAsync(tbOrganization organization)
         {
+            organization.CreateDate = DateTime.Now;
+            organization.CreateUser = 1;
+            organization.Status = 1;
             await db.tbOrganizations.AddAsync(organization);
             await db.SaveChangesAsync();
         }
         public async Task UpdateAsync(tbOrganization organization)
         {
+            organization.UpdateDate = DateTime.Now;
+            organization.UpdateUser = 1;
             db.tbOrganizations.Update(organization);
             await db.SaveChangesAsync();
-        }
-        public void Delete(tbOrganization organization)
-        {
-            db.tbOrganizations.Remove(organization);
-            db.SaveChanges();
         }
         public void Delete(int id)
         {
@@ -48,7 +48,7 @@ namespace waPlanner.Services
         }
         public async Task<tbOrganization[]> GetAllOrgsAsync()
         {
-            return await db.tbOrganizations.ToArrayAsync();
+            return await db.tbOrganizations.AsNoTracking().ToArrayAsync();
         }
     }
 }

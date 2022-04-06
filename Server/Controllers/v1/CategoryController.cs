@@ -20,12 +20,6 @@ namespace waPlanner.Controllers.v1
             this.service = service;
         }
 
-        [HttpDelete]
-        public void Delete([FromBody] spCategory value)
-        {
-            service.Delete(value);
-        }
-
         [HttpDelete("{id}")]
         public void Delete(int id)
         {

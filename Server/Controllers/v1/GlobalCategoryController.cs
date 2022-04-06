@@ -28,11 +28,6 @@ namespace waPlanner.Controllers.v1
         {
             await service.UpdateAsync(globalCategory);
         }
-        [HttpDelete]
-        public void Delete([FromBody] spGlobalCategory globalCategory)
-        {
-            service.Delete(globalCategory);
-        }
         [HttpDelete("id")]
         public void Delete(int id)
         {

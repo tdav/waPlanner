@@ -28,11 +28,6 @@ namespace waPlanner.Controllers.v1
         {
             await service.UpdateAsync(user);
         }
-        [HttpDelete]
-        public void Delete([FromBody] tbUser user)
-        {
-            service.Delete(user);
-        }
         [HttpDelete("id")]
         public void Delete(int id)
         {

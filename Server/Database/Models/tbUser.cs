@@ -37,19 +37,35 @@ namespace waPlanner.Database.Models
         [Required]
         [StringLength(50)]
         public string? Password { get; set; }
+
         public DateTime? BirthDay { get; set; }
 
         [Required]
         public int UserTypeId { get; set; }
+
         public virtual spUserType UserType { get; set; }
+
         public int? CategoryId { get; set; }
+
         public virtual spCategory Category { get; set; }
+
         public int? OrganizationId { get; set; }
+
         public virtual tbOrganization Organization { get; set; }
+
         public long? TelegramId { get; set; }
+
         public bool? Online { get; set; }
+
         public DateTime? Experience { get; set; }
+
         public int[] Availability { get; set; }
+
+        [StringLength(256)]
+        public string Photo { get; set; }
+
+        [StringLength(150)]
+        public string AdInfo { get; set; }
 
     }
 }

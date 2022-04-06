@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
@@ -9,7 +10,6 @@ namespace waPlanner.Services
     {
         Task InsertAsync(tbUser user);
         Task UpdateAsync(tbUser user);
-        void Delete(tbUser user);
         void Delete(int id);
         Task<tbUser> GetUserByIdAsync(int id);
         Task<tbUser[]> GetAllAsync();
@@ -23,18 +23,18 @@ namespace waPlanner.Services
         }
         public async Task InsertAsync(tbUser user)
         {
+            user.CreateDate = DateTime.Now;
+            user.CreateUser = 1;
+            user.Status = 1;
             await myDb.tbUsers.AddAsync(user);
             await myDb.SaveChangesAsync();
         }
         public async Task UpdateAsync(tbUser user)
         {
+            user.UpdateDate = DateTime.Now;
+            user.UpdateUser = 1;
             myDb.tbUsers.Update(user);
             await myDb.SaveChangesAsync();
-        }
-        public void Delete(tbUser user)
-        {
-            myDb.tbUsers.Remove(user);
-            myDb.SaveChanges();
         }
         public void Delete(int id)
         {
@@ -44,7 +44,7 @@ namespace waPlanner.Services
         }
         public async Task<tbUser[]> GetAllAsync()
         {
-            return await myDb.tbUsers.ToArrayAsync();
+            return await myDb.tbUsers.AsNoTracking().ToArrayAsync();
         }
         public async Task<tbUser> GetUserByIdAsync(int id)
         {

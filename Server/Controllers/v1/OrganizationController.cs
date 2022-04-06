@@ -27,11 +27,6 @@ namespace waPlanner.Controllers.v1
         {
             await service.UpdateAsync(organization);
         }
-        [HttpDelete]
-        public void Delete([FromBody] tbOrganization organization)
-        {
-            service.Delete(organization);
-        }
         [HttpDelete("id")]
         public void Delete(int id)
         {

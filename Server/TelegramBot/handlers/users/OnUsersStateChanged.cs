@@ -15,10 +15,9 @@ namespace waPlanner.TelegramBot.handlers.users
     public class OnUsersStateChanged
     {
         public static async Task OnStateChange(long chat_id, MyDbContext db, ITelegramBotClient Bot_, Message message, 
-            List<IdValue> menu, ReplyKeyboardMarkup back)
+            List<IdValue> menu, ReplyKeyboardMarkup back, TelegramBotValuesModel cache)
         {
             string message_for_user = "";
-            var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
             string msg = message.Text;
 
             if (msg == "⬅️Назад")
@@ -70,8 +69,8 @@ namespace waPlanner.TelegramBot.handlers.users
                     {
                         var check_services = await DbManipulations.CheckServices(db);
                         if (!check_services.Contains(msg) && msg != "⬅️Назад") return;
-                        cache.Service = msg != "⬅️Назад" ? msg : cache.Service;
-                        menu = await DbManipulations.GetCategoriesByType(db, cache.Service);
+                        cache.GlobalCategory = msg != "⬅️Назад" ? msg : cache.GlobalCategory;
+                        menu = await DbManipulations.GetCategoriesByType(db, cache.GlobalCategory);
                         cache.State = PlannerStates.STUFF;
                         message_for_user = "Выберите категорию";
                         break;

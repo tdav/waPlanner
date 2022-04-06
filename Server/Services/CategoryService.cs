@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
@@ -9,7 +10,6 @@ namespace waPlanner.Services
     {
         Task InsertAsync(spCategory value);
         Task UpdateAsync(spCategory value);
-        void Delete(spCategory value);
         void Delete(int id);
         Task<spCategory[]> GetAllAsync();
         Task<spCategory> GetAsync(int id);
@@ -23,13 +23,6 @@ namespace waPlanner.Services
         {
             this.myDb = myDb;
         }
-
-        public void Delete(spCategory value)
-        {
-            myDb.spCategories.Remove(value);
-            myDb.SaveChanges();
-        }
-
         public void Delete(int id)
         {
             var value = myDb.spCategories.Find(id);
@@ -44,17 +37,22 @@ namespace waPlanner.Services
 
         public async Task<spCategory[]> GetAllAsync()
         {
-            return await myDb.spCategories.ToArrayAsync();
+            return await myDb.spCategories.AsNoTracking().ToArrayAsync();
         }
 
         public async Task InsertAsync(spCategory value)
         {
+            value.CreateDate = DateTime.Now;
+            value.CreateUser=1;
+            value.Status = 1;
             await myDb.spCategories.AddAsync(value);
             await myDb.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(spCategory value)
         {
+            value.UpdateDate = DateTime.Now;
+            value.UpdateUser = 1;
             myDb.spCategories.Update(value);
             await myDb.SaveChangesAsync();
         }

@@ -10,6 +10,8 @@ using waPlanner.ModelViews;
 using System.Collections.Generic;
 using Telegram.Bot.Types.ReplyMarkups;
 using waPlanner.TelegramBot.keyboards;
+using waPlanner.TelegramBot.Utils;
+using System.Text.RegularExpressions;
 
 namespace waPlanner.TelegramBot.handlers
 {
@@ -48,6 +50,8 @@ namespace waPlanner.TelegramBot.handlers
         private static async Task BotOnMessageReceived(Message message)
         {
             long chat_id = message.Chat.Id;
+            string msg = message.Text;
+            string message_for_user = "";
 
             using (var db = new MyDbContextFactory().CreateDbContext(null))
             {
@@ -55,9 +59,9 @@ namespace waPlanner.TelegramBot.handlers
                 {
                     Program.Cache[chat_id] = new TelegramBotValuesModel { State = PlannerStates.NONE, };
                 }
-
+                var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
                 List<IdValue> menu = null;
-                await users.OnUsersStateChanged.OnStateChange(chat_id, db, Bot_, message, menu, back);
+                await users.OnUsersStateChanged.OnStateChange(chat_id, db, Bot_, message, menu, back, cache);
             }
         }
         public static async Task BotOnCallbackQueryReceived(CallbackQuery call)
