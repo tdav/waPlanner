@@ -12,8 +12,8 @@ using waPlanner.Database;
 namespace waPlanner.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20220405055108_org_name")]
-    partial class org_name
+    [Migration("20220405072052_t1")]
+    partial class t1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

@@ -39,8 +39,7 @@ namespace waPlanner
                       .ConfigureWebHostDefaults(webBuilder =>
                       {
                           webBuilder
-                           .UseStartup<Startup>()
-                           .UseKestrel();
+                           .UseStartup<Startup>();
                       })
                       .ConfigureAppConfiguration(configuration =>
                       {
