@@ -75,12 +75,11 @@ namespace waPlanner
             }
             else
             {
-                app.UseExceptionHandler("/Error");
-                //  app.UseHsts();
+                app.UseExceptionHandler("/Error");                
             }
             app.UseCompression();
             app.UseDeveloperExceptionPage();
-            //app.UseHttpsRedirection();
+            
             app.UseRequestLocalization();
 
             var options = new DefaultFilesOptions();

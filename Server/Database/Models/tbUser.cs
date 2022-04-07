@@ -25,10 +25,9 @@ namespace waPlanner.Database.Models
         [StringLength(100)]
         public string Name { get; set; }
 
-        [Required]
         [StringLength(100)]
         public string Patronymic { get; set; }
-
+         
         [IndexColumn]
         [StringLength(20)]
         public string PhoneNum { get; set; }
@@ -67,5 +66,7 @@ namespace waPlanner.Database.Models
         [StringLength(150)]
         public string AdInfo { get; set; }
 
+        [StringLength(20)]
+        public string Gender { get; set; }
     }
 }

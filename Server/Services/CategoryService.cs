@@ -10,9 +10,8 @@ namespace waPlanner.Services
     {
         Task InsertAsync(spCategory value);
         Task UpdateAsync(spCategory value);
-        void Delete(int id);
         Task<spCategory[]> GetAllAsync();
-        Task<spCategory> GetAsync(int id);
+        //Task<spCategory> GetCategoryByIdAsync(int id);
     }
 
     public class CategoryService : ICategoryService
@@ -23,17 +22,11 @@ namespace waPlanner.Services
         {
             this.myDb = myDb;
         }
-        public void Delete(int id)
-        {
-            var value = myDb.spCategories.Find(id);
-            myDb.Remove(value);
-            myDb.SaveChanges();
-        }
 
-        public async Task<spCategory> GetAsync(int id)
-        {
-            return await myDb.spCategories.FindAsync(id);
-        }
+        //public async Task<spCategory> GetCategoryByIdAsync(int id)
+        //{
+            
+        //}
 
         public async Task<spCategory[]> GetAllAsync()
         {

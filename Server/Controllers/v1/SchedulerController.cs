@@ -2,6 +2,7 @@
 using Swashbuckle.AspNetCore.Annotations;
 using System.Threading.Tasks;
 using waPlanner.Database.Models;
+using waPlanner.ModelViews;
 using waPlanner.Services;
 
 namespace waPlanner.Controllers.v1
@@ -10,34 +11,39 @@ namespace waPlanner.Controllers.v1
     [ApiController]
     [ApiVersion("1.0")]
     [SwaggerTag("Расписание")]
-    public class SchedulerController: ControllerBase
+    public class SchedulerController : ControllerBase
     {
         private readonly ISchedulerService service;
         public SchedulerController(ISchedulerService service)
         {
             this.service = service;
         }
+
         [HttpPost]
-        public async Task Insert([FromBody] tbScheduler scheduler)
+        public async Task Insert([FromBody] viScheduler scheduler)
         {
-            await service.InsertAsync(scheduler);
+            await service.InsertSchedulerAsync(scheduler);
         }
-        [HttpPut]
-        public async Task Update([FromBody] tbScheduler scheduler)
+
+        [HttpPut("{scheduler_id}")]
+        public async Task Update(int scheduler_id, [FromBody] viScheduler scheduler)
         {
-            await service.UpdateAsync(scheduler);
+            await service.UpdateSchedulerAsync(scheduler_id, scheduler);
         }
-        [HttpDelete("id")]
-        public void Delete(int id)
+
+        [HttpPut("change_scheduler_status/{scheduler_id}/{status}")]
+        public async Task UpdateSchedulerStatus(int scheduler_id, byte status)
         {
-            service.Delete(id);
+            await service.UpdateSchedulerStatus(scheduler_id, status);
         }
-        [HttpGet]
+
+        [HttpGet("{id}")]
         public async Task<tbScheduler> GetSchedulerById(int id)
         {
             return await service.GetSchedulerByIdAsync(id);
         }
-        [HttpGet("id")]
+
+        [HttpGet("all")]
         public async Task<tbScheduler[]> GetSchedulers()
         {
             return await service.GetAllSchedulersAsync();

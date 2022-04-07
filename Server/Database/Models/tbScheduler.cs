@@ -22,7 +22,7 @@ namespace waPlanner.Database.Models
         public int CategoryId { get; set; }
         public virtual spCategory Category { get; set; }
 
-        public int? OrganizationId { get; set; }
+        public int OrganizationId { get; set; }
         public virtual tbOrganization Organization { get; set; }
     }
 }

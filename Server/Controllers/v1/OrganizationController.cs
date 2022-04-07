@@ -2,6 +2,7 @@
 using Swashbuckle.AspNetCore.Annotations;
 using System.Threading.Tasks;
 using waPlanner.Database.Models;
+using waPlanner.ModelViews;
 using waPlanner.Services;
 
 namespace waPlanner.Controllers.v1
@@ -17,30 +18,35 @@ namespace waPlanner.Controllers.v1
         {
             this.service = service;
         }
+
         [HttpPost]
-        public async Task Insert([FromBody] tbOrganization organization)
+        public async Task Insert([FromBody] viOrganization organization)
         {
-            await service.InsertAsync(organization);
+            await service.InsertOrganizationAsync(organization);
         }
-        [HttpPut]
-        public async Task Update([FromBody] tbOrganization organization)
+
+        [HttpPut("change_organization/{organization_id}")]
+        public async Task UpdateOrganizationA(int organization_id, viOrganization organziation)
         {
-            await service.UpdateAsync(organization);
+            await service.UpdateOrganizationAsync(organization_id, organziation);
         }
-        [HttpDelete("id")]
-        public void Delete(int id)
+
+        [HttpPut("change_organization_status/{organization_id}/{status}")]
+        public async Task ChangeStatus(int organization_id, int status)
         {
-            service.Delete(id);
+            await service.UpdateOrganizationStatus(organization_id, status);
         }
+
         [HttpGet("Id")]
-        public async Task<tbOrganization> GetOrganizationAsync(int id)
+        public Task<tbOrganization> GetOrganizationAsync(int id)
         {
-            return await service.GetOrgByIdAsync(id);
+            return service.GetOrgByIdAsync(id);
         }
+
         [HttpGet]
-        public async Task<tbOrganization[]> GetAllAsync()
+        public Task<tbOrganization[]> GetAllAsync()
         {
-            return await service.GetAllOrgsAsync();
+            return service.GetAllOrgsAsync();
         }
     }
 }

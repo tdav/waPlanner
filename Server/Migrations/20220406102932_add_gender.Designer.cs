@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using waPlanner.Database;
@@ -11,9 +12,10 @@ using waPlanner.Database;
 namespace waPlanner.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    partial class MyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220406102932_add_gender")]
+    partial class add_gender
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -336,7 +338,7 @@ namespace waPlanner.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("doctor_id");
 
-                    b.Property<int>("OrganizationId")
+                    b.Property<int?>("OrganizationId")
                         .HasColumnType("integer")
                         .HasColumnName("organization_id");
 
@@ -438,6 +440,7 @@ namespace waPlanner.Migrations
                         .HasColumnName("password");
 
                     b.Property<string>("Patronymic")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("patronymic");
@@ -542,7 +545,6 @@ namespace waPlanner.Migrations
                         .WithMany()
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
                         .HasConstraintName("fk_tb_schedulers_tb_organizations_organization_id");
 
                     b.HasOne("waPlanner.Database.Models.tbUser", "User")

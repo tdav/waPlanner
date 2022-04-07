@@ -12,8 +12,8 @@ using waPlanner.Database;
 namespace waPlanner.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20220405072052_t1")]
-    partial class t1
+    [Migration("20220407064015_pat_sur")]
+    partial class pat_sur
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -313,6 +313,11 @@ namespace waPlanner.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AdInfo")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("ad_info");
+
                     b.Property<DateTime>("AppointmentDateTime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("appointment_date_time");
@@ -332,11 +337,6 @@ namespace waPlanner.Migrations
                     b.Property<int>("DoctorId")
                         .HasColumnType("integer")
                         .HasColumnName("doctor_id");
-
-                    b.Property<string>("DpInfo")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("dp_info");
 
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("integer")
@@ -385,6 +385,11 @@ namespace waPlanner.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AdInfo")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("ad_info");
+
                     b.Property<int[]>("Availability")
                         .HasColumnType("integer[]")
                         .HasColumnName("availability");
@@ -409,6 +414,11 @@ namespace waPlanner.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("experience");
 
+                    b.Property<string>("Gender")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("gender");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -430,7 +440,6 @@ namespace waPlanner.Migrations
                         .HasColumnName("password");
 
                     b.Property<string>("Patronymic")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("patronymic");
@@ -439,6 +448,11 @@ namespace waPlanner.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("phone_num");
+
+                    b.Property<string>("Photo")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("photo");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer")

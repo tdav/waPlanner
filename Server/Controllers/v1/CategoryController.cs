@@ -20,17 +20,11 @@ namespace waPlanner.Controllers.v1
             this.service = service;
         }
 
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-            service.Delete(id);
-        }
-
-        [HttpGet("{id}")]
-        public async Task<spCategory> Get(int id)
-        {
-            return await service.GetAsync(id);
-        }
+        //[HttpGet("{id}")]
+        //public async Task<spCategory> Get(int id)
+        //{
+        //    return await service.GetAsync(id);
+        //}
 
         [HttpGet]
         public async Task<spCategory[]> GetAll()

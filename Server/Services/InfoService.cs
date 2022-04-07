@@ -5,6 +5,7 @@ using System.Linq;
 using System.Collections.Generic;
 using waPlanner.ModelViews;
 using System;
+using waPlanner.TelegramBot;
 
 namespace waPlanner.Services
 {
@@ -76,7 +77,7 @@ namespace waPlanner.Services
             return await db.tbSchedulers
                 .AsNoTracking()
                 .Include(x => x.Category)
-                .Where(x => x.User.UserTypeId == 2 &&
+                .Where(x => x.User.UserTypeId == (int)UserTypes.TELEGRAM_USER &&
                        x.OrganizationId == organization_id &&
                        x.CreateDate >= DateTime.Now.Date.AddMonths(-1) &&
                        x.CreateDate <= DateTime.Now)
@@ -88,7 +89,6 @@ namespace waPlanner.Services
                     CreateDate = x.Key.Date
                 })
                 .ToListAsync();
-
         }
     }
 }

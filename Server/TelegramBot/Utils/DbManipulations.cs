@@ -27,7 +27,7 @@ namespace waPlanner.TelegramBot.Utils
                 DoctorId = staff.StaffId,
                 AppointmentDateTime = plannerDate,
                 CategoryId = categoryId,
-                OrganizationId = staff.OrganizationId,
+                OrganizationId = staff.OrganizationId.Value,
                 CreateDate = DateTime.Now,
                 Status = 1,
                 CreateUser = 1
@@ -48,10 +48,10 @@ namespace waPlanner.TelegramBot.Utils
                 TelegramId = chat_id,
                 Surname = "TelegramUser",
                 Name = value.UserName,
-                Patronymic = " ",
-                UserTypeId = 2,
+                Patronymic = "",
+                UserTypeId = (int)UserTypes.TELEGRAM_USER,
                 PhoneNum = value.Phone,
-                Password = "1",
+                Password = "123456",
                 CreateDate = DateTime.Now,
                 Status=1
             };  
@@ -80,7 +80,7 @@ namespace waPlanner.TelegramBot.Utils
             var snp = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             var stuff = await db.tbUsers
                 .AsNoTracking()
-                .Where(x => x.UserTypeId == 1 && x.Surname == snp[0] && x.Name == snp[1] && x.Patronymic == snp[2])
+                .Where(x => x.UserTypeId == (int)UserTypes.STAFF && x.Surname == snp[0] && x.Name == snp[1] && x.Patronymic == snp[2])
                 .Select(x => new viStaffOrganizationId { StaffId = x.Id, OrganizationId = x.OrganizationId})
                 .FirstAsync();
             return stuff;
@@ -91,7 +91,7 @@ namespace waPlanner.TelegramBot.Utils
             return await db.tbUsers
                          .AsNoTracking()
                          .Include(i => i.Category)
-                         .Where(x => x.UserTypeId == 1 && x.Category.NameUz == category)
+                         .Where(x => x.UserTypeId == (int)UserTypes.STAFF && x.Category.NameUz == category)
                          .Select(x => new IdValue { Id = x.Id, Name = $"{x.Surname} {x.Name} {x.Patronymic}" })
                          .ToListAsync();
         }
@@ -100,7 +100,7 @@ namespace waPlanner.TelegramBot.Utils
             var list = await db.tbUsers
                          .AsNoTracking()
                          .Include(i => i.Category)
-                         .Where(x => x.UserTypeId == 1 && x.Category.NameUz == category)
+                         .Where(x => x.UserTypeId == (int)UserTypes.STAFF && x.Category.NameUz == category)
                          .Select(x => new IdValue { Id = x.Id, Name = $"{x.Surname} {x.Name} {x.Patronymic}" })
                          .ToListAsync();
             return list.Any(x => x.Name == value);
