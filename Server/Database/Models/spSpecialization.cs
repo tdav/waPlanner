@@ -1,10 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Toolbelt.ComponentModel.DataAnnotations.Schema.V5;
 using waPlanner.ModelViews;
 
 namespace waPlanner.Database.Models
 {
-    public class spCategory : NameBaseModel
+    public class spSpecialization : NameBaseModel
     {
         public int Id { get; set; }
 
@@ -20,7 +21,6 @@ namespace waPlanner.Database.Models
         [StringLength(200)]
         public new string NameRu { get; set; }
 
-        public int? OrganizationId { get; set; }
-        public virtual spOrganization Organization { get; set; }
+        public virtual List<spOrganization> Organizations { get; set; }
     }
 }

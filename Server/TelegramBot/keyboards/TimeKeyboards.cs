@@ -59,28 +59,28 @@ namespace waPlanner.TelegramBot.keyboards
             {
                 switch (action)
                 {
-                    case "TIME":
-                        {
-                            cache.Time = data[1];
-                            await bot.EditMessageTextAsync(chat_id, call.Message.MessageId, $"Выбрано время:<b>{data[1]}</b>", parseMode:ParseMode.Html);
-                            if (await DbManipulations.CheckUser(chat_id, db))
-                            {
-                                List<IdValue> services = await DbManipulations.GetAllGlobalCats(db);
-                                var servicesButtons = ReplyKeyboards.SendKeyboards(services);
-                                ReplyKeyboardMarkup reply = new(servicesButtons) { ResizeKeyboard = true };
-                                await bot.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора", replyMarkup: reply);
-                                await DbManipulations.RegistrateUserPlanner(chat_id, cache, db);
-                                cache.State = PlannerStates.NONE;
-                                break;
-                            }
-                            else
-                            {
-                                cache.State = PlannerStates.PHONE;
-                                await ReplyKeyboards.RequestContactAsync(bot, chat_id);
-                                break;
-                            }
+                    //case "TIME":
+                    //    {
+                    //        cache.Time = data[1];
+                    //        await bot.EditMessageTextAsync(chat_id, call.Message.MessageId, $"Выбрано время:<b>{data[1]}</b>", parseMode:ParseMode.Html);
+                    //        if (await DbManipulations.CheckUser(chat_id, db))
+                    //        {
+                    //            List<IdValue> services = await DbManipulations.GetAllGlobalCats(db);
+                    //            var servicesButtons = ReplyKeyboards.SendKeyboards(services);
+                    //            ReplyKeyboardMarkup reply = new(servicesButtons) { ResizeKeyboard = true };
+                    //            await bot.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора", replyMarkup: reply);
+                    //            await DbManipulations.RegistrateUserPlanner(chat_id, cache, db);
+                    //            cache.State = PlannerStates.NONE;
+                    //            break;
+                    //        }
+                    //        else
+                    //        {
+                    //            cache.State = PlannerStates.PHONE;
+                    //            await ReplyKeyboards.RequestContactAsync(bot, chat_id);
+                    //            break;
+                    //        }
                             
-                        }
+                    //    }
                     default:
                         {
                             await bot.AnswerCallbackQueryAsync(call.Id, cacheTime: 600);

@@ -38,13 +38,13 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpGet("Id")]
-        public Task<tbOrganization> GetOrganizationAsync(int id)
+        public Task<spOrganization> GetOrganizationAsync(int id)
         {
             return service.GetOrgByIdAsync(id);
         }
 
         [HttpGet]
-        public Task<tbOrganization[]> GetAllAsync()
+        public Task<spOrganization[]> GetAllAsync()
         {
             return service.GetAllOrgsAsync();
         }

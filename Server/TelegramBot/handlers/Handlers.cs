@@ -51,7 +51,6 @@ namespace waPlanner.TelegramBot.handlers
         {
             long chat_id = message.Chat.Id;
             string msg = message.Text;
-            string message_for_user = "";
 
             using (var db = new MyDbContextFactory().CreateDbContext(null))
             {
@@ -61,7 +60,7 @@ namespace waPlanner.TelegramBot.handlers
                 }
                 var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
                 List<IdValue> menu = null;
-                await users.OnUsersStateChanged.OnStateChange(chat_id, db, Bot_, message, menu, back, cache);
+                await users.OnUsersStateChanged.OnStateChange(chat_id, db, Bot_, message, back, cache);
             }
         }
         public static async Task BotOnCallbackQueryReceived(CallbackQuery call)

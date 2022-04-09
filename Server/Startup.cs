@@ -62,7 +62,6 @@ namespace waPlanner
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ISchedulerService, SchedulerService>();
             services.AddScoped<IOrganizationService, OrganizationService>();
-            services.AddScoped<IGlobalCategoryService, GlobalCategoryService>();
             services.AddScoped<IStaffService, StaffService>();
             services.AddScoped<IInfoService, InfoService>();
         }

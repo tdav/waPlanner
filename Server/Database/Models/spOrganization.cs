@@ -1,10 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using waPlanner.ModelViews;
 
 namespace waPlanner.Database.Models
 {
-    public class tbOrganization: BaseModel
+    public class spOrganization: BaseModel
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
@@ -20,14 +21,14 @@ namespace waPlanner.Database.Models
         public float  Latitude { get; set; }
 
         [Required]
-        public float Longitude { get; set; }
-
-        [Required]
-        public int TypeId { get; set; }
-
-        public virtual spOrganizationType Type { get; set; }
+        public float Longitude { get; set; }       
 
         [StringLength(150)]
         public string Name { get; set; }
+
+        public int? SpecializationId { get; set; }
+        public virtual spSpecialization Specialization { get; set; }
+
+        public virtual List< spCategory> Categories{ get; set; }
     }
 }
