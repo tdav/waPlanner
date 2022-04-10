@@ -78,6 +78,7 @@ namespace waPlanner.Services
                 CreateDate = DateTime.Now,
                 CreateUser = 1,
                 Password = "123456",
+                Status = 1
             };
             await db.tbUsers.AddAsync(newStaff);
             await db.SaveChangesAsync();
@@ -109,12 +110,6 @@ namespace waPlanner.Services
         {
             var updateStaff = await db.tbUsers.FindAsync(staff_id);
 
-            updateStaff.Surname = staff.Surname;
-            updateStaff.Name = staff.Name;
-            updateStaff.Patronymic = staff.Patronymic;
-            updateStaff.UserTypeId = (int)UserTypes.STAFF;
-            updateStaff.PhoneNum = staff.PhoneNum;
-
             if (staff.BirthDay.HasValue)
                 updateStaff.BirthDay = staff.BirthDay.Value;
 
@@ -127,7 +122,25 @@ namespace waPlanner.Services
             if (staff.Experience.HasValue)
                 updateStaff.Experience = staff.Experience.Value;
 
-            updateStaff.Password = staff.Password;
+            if(staff.Status.HasValue)
+                updateStaff.Status = staff.Status.Value;
+
+            if(staff.Surname is not null)
+                updateStaff.Surname = staff.Surname;
+
+            if(staff.Name is not null)
+                updateStaff.Name = staff.Name;
+
+            if(staff.Patronymic is not null)
+                updateStaff.Patronymic = staff.Patronymic;
+
+            if(staff.Password is not null)
+                updateStaff.Password = staff.Password;
+
+            if(staff.PhoneNum is not null)
+                updateStaff.PhoneNum = staff.PhoneNum;
+
+            updateStaff.UserTypeId = (int)UserTypes.STAFF;
             updateStaff.UpdateDate = DateTime.Now;
             updateStaff.UpdateUser = 1;
             await db.SaveChangesAsync();

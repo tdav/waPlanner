@@ -36,51 +36,55 @@ namespace waPlanner.Services
             if (organization.longitude.HasValue)
                 addOrganization.Longitude = organization.longitude.Value;
 
-            if (organization.TypeId.HasValue)
-                addOrganization.TypeId = organization.TypeId.Value;
+            if(organization.SpecializationId.HasValue)
+                addOrganization.SpecializationId = organization.SpecializationId.Value;
 
+            addOrganization.Name = organization.Name;
             addOrganization.CreateDate = DateTime.Now;
             addOrganization.CreateUser = 1;
-            addOrganization.Status = organization.Status;
+            addOrganization.Status = organization.Status.Value;
             addOrganization.Address = organization.address;
             await db.spOrganizations.AddAsync(addOrganization);
             await db.SaveChangesAsync();
 
 
         }
-        public async Task UpdateOrganizationAsync(int organization_id, viOrganization organziation)
+        public async Task UpdateOrganizationAsync(int organization_id, viOrganization organization)
         {
             var updatedOrganization = await db.spOrganizations.FindAsync(organization_id);
 
-            if (organziation.ChatId.HasValue)
-                updatedOrganization.ChatId = organziation.ChatId.Value;
+            if (organization.ChatId.HasValue)
+                updatedOrganization.ChatId = organization.ChatId.Value;
 
-            if (organziation.latitude.HasValue)
-                updatedOrganization.Latitude = organziation.latitude.Value;
+            if (organization.latitude.HasValue)
+                updatedOrganization.Latitude = organization.latitude.Value;
 
-            if (organziation.longitude.HasValue)
-                updatedOrganization.Longitude = organziation.longitude.Value;
+            if (organization.longitude.HasValue)
+                updatedOrganization.Longitude = organization.longitude.Value;
 
-            if (organziation.TypeId.HasValue)
-                updatedOrganization.TypeId = organziation.TypeId.Value;
+            if(organization.SpecializationId.HasValue)
+                updatedOrganization.SpecializationId = organization.SpecializationId.Value;
 
-            updatedOrganization.Status = organziation.Status;
+            if(organization.Status.HasValue)
+                updatedOrganization.Status = organization.Status.Value;
+
+            updatedOrganization.Name = organization.Name;
             updatedOrganization.UpdateDate = DateTime.Now;
             updatedOrganization.UpdateUser = 1;
             await db.SaveChangesAsync();
         }
 
-        public async Task UpdateOrganizationStatus(int organizatin_id, int status)
+        public async Task UpdateOrganizationStatus(int organization_id, int status)
         {
-            var organiztion = await db.spOrganizations.FindAsync(organizatin_id);
+            var organiztion = await db.spOrganizations.FindAsync(organization_id);
             organiztion.Status = status;
             organiztion.UpdateDate = DateTime.Now;
             organiztion.UpdateUser = 1;
             await db.SaveChangesAsync();
         }
-        public async Task<spOrganization> GetOrgByIdAsync(int id)
+        public async Task<spOrganization> GetOrgByIdAsync(int organization_id)
         {
-            return await db.spOrganizations.AsNoTracking().FirstOrDefaultAsync(x => x.Status == 1);
+            return await db.spOrganizations.AsNoTracking().FirstAsync(x => x.Status == 1 && x.Id == organization_id);
         }
         public async Task<spOrganization[]> GetAllOrgsAsync()
         {

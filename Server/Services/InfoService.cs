@@ -28,12 +28,14 @@ namespace waPlanner.Services
         {
             return await db.tbSchedulers.CountAsync(x => x.AppointmentDateTime.Date == DateTime.Now.Date && x.OrganizationId == organization_id);
         }
+
         public async Task<int> GetTotalWeekAppointments(int organization_id)
         {
             return await db.tbSchedulers.CountAsync(x => x.AppointmentDateTime.Date >= DateTime.Now.Date.AddDays(-7) &&
                                                          x.AppointmentDateTime.Date <= DateTime.Now.Date &&
                                                          x.OrganizationId == organization_id);
         }
+
         public async Task<List<viAppointmentsModel>> GetTodayAppointments(int organization_id)
         {
             return await db.tbSchedulers
@@ -53,6 +55,7 @@ namespace waPlanner.Services
                 .Take(20)
                 .ToListAsync();
         }
+
         public async Task<List<viRecentSchedulers>> GetRecentUsers(int organization_id)
         {
             return await db.tbSchedulers
@@ -63,7 +66,7 @@ namespace waPlanner.Services
                 .Select(x => new viRecentSchedulers
                 {
                     Id = x.Id,
-                    PeersonName = x.User.Name,
+                    PersonName = x.User.Name,
                     DpInfo = x.AdInfo,
                     CreateDate = x.CreateDate
                 })

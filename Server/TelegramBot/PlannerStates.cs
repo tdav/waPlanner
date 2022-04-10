@@ -9,9 +9,9 @@
     public enum PlannerStates
     {
         NONE = 0,
-        CATEGORY = 1,
-        STUFF = 2,
-        ORGANIZATION = 3,
+        ORGANIZATION = 1,
+        CATEGORY = 2,
+        STUFF = 3,
         CHOOSE_DATE = 4,
         CHOOSE_TIME = 5,
         PHONE = 6,

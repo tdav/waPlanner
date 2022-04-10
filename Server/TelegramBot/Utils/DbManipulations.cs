@@ -11,99 +11,75 @@ namespace waPlanner.TelegramBot.Utils
 {
     public class DbManipulations
     {
-        public static async Task<(List<IdValue> list, bool Is)> GetRootList(MyDbContext db)
+        public static async Task<List<IdValue>> SendSpecializations(MyDbContext db)
         {
-            var list = await db.spCategories.AsNoTracking()
-                               .Where(x => x.ParentId==null)
-                               .Select(x => new IdValue { Id = x.Id, Name = x.NameUz })
-                               .ToListAsync();
-            return (list, true);
-        }
-
-        public static async Task<(List<IdValue> list, bool IsCategory)> GetChildCategory(MyDbContext db, int parent_id, TelegramBotValuesModel cache)
-        {
-            var list =  await db.spCategories
+            return await db.spSpecializations
                 .AsNoTracking()
-                .Where(x => x.ParentId == parent_id)
                 .Select(x => new IdValue { Id = x.Id, Name = x.NameUz})
                 .ToListAsync();
-
-            if (list.Count==0)
-            {
-                var organizations = await GetOrganizationsByCategory(db, parent_id);
-                cache.State = PlannerStates.ORGANIZATION;
-                return (organizations, false);
-            }
-            else
-            {
-                return (list, true);
-            }
         }
 
-        //public static async Task<int> GetCategoryIdByName(MyDbContext db, string category_name, int parent_id)
-        //{
-        //    var category = await db.spCategories.AsNoTracking().FirstAsync(x => x.NameUz == category_name && x.ParentId == parent_id);
-        //    return category.Id;
-        //}
-
-        public static async Task<int> GetCategoryIdByName(MyDbContext db, string category_name)
+        public static async Task<int> GetSpecializationIdByName(MyDbContext db, string spec_name)
         {
-            var category = await db.spCategories
+            var spec_id = await db.spSpecializations
                 .AsNoTracking()
-                .Where(x => EF.Functions.ILike( x.NameUz, category_name))
-                .FirstOrDefaultAsync();
-            return category.Id;
+                .Where(x => x.NameUz == spec_name)
+                .FirstAsync();
+            return spec_id.Id;
         }
 
-        public static async Task<int> GetParentCategory(MyDbContext db, int child_id)
+        public static async Task<List<IdValue>> SendOrganizations(MyDbContext db, string spec_name)
         {
-            var parent = await db.spCategories.AsNoTracking().FirstAsync(x => x.Id == child_id);
-            return parent.Id;
-        }
-
-        public static async Task<List<IdValue>> GetOrganizationsByCategory(MyDbContext db, int category_id)
-        {
+            int spec_id = await GetSpecializationIdByName(db, spec_name);
             return await db.spOrganizations
                 .AsNoTracking()
-                .Where(x => x.CategoryId == category_id && x.Status == 1)
+                .Where(x => x.SpecializationId == spec_id)
                 .Select(x => new IdValue { Id = x.Id, Name = x.Name })
                 .ToListAsync();
         }
 
-        public static async Task<List<IdValue>> GetStaffByCategoryOrganizationId(MyDbContext db, int category_id, int organization_id)
+        public static async Task<int> GetOrganizationId(MyDbContext db, string organization_name)
         {
-            return await db.tbUsers
+            var organization = await db.spOrganizations
                 .AsNoTracking()
-                .Where(x => x.UserTypeId == (int)UserTypes.STAFF && x.CategoryId == category_id && x.OrganizationId == organization_id)
-                .Select(x => new IdValue { Id = x.Id, Name = $"{x.Surname} {x.Name} {x.Patronymic}"})
-                .ToListAsync();
+                .FirstAsync(x => x.Name == organization_name);
+            return organization.Id;
         }
 
-        //public static async Task RegistrateUserPlanner(long chat_id, TelegramBotValuesModel value, MyDbContext db)
-        //{
-        //    viStaffOrganizationId staff = await GetStaffIdByNameAsync(db, value.Stuff);
-        //    int categoryId = await GetCategoryIdByName(db, value.Category);
-        //    int userId = await GetUserId(chat_id, db);
-        //    string[] userSelectedTime = value.Time.Split(":");
-        //    DateTime plannerDate = value.Calendar
-        //        .AddHours(int.Parse(userSelectedTime[0]))
-        //        .AddMinutes(int.Parse(userSelectedTime[1]));
+        public static async Task<List<IdValue>> SendCategoriesByOrgName(MyDbContext db, string organization_name)
+        {
+            int organization_id = await GetOrganizationId(db, organization_name);
+            return await db.spCategories
+                .AsNoTracking()
+                .Where(x => x.OrganizationId == organization_id)
+                .Select(x => new IdValue { Id = x.Id, Name = x.NameUz })
+                .ToListAsync();
+        }
+        public static async Task RegistrateUserPlanner(long chat_id, TelegramBotValuesModel value, MyDbContext db)
+        {
+            viStaffOrganizationId staff = await GetStaffIdByNameAsync(db, value.Stuff);
+            int categoryId = await GetCategoryIdByName(db, value.Category);
+            int userId = await GetUserId(chat_id, db);
+            string[] userSelectedTime = value.Time.Split(":");
+            DateTime plannerDate = value.Calendar
+                .AddHours(int.Parse(userSelectedTime[0]))
+                .AddMinutes(int.Parse(userSelectedTime[1]));
 
-        //    var planner = new tbScheduler
-        //    {
-        //        UserId = userId,
-        //        DoctorId = staff.StaffId,
-        //        AppointmentDateTime = plannerDate,
-        //        CategoryId = categoryId,
-        //        OrganizationId = staff.OrganizationId.Value,
-        //        CreateDate = DateTime.Now,
-        //        Status = 1,
-        //        CreateUser = 1
-        //    };
+            var planner = new tbScheduler
+            {
+                UserId = userId,
+                DoctorId = staff.StaffId,
+                AppointmentDateTime = plannerDate,
+                CategoryId = categoryId,
+                OrganizationId = staff.OrganizationId.Value,
+                CreateDate = DateTime.Now,
+                Status = 1,
+                CreateUser = 1
+            };
 
-        //    await db.tbSchedulers.AddAsync(planner);
-        //    await db.SaveChangesAsync();
-        //}
+            await db.tbSchedulers.AddAsync(planner);
+            await db.SaveChangesAsync();
+        }
 
         private static async Task<int> GetUserId(long chat_id, MyDbContext db)
         {
@@ -138,13 +114,13 @@ namespace waPlanner.TelegramBot.Utils
             if (result != null)                return true;
             return false;
         }
-        //public static async Task<int> GetCategoryIdByName(MyDbContext db, string name)
-        //{
-        //    var category = await db.spCategories
-        //        .AsNoTracking()
-        //        .FirstAsync(x => x.NameUz == name);
-        //    return category.Id;
-        //}
+        public static async Task<int> GetCategoryIdByName(MyDbContext db, string name)
+        {
+            var category = await db.spCategories
+                .AsNoTracking()
+                .FirstAsync(x => x.NameUz == name);
+            return category.Id;
+        }
 
         public static async Task<viStaffOrganizationId> GetStaffIdByNameAsync(MyDbContext db, string name)
         {
@@ -195,12 +171,12 @@ namespace waPlanner.TelegramBot.Utils
             
         }
 
-        public static async Task<long> GetGroupId(MyDbContext db)
-        {
-            var chat = await db.spOrganizations
-                .AsNoTracking()
-                .FirstAsync(x => x.TypeId == 1);
-            return chat.Id;
-        }
+        //public static async Task<long> GetGroupId(MyDbContext db)
+        //{
+        //    var chat = await db.spOrganizations
+        //        .AsNoTracking()
+        //        .FirstAsync(x => x.TypeId == 1);
+        //    return chat.Id;
+        //}
     }
 }

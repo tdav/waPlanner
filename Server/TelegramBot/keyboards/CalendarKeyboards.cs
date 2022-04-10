@@ -85,56 +85,52 @@ namespace waPlanner.TelegramBot.keyboards
             var bot = handlers.Handlers.Bot_;
             var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
             
-
-            if (cache.State == PlannerStates.CHOOSE_DATE)
+            DateTime.TryParse(data[1], out var date);
+            switch (action)
             {
-                DateTime.TryParse(data[1], out var date);
-                switch (action)
-                {
-                    case "NEXT-MONTH":
+                case "NEXT-MONTH":
+                    {
+                        await bot.EditMessageReplyMarkupAsync(chat_id, messageId, SendCalendar(ref date));
+                        break;
+                    }
+                case "PREV-MONTH":
+                    {
+                        if(date.Month >= DateTime.Now.Month)
                         {
                             await bot.EditMessageReplyMarkupAsync(chat_id, messageId, SendCalendar(ref date));
                             break;
                         }
-                    case "PREV-MONTH":
-                        {
-                            if(date.Month >= DateTime.Now.Month)
-                            {
-                                await bot.EditMessageReplyMarkupAsync(chat_id, messageId, SendCalendar(ref date));
-                                break;
-                            }
-                            break;
-                            
-                        }
-                    case "DAY":
-                        {
-                            if (date >= DateTime.Today)
-                            {
-                                cache.State = PlannerStates.CHOOSE_TIME;
-                                cache.Calendar = date;
-                                try
-                                {
-                                    await bot.DeleteMessageAsync(chat_id, messageId);
-                                }
-                                catch
-                                {
-                                
-                                }
-                                await bot.SendTextMessageAsync(chat_id, $"Выбрана дата: <b>{date.ToShortDateString()}</b>", replyMarkup: back, parseMode: ParseMode.Html);
-                                await bot.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
-                                return;
-                            }
-                            await bot.AnswerCallbackQueryAsync(call.Id, "Нельзя выбирать старую дату!", true);
-                            break;
-                        }
-                    case "i":
-                        {
-                            await bot.AnswerCallbackQueryAsync(call.Id);
-                            break;
-                        }
-                    default:
                         break;
-                }
+                            
+                    }
+                case "DAY":
+                    {
+                        if (date >= DateTime.Today)
+                        {
+                            cache.State = PlannerStates.CHOOSE_TIME;
+                            cache.Calendar = date;
+                            try
+                            {
+                                await bot.DeleteMessageAsync(chat_id, messageId);
+                            }
+                            catch
+                            {
+                                
+                            }
+                            await bot.SendTextMessageAsync(chat_id, $"Выбрана дата: <b>{date.ToShortDateString()}</b>", replyMarkup: back, parseMode: ParseMode.Html);
+                            await bot.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
+                            return;
+                        }
+                        await bot.AnswerCallbackQueryAsync(call.Id, "Нельзя выбирать старую дату!", true);
+                        break;
+                    }
+                case "i":
+                    {
+                        await bot.AnswerCallbackQueryAsync(call.Id);
+                        break;
+                    }
+                default:
+                    break;
             }
         }
     }

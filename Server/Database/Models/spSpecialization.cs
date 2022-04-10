@@ -20,7 +20,6 @@ namespace waPlanner.Database.Models
         [IndexColumn(IsUnique = true)]
         [StringLength(200)]
         public new string NameRu { get; set; }
-
         public virtual List<spOrganization> Organizations { get; set; }
     }
 }

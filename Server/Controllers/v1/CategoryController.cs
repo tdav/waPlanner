@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using waPlanner.Database.Models;
+using waPlanner.ModelViews;
 using waPlanner.Services;
 
 namespace waPlanner.Controllers.v1
@@ -20,28 +22,34 @@ namespace waPlanner.Controllers.v1
             this.service = service;
         }
 
-        //[HttpGet("{id}")]
-        //public async Task<spCategory> Get(int id)
-        //{
-        //    return await service.GetAsync(id);
-        //}
-
-        [HttpGet]
-        public async Task<spCategory[]> GetAll()
+        [HttpGet("{category_id}")]
+        public async Task<viCategory> Get(int category_id)
         {
-            return await service.GetAllAsync();
+            return await service.GetCategoryByIdAsync(category_id);
+        }
+
+        [HttpGet("get_by_organization/{organization_id}")]
+        public async Task<List<viCategory>> GetAll(int organization_id)
+        {
+            return await service.GetAllCategoryByOrgAsync(organization_id);
         }
 
         [HttpPost]
-        public async Task Insert([FromBody] spCategory value)
+        public async Task Insert([FromBody] viCategory value)
         {
-            await service.InsertAsync(value);
+            await service.AddCategoryAsync(value);
         }
 
-        [HttpPut]
-        public async Task Update([FromBody] spCategory value)
+        [HttpPut("change_category/{category_id}")]
+        public async Task Update(int category_id, [FromBody] viCategory value)
         {
-            await service.UpdateAsync(value);
+            await service.UpdateAsync(category_id, value);
+        }
+
+        [HttpPut("change_status/{category_id}/{status}")]
+        public async Task ChangeCategoryStatus(int category_id, int status)
+        {
+            await service.ChangeCategoryStatus(category_id, status);
         }
     }
 }

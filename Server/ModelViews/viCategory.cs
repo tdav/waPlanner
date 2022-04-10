@@ -2,17 +2,14 @@
 {
     public class viCategory
     {
-        public int TypeId { get; set; }
-        public string Type { get; set; }
-
         public string NameUz { get; set; }
         public string NameRu { get; set; }
-        public string NameIt { get; set; }
+        public string NameLt { get; set; }
 
-        public int GlobalCategoryId { get; set; }
-        public string GlobalCategory { get; set; }
+        public int? OrganizationId { get; set; }
+        public string Organization { get; set; }
 
-        public int Status { get; set; }
+        public int? Status { get; set; }
 
     }
 }

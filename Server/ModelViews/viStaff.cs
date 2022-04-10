@@ -27,5 +27,6 @@ namespace waPlanner.ModelViews
         public DateTime CreateDate { get; set; }
         public string Photo { get; set; }
         public string Password { get; set; }
+        public int? Status { get; set; }
     }
 }
