@@ -17,6 +17,6 @@ namespace waPlanner.ModelViews
         public string Organization { get; set; }
         public DateTime? AppointmentDateTime { get; set; }
         public string AdInfo { get; set; }
-        public int Status { get;  set; }
+        public int? Status { get;  set; }
     }
 }

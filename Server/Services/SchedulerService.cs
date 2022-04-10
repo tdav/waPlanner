@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using waPlanner.Database;
@@ -13,8 +14,8 @@ namespace waPlanner.Services
         Task InsertSchedulerAsync(viScheduler scheduler);
         Task UpdateSchedulerAsync(int scheduler_id, viScheduler scheduler);
         Task UpdateSchedulerStatus(int scheduler_id, byte status);        
-        Task<tbScheduler> GetSchedulerByIdAsync(int id);
-        Task<tbScheduler[]> GetAllSchedulersAsync();
+        Task<viScheduler> GetSchedulerByIdAsync(int id);
+        Task<List<viScheduler>> GetAllSchedulersByOrgAsync(int organization_id);
     }
     public class SchedulerService: ISchedulerService
     {
@@ -53,6 +54,7 @@ namespace waPlanner.Services
         public async Task UpdateSchedulerAsync(int scheduler_id, viScheduler scheduler)
         {
             var updateScheduler = await db.tbSchedulers.FindAsync(scheduler_id);
+
             if(scheduler.UserId.HasValue)
                 updateScheduler.UserId = scheduler.UserId.Value;
 
@@ -68,7 +70,9 @@ namespace waPlanner.Services
             if(scheduler.AppointmentDateTime.HasValue)
                 updateScheduler.AppointmentDateTime = scheduler.AppointmentDateTime.Value;
 
-            updateScheduler.Status = scheduler.Status;
+            if(scheduler.Status.HasValue)
+                updateScheduler.Status = scheduler.Status.Value;
+
             updateScheduler.AdInfo = scheduler.AdInfo;
             updateScheduler.UpdateDate = DateTime.Now;
             updateScheduler.UpdateUser = 1;
@@ -83,14 +87,48 @@ namespace waPlanner.Services
             await db.SaveChangesAsync();
         }
      
-        public async Task<tbScheduler> GetSchedulerByIdAsync(int id)
+        public async Task<viScheduler> GetSchedulerByIdAsync(int id)
         {
-            return await db.tbSchedulers.AsNoTracking().FirstOrDefaultAsync(x => x.Status == 1);
+            return await db.tbSchedulers
+                .AsNoTracking()
+                .Where(x => x.Id == id && x.Status == 1)
+                .Select(x => new viScheduler
+                {
+                    UserId = x.UserId,
+                    User = $"{x.User.Name} {x.User.Surname} {x.User.Patronymic}",
+                    StaffId = x.DoctorId,
+                    Staff = $"{x.Doctor.Name} {x.Doctor.Surname} {x.Doctor.Patronymic}",
+                    CategoryId = x.CategoryId,
+                    Category = x.Category.NameUz,
+                    OrganizationId = x.OrganizationId,
+                    Organization = x.Organization.Name,
+                    AppointmentDateTime = x.AppointmentDateTime,
+                    AdInfo = x.AdInfo,
+                    Status = x.Status
+                })
+                .FirstAsync();
         }
 
-        public async Task<tbScheduler[]> GetAllSchedulersAsync()
+        public async Task<List<viScheduler>> GetAllSchedulersByOrgAsync(int organization_id)
         {
-            return await db.tbSchedulers.Where(x => x.Status == 1) .AsNoTracking().ToArrayAsync();
+            return await db.tbSchedulers
+                .AsNoTracking()
+                .Where(x => x.OrganizationId == organization_id)
+                .Select(x => new viScheduler
+                {
+                    UserId = x.UserId,
+                    User = $"{x.User.Name} {x.User.Surname} {x.User.Patronymic}",
+                    StaffId = x.DoctorId,
+                    Staff = $"{x.Doctor.Name} {x.Doctor.Surname} {x.Doctor.Patronymic}",
+                    CategoryId = x.CategoryId,
+                    Category = x.Category.NameUz,
+                    OrganizationId = x.OrganizationId,
+                    Organization = x.Organization.Name,
+                    AppointmentDateTime = x.AppointmentDateTime,
+                    AdInfo = x.AdInfo,
+                    Status = x.Status
+                })
+                .ToListAsync();
         }
     }
 }

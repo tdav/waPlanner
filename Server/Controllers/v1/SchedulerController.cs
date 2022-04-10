@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using waPlanner.Database.Models;
 using waPlanner.ModelViews;
@@ -37,16 +38,16 @@ namespace waPlanner.Controllers.v1
             await service.UpdateSchedulerStatus(scheduler_id, status);
         }
 
-        [HttpGet("{id}")]
-        public async Task<tbScheduler> GetSchedulerById(int id)
+        [HttpGet("{scheduler_id}")]
+        public async Task<viScheduler> GetSchedulerById(int scheduler_id)
         {
-            return await service.GetSchedulerByIdAsync(id);
+            return await service.GetSchedulerByIdAsync(scheduler_id);
         }
 
-        [HttpGet("all")]
-        public async Task<tbScheduler[]> GetSchedulers()
+        [HttpGet("schedulers/{organization_id}")]
+        public async Task<List<viScheduler>> GetSchedulers(int organization_id)
         {
-            return await service.GetAllSchedulersAsync();
+            return await service.GetAllSchedulersByOrgAsync(organization_id);
         }
     }
 }
