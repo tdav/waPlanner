@@ -40,16 +40,22 @@ namespace waPlanner.Controllers.v1
             await service.AddCategoryAsync(value);
         }
 
-        [HttpPut("change_category/{category_id}")]
+        [HttpPost("change_category/{category_id}")]
         public async Task Update(int category_id, [FromBody] viCategory value)
         {
             await service.UpdateAsync(category_id, value);
         }
 
-        [HttpPut("change_status/{category_id}/{status}")]
+        [HttpPost("change_status/{category_id}/{status}")]
         public async Task ChangeCategoryStatus(int category_id, int status)
         {
             await service.ChangeCategoryStatus(category_id, status);
+        }
+
+        [HttpGet]
+        public async Task<List<spCategory>> GetAllCats()
+        {
+            return await service.GetAllCategories();
         }
     }
 }

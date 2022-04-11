@@ -27,13 +27,13 @@ namespace waPlanner.Controllers.v1
             await service.AddSpecializationAsync(spec);
         }
 
-        [HttpPut("{spec_id}")]
+        [HttpPost("{spec_id}")]
         public async Task UpdateSpecialization(int spec_id, [FromBody] viSpecialization spec)
         {
             await service.UpdateSpecializationAsync(spec_id, spec);
         }
 
-        [HttpPut("change_status/{spec_id}/{status}")]
+        [HttpPost("change_status/{spec_id}/{status}")]
         public async Task ChangeStatus(int spec_id, int status)
         {
             await service.ChangeSpecializationStatus(spec_id, status);

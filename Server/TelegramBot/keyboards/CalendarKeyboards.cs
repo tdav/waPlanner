@@ -53,7 +53,7 @@ namespace waPlanner.TelegramBot.keyboards
 
                 currentDate = currentDate.AddDays(1);
 
-                if ((int)currentDate.DayOfWeek < 7 && currentDate.Month != date.Month && keyboards.Count <= 6)
+                if ((int)currentDate.DayOfWeek < 7 && currentDate.Month != date.Month && keyboards.Count < 7)
                 {
                     buttons.Add(InlineKeyboardButton.WithCallbackData(" ", IGNORE));
                     iterations++;

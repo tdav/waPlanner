@@ -28,5 +28,6 @@ namespace waPlanner.ModelViews
         public string Photo { get; set; }
         public string Password { get; set; }
         public int? Status { get; set; }
+        public string Gender { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 {
     public class viCategory
     {
+        public int Id { get; set; }
         public string NameUz { get; set; }
         public string NameRu { get; set; }
         public string NameLt { get; set; }

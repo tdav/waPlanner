@@ -11,11 +11,13 @@ namespace waPlanner.Services
 {
     public interface ISchedulerService
     {
-        Task InsertSchedulerAsync(viScheduler scheduler);
+        Task AddSchedulerAsync(viScheduler scheduler);
         Task UpdateSchedulerAsync(int scheduler_id, viScheduler scheduler);
         Task UpdateSchedulerStatus(int scheduler_id, byte status);        
         Task<viScheduler> GetSchedulerByIdAsync(int id);
-        Task<List<viScheduler>> GetAllSchedulersByOrgAsync(int organization_id);
+        Task<viScheduler[]> GetAllSchedulersByOrgAsync(int organization_id);
+        Task<viMiniScheduler[]> ChooseSchedulerMonth(DateTime date, int organization_id);
+        Task<viMiniScheduler[]> ChooseSchedulerDay(DateTime day, int organization_id);
     }
     public class SchedulerService: ISchedulerService
     {
@@ -25,7 +27,7 @@ namespace waPlanner.Services
             this.db = db; 
         }
 
-        public async Task InsertSchedulerAsync(viScheduler scheduler)
+        public async Task AddSchedulerAsync(viScheduler scheduler)
         {
             var addScheduler = new tbScheduler();
 
@@ -94,6 +96,7 @@ namespace waPlanner.Services
                 .Where(x => x.Id == id && x.Status == 1)
                 .Select(x => new viScheduler
                 {
+                    SchedulerId = x.Id,
                     UserId = x.UserId,
                     User = $"{x.User.Name} {x.User.Surname} {x.User.Patronymic}",
                     StaffId = x.DoctorId,
@@ -109,13 +112,14 @@ namespace waPlanner.Services
                 .FirstAsync();
         }
 
-        public async Task<List<viScheduler>> GetAllSchedulersByOrgAsync(int organization_id)
+        public async Task<viScheduler[]> GetAllSchedulersByOrgAsync(int organization_id)
         {
             return await db.tbSchedulers
                 .AsNoTracking()
                 .Where(x => x.OrganizationId == organization_id)
                 .Select(x => new viScheduler
                 {
+                    SchedulerId = x.Id,
                     UserId = x.UserId,
                     User = $"{x.User.Name} {x.User.Surname} {x.User.Patronymic}",
                     StaffId = x.DoctorId,
@@ -128,7 +132,43 @@ namespace waPlanner.Services
                     AdInfo = x.AdInfo,
                     Status = x.Status
                 })
-                .ToListAsync();
+                .ToArrayAsync();
+        }
+
+        public async Task<viMiniScheduler[]> ChooseSchedulerDay(DateTime date, int organization_id)
+        {
+            return await db.tbSchedulers
+                .AsNoTracking()
+                .Where(x => x.Status == 1 && x.AppointmentDateTime.Day == date.Day && x.OrganizationId == organization_id)
+                .Select(x => new viMiniScheduler
+                {
+                    SchedulerId = x.Id,
+                    UserId = x.UserId,
+                    User = $"{x.User.Name} {x.User.Surname} {x.User.Patronymic}",
+                    StaffId = x.DoctorId,
+                    Staff = $"{x.Doctor.Name} {x.Doctor.Surname} {x.Doctor.Patronymic}",
+                    AppointmentDateTime = x.AppointmentDateTime,
+                    AdInfo = x.AdInfo
+                })
+                .ToArrayAsync();
+        }
+
+        public async Task<viMiniScheduler[]> ChooseSchedulerMonth(DateTime date, int organization_id)
+        {
+            return await db.tbSchedulers
+                .AsNoTracking()
+                .Where(x => x.Status == 1 && x.AppointmentDateTime.Month == date.Month && x.OrganizationId == organization_id)
+                .Select(x => new viMiniScheduler
+                {
+                    SchedulerId = x.Id,
+                    UserId = x.UserId,
+                    User = $"{x.User.Name} {x.User.Surname} {x.User.Patronymic}",
+                    StaffId = x.DoctorId,
+                    Staff = $"{x.Doctor.Name} {x.Doctor.Surname} {x.Doctor.Patronymic}",
+                    AppointmentDateTime = x.AppointmentDateTime,
+                    AdInfo = x.AdInfo
+                })
+                .ToArrayAsync();
         }
     }
 }

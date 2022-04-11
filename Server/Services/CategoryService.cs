@@ -16,6 +16,7 @@ namespace waPlanner.Services
         Task<List<viCategory>> GetAllCategoryByOrgAsync(int organization_id);
         Task ChangeCategoryStatus(int category_id, int status);
         Task<viCategory> GetCategoryByIdAsync(int category_id);
+        Task<List<spCategory>> GetAllCategories();
     }
 
     public class CategoryService : ICategoryService
@@ -34,6 +35,7 @@ namespace waPlanner.Services
                 .Where(x => x.Id == category_id)
                 .Select(x => new viCategory
                 {
+                    Id = x.Id,
                     NameLt = x.NameLt,
                     NameRu = x.NameRu,
                     NameUz = x.NameUz,
@@ -51,6 +53,7 @@ namespace waPlanner.Services
                 .Where(x => x.OrganizationId == organization_id)
                 .Select(x => new viCategory
                 {
+                    Id = x.Id,
                     NameLt = x.NameLt,
                     NameRu = x.NameRu,
                     NameUz = x.NameUz,
@@ -111,6 +114,12 @@ namespace waPlanner.Services
             category.UpdateDate = DateTime.Now;
             category.UpdateUser = 1;
             await db.SaveChangesAsync();
+        }
+        public async Task<List<spCategory>> GetAllCategories()
+        {
+            return await db.spCategories
+                .AsNoTracking()
+                .ToListAsync();
         }
     }
 }

@@ -27,13 +27,13 @@ namespace waPlanner.Controllers.v1
             await service.AddPatientsAsync(patient);
         }
 
-        [HttpPut("change_patient/{patient_id}")]
+        [HttpPost("change_patient/{patient_id}")]
         public async Task UpdatePatient(int patient_id, viPatient patient)
         {
             await service.UpdatePatient(patient_id, patient);
         }
 
-        [HttpPut("change_patient_status{patient_id}/{status}")]
+        [HttpPost("change_patient_status{patient_id}/{status}")]
         public async Task UpdatePatientStatus(int patient_id, byte status)
         {
             await service.UpdatePatientStatus(patient_id, status);

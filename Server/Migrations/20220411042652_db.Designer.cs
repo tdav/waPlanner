@@ -12,8 +12,8 @@ using waPlanner.Database;
 namespace waPlanner.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20220409124011_org_id")]
-    partial class org_id
+    [Migration("20220411042652_db")]
+    partial class db
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -189,10 +189,6 @@ namespace waPlanner.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
                         .HasColumnName("name_uz");
-
-                    b.Property<int>("OrganizationId")
-                        .HasColumnType("integer")
-                        .HasColumnName("organization_id");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer")

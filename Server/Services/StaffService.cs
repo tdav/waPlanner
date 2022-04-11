@@ -13,7 +13,7 @@ namespace waPlanner.Services
     public interface IStaffService
     {
         Task<List<viStaff>> GetStaffByOrganizationId(int organization_id);
-        Task AddStaffAsync(viStaff user);
+        Task AddStaffAsync(viStaff user, int organization_id);
         Task<List<IdValue>> GetStuffList(int organization_id);
         Task UpdateStaffStatus(int staff_id, byte status);
         Task UpdateStaff(int staff_id, viStaff staff);
@@ -54,32 +54,38 @@ namespace waPlanner.Services
                     Category = x.Category.NameUz,
                     UserTypeId = (int)UserTypes.STAFF,
                     UserType = x.UserType.NameUz,
-                    Photo = x.Photo
+                    Photo = x.Photo,
+                    Gender = x.Gender
                 }
                 ).ToListAsync();
         }
 
-        public async Task AddStaffAsync(viStaff staff)
+        public async Task AddStaffAsync(viStaff staff, int organization_id)
         {
-            var newStaff = new tbUser
-            {
-                Surname = staff.Surname,
-                Name = staff.Name,
-                Patronymic = staff.Patronymic,
-                PhoneNum = staff.PhoneNum,
-                BirthDay = staff.BirthDay,
-                Photo = staff.Photo,
-                UserTypeId = (int)UserTypes.STAFF,
-                CategoryId = staff.CategoryId,
-                OrganizationId = staff.OrganizationId,
-                TelegramId = staff.TelegramId,                
-                Experience = staff.Experience,
-                Availability = staff.Availability,
-                CreateDate = DateTime.Now,
-                CreateUser = 1,
-                Password = "123456",
-                Status = 1
-            };
+            var newStaff = new tbUser();
+
+            newStaff.Surname = staff.Surname;
+            newStaff.Name = staff.Name;
+            newStaff.Patronymic = staff.Patronymic;
+            newStaff.PhoneNum = staff.PhoneNum;
+            newStaff.BirthDay = staff.BirthDay;
+            newStaff.Photo = staff.Photo;
+            newStaff.UserTypeId = (int)UserTypes.STAFF;
+            newStaff.CategoryId = staff.CategoryId;
+
+            if (staff.OrganizationId != 0)
+                newStaff.OrganizationId = organization_id;
+            else
+                newStaff.OrganizationId = 1;
+            newStaff.TelegramId = staff.TelegramId;
+            newStaff.Experience = staff.Experience;
+            newStaff.Availability = staff.Availability;
+            newStaff.CreateDate = DateTime.Now;
+            newStaff.Gender = staff.Gender;
+            newStaff.CreateUser = 1;
+            newStaff.Password = "123456";
+            newStaff.Status = 1;
+
             await db.tbUsers.AddAsync(newStaff);
             await db.SaveChangesAsync();
         }
@@ -116,9 +122,6 @@ namespace waPlanner.Services
             if (staff.CategoryId.HasValue)
                 updateStaff.CategoryId = staff.CategoryId.Value;
 
-            if(staff.OrganizationId.HasValue)
-                updateStaff.OrganizationId = staff.OrganizationId.Value;
-
             if (staff.Experience.HasValue)
                 updateStaff.Experience = staff.Experience.Value;
 
@@ -139,6 +142,9 @@ namespace waPlanner.Services
 
             if(staff.PhoneNum is not null)
                 updateStaff.PhoneNum = staff.PhoneNum;
+
+            if (staff.Gender is not null)
+                updateStaff.Gender = staff.Gender;
 
             updateStaff.UserTypeId = (int)UserTypes.STAFF;
             updateStaff.UpdateDate = DateTime.Now;
