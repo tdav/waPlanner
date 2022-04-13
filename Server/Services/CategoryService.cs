@@ -12,9 +12,9 @@ namespace waPlanner.Services
     public interface ICategoryService
     {
         Task AddCategoryAsync(viCategory value);
-        Task UpdateAsync(int category_id, viCategory value);
+        Task UpdateAsync(viCategory value);
         Task<List<viCategory>> GetAllCategoryByOrgAsync(int organization_id);
-        Task ChangeCategoryStatus(int category_id, int status);
+        Task ChangeCategoryStatus(viCategory value, int status);
         Task<viCategory> GetCategoryByIdAsync(int category_id);
         Task<List<spCategory>> GetAllCategories();
     }
@@ -83,9 +83,9 @@ namespace waPlanner.Services
             await db.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(int category_id, viCategory value)
+        public async Task UpdateAsync(viCategory value)
         {
-            var category = await db.spCategories.FindAsync(category_id);
+            var category = await db.spCategories.FindAsync(value.Id);
 
             if (value.OrganizationId.HasValue)
                 category.OrganizationId = value.OrganizationId;
@@ -107,9 +107,9 @@ namespace waPlanner.Services
             await db.SaveChangesAsync();
         }
 
-        public async Task ChangeCategoryStatus(int category_id, int status)
+        public async Task ChangeCategoryStatus(viCategory value, int status)
         {
-            var category = await db.spCategories.FindAsync(category_id);
+            var category = await db.spCategories.FindAsync(value.Id);
             category.Status = status;
             category.UpdateDate = DateTime.Now;
             category.UpdateUser = 1;

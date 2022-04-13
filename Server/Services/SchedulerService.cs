@@ -12,12 +12,10 @@ namespace waPlanner.Services
     public interface ISchedulerService
     {
         Task AddSchedulerAsync(viScheduler scheduler);
-        Task UpdateSchedulerAsync(int scheduler_id, viScheduler scheduler);
-        Task UpdateSchedulerStatus(int scheduler_id, byte status);        
+        Task UpdateSchedulerAsync(viScheduler scheduler);
+        Task UpdateSchedulerStatus(viScheduler scheduler, byte status);        
         Task<viScheduler> GetSchedulerByIdAsync(int id);
-        Task<viScheduler[]> GetAllSchedulersByOrgAsync(int organization_id);
-        Task<viMiniScheduler[]> ChooseSchedulerMonth(DateTime date, int organization_id);
-        Task<viMiniScheduler[]> ChooseSchedulerDay(DateTime day, int organization_id);
+        Task<viEvents[]> GetAllSchedulersByOrgAsync(int organization_id);
     }
     public class SchedulerService: ISchedulerService
     {
@@ -35,7 +33,7 @@ namespace waPlanner.Services
                 addScheduler.UserId = scheduler.UserId.Value;
 
             if (scheduler.StaffId.HasValue)
-                addScheduler.DoctorId = scheduler.StaffId.Value;
+                addScheduler.StaffId = scheduler.StaffId.Value;
 
             if(scheduler.AppointmentDateTime.HasValue)
                 addScheduler.AppointmentDateTime = scheduler.AppointmentDateTime.Value;
@@ -46,22 +44,22 @@ namespace waPlanner.Services
             if(scheduler.OrganizationId.HasValue)
                 addScheduler.OrganizationId = scheduler.OrganizationId.Value;
 
-            addScheduler.AdInfo = scheduler.AdInfo;
+            addScheduler.AdInfo = scheduler.AdInfo ?? "Нет данных";
             addScheduler.Status = 1;
             addScheduler.CreateUser = 1;
             addScheduler.CreateDate = DateTime.Now;
             await db.tbSchedulers.AddAsync(addScheduler);
             await db.SaveChangesAsync();
         }
-        public async Task UpdateSchedulerAsync(int scheduler_id, viScheduler scheduler)
+        public async Task UpdateSchedulerAsync(viScheduler scheduler)
         {
-            var updateScheduler = await db.tbSchedulers.FindAsync(scheduler_id);
+            var updateScheduler = await db.tbSchedulers.FindAsync(scheduler.SchedulerId);
 
             if(scheduler.UserId.HasValue)
                 updateScheduler.UserId = scheduler.UserId.Value;
 
             if (scheduler.StaffId.HasValue)
-                updateScheduler.DoctorId = scheduler.StaffId.Value;
+                updateScheduler.StaffId = scheduler.StaffId.Value;
 
             if(scheduler.CategoryId.HasValue)
                 updateScheduler.CategoryId = scheduler.CategoryId.Value;
@@ -75,14 +73,14 @@ namespace waPlanner.Services
             if(scheduler.Status.HasValue)
                 updateScheduler.Status = scheduler.Status.Value;
 
-            updateScheduler.AdInfo = scheduler.AdInfo;
+            updateScheduler.AdInfo = scheduler.AdInfo ?? "Нет данных";
             updateScheduler.UpdateDate = DateTime.Now;
             updateScheduler.UpdateUser = 1;
             await db.SaveChangesAsync();
         }
-        public async Task UpdateSchedulerStatus(int scheduler_id, byte status)
+        public async Task UpdateSchedulerStatus(viScheduler scheduler, byte status)
         {
-            var sh = await db.tbSchedulers.FindAsync(scheduler_id);
+            var sh = await db.tbSchedulers.FindAsync(scheduler.SchedulerId);
             sh.Status = status;
             sh.UpdateUser = 1;
             sh.UpdateDate = DateTime.Now;
@@ -99,74 +97,35 @@ namespace waPlanner.Services
                     SchedulerId = x.Id,
                     UserId = x.UserId,
                     User = $"{x.User.Name} {x.User.Surname} {x.User.Patronymic}",
-                    StaffId = x.DoctorId,
-                    Staff = $"{x.Doctor.Name} {x.Doctor.Surname} {x.Doctor.Patronymic}",
+                    StaffId = x.StaffId,
+                    Staff = $"{x.Staff.Name} {x.Staff.Surname} {x.Staff.Patronymic}",
                     CategoryId = x.CategoryId,
                     Category = x.Category.NameUz,
                     OrganizationId = x.OrganizationId,
                     Organization = x.Organization.Name,
                     AppointmentDateTime = x.AppointmentDateTime,
-                    AdInfo = x.AdInfo,
+                    AdInfo = x.AdInfo ?? "Нет данных",
                     Status = x.Status
                 })
                 .FirstAsync();
         }
 
-        public async Task<viScheduler[]> GetAllSchedulersByOrgAsync(int organization_id)
+        public async Task<viEvents[]> GetAllSchedulersByOrgAsync(int organization_id)
         {
             return await db.tbSchedulers
                 .AsNoTracking()
-                .Where(x => x.OrganizationId == organization_id)
-                .Select(x => new viScheduler
+                .Where(x => x.OrganizationId == organization_id && x.AppointmentDateTime.Date >= DateTime.Now.AddMonths(-3) &&
+                                                                   x.AppointmentDateTime.Date.Month <= DateTime.Now.Date.Month)
+                .Select(x => new viEvents
                 {
-                    SchedulerId = x.Id,
+                    Id = x.Id,
+                    StaffId = x.StaffId,
+                    Staff = $"{x.Staff.Surname} {x.Staff.Name} {x.Staff.Patronymic}",
                     UserId = x.UserId,
                     User = $"{x.User.Name} {x.User.Surname} {x.User.Patronymic}",
-                    StaffId = x.DoctorId,
-                    Staff = $"{x.Doctor.Name} {x.Doctor.Surname} {x.Doctor.Patronymic}",
-                    CategoryId = x.CategoryId,
-                    Category = x.Category.NameUz,
-                    OrganizationId = x.OrganizationId,
-                    Organization = x.Organization.Name,
-                    AppointmentDateTime = x.AppointmentDateTime,
-                    AdInfo = x.AdInfo,
-                    Status = x.Status
-                })
-                .ToArrayAsync();
-        }
-
-        public async Task<viMiniScheduler[]> ChooseSchedulerDay(DateTime date, int organization_id)
-        {
-            return await db.tbSchedulers
-                .AsNoTracking()
-                .Where(x => x.Status == 1 && x.AppointmentDateTime.Day == date.Day && x.OrganizationId == organization_id)
-                .Select(x => new viMiniScheduler
-                {
-                    SchedulerId = x.Id,
-                    UserId = x.UserId,
-                    User = $"{x.User.Name} {x.User.Surname} {x.User.Patronymic}",
-                    StaffId = x.DoctorId,
-                    Staff = $"{x.Doctor.Name} {x.Doctor.Surname} {x.Doctor.Patronymic}",
-                    AppointmentDateTime = x.AppointmentDateTime,
-                    AdInfo = x.AdInfo
-                })
-                .ToArrayAsync();
-        }
-
-        public async Task<viMiniScheduler[]> ChooseSchedulerMonth(DateTime date, int organization_id)
-        {
-            return await db.tbSchedulers
-                .AsNoTracking()
-                .Where(x => x.Status == 1 && x.AppointmentDateTime.Month == date.Month && x.OrganizationId == organization_id)
-                .Select(x => new viMiniScheduler
-                {
-                    SchedulerId = x.Id,
-                    UserId = x.UserId,
-                    User = $"{x.User.Name} {x.User.Surname} {x.User.Patronymic}",
-                    StaffId = x.DoctorId,
-                    Staff = $"{x.Doctor.Name} {x.Doctor.Surname} {x.Doctor.Patronymic}",
-                    AppointmentDateTime = x.AppointmentDateTime,
-                    AdInfo = x.AdInfo
+                    Start = x.AppointmentDateTime,
+                    End = x.AppointmentDateTime.AddMinutes(30),
+                    AdInfo = x.AdInfo ?? "Нет данных"
                 })
                 .ToArrayAsync();
         }

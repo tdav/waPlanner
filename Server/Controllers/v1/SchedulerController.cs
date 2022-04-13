@@ -28,15 +28,15 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpPost("{scheduler_id}")]
-        public async Task Update(int scheduler_id, [FromBody] viScheduler scheduler)
+        public async Task Update([FromBody] viScheduler scheduler)
         {
-            await service.UpdateSchedulerAsync(scheduler_id, scheduler);
+            await service.UpdateSchedulerAsync(scheduler);
         }
 
-        [HttpPut("change_scheduler_status/{scheduler_id}/{status}")]
-        public async Task UpdateSchedulerStatus(int scheduler_id, byte status)
+        [HttpPost("change_scheduler_status/{status}")]
+        public async Task UpdateSchedulerStatus([FromBody] viScheduler scheduler, byte status)
         {
-            await service.UpdateSchedulerStatus(scheduler_id, status);
+            await service.UpdateSchedulerStatus(scheduler, status);
         }
 
         [HttpGet("{scheduler_id}")]
@@ -45,22 +45,10 @@ namespace waPlanner.Controllers.v1
             return await service.GetSchedulerByIdAsync(scheduler_id);
         }
 
-        [HttpGet("schedulers/{organization_id}")]
-        public async Task<viScheduler[]> GetSchedulers(int organization_id)
+        [HttpGet("get_by_organization/{organization_id}")]
+        public async Task<viEvents[]> GetSchedulers(int organization_id)
         {
             return await service.GetAllSchedulersByOrgAsync(organization_id);
-        }
-
-        [HttpGet("choose_scheduler_month/{date}/{organization_id}")]
-        public async Task<viMiniScheduler[]> ChooseSchedulerMonth(DateTime date, int organization_id)
-        {
-            return await service.ChooseSchedulerMonth(date, organization_id);
-        }
-
-        [HttpGet("choose_scheduler_day/{date}/{organization_id}")]
-        public async Task<viMiniScheduler[]> ChooseSchedulerDay(DateTime date, int organization_id)
-        {
-            return await service.ChooseSchedulerDay(date, organization_id);
         }
     }
 }

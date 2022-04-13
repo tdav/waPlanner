@@ -15,8 +15,8 @@ namespace waPlanner.Services
         Task<List<viStaff>> GetStaffByOrganizationId(int organization_id);
         Task AddStaffAsync(viStaff user, int organization_id);
         Task<List<IdValue>> GetStuffList(int organization_id);
-        Task UpdateStaffStatus(int staff_id, byte status);
-        Task UpdateStaff(int staff_id, viStaff staff);
+        Task UpdateStaffStatus(viStaff staff, byte status);
+        Task UpdateStaff(viStaff staff);
         Task<viStaff> GetStaffById(int staff_id);
     }
 
@@ -30,19 +30,18 @@ namespace waPlanner.Services
 
         public async Task<List<viStaff>> GetStaffByOrganizationId(int organization_id)
         {
-            return await db.tbUsers
+            return await db.tbStaffs
                 .AsNoTracking()
                 .Include(s => s.Organization)
                 .Include(s => s.Category)
-                .Include(s => s.UserType)
-                .Where(s => s.UserTypeId == 1 && s.OrganizationId == organization_id)
+                .Where(s => s.OrganizationId == organization_id)
                 .Select(x=> new viStaff
                 {
                     Id = x.Id,
                     Name = x.Name,
                     Surname = x.Surname,
                     BirthDay = x.BirthDay,
-                    PhoneNum = x.PhoneNum,
+                    PhoneNum = x.PhoneNum ?? "Нет данных",
                     Patronymic = x.Patronymic,
                     TelegramId = x.TelegramId,
                     Online = x.Online,
@@ -53,16 +52,15 @@ namespace waPlanner.Services
                     CategoryId = x.CategoryId,
                     Category = x.Category.NameUz,
                     UserTypeId = (int)UserTypes.STAFF,
-                    UserType = x.UserType.NameUz,
-                    Photo = x.Photo,
-                    Gender = x.Gender
+                    Photo = x.Photo ?? "Нет данных",
+                    Gender = x.Gender ?? "Нет данных"
                 }
                 ).ToListAsync();
         }
 
         public async Task AddStaffAsync(viStaff staff, int organization_id)
         {
-            var newStaff = new tbUser();
+            var newStaff = new tbStaff();
 
             newStaff.Surname = staff.Surname;
             newStaff.Name = staff.Name;
@@ -86,15 +84,15 @@ namespace waPlanner.Services
             newStaff.Password = "123456";
             newStaff.Status = 1;
 
-            await db.tbUsers.AddAsync(newStaff);
+            await db.tbStaffs.AddAsync(newStaff);
             await db.SaveChangesAsync();
         }
 
         public async Task<List<IdValue>> GetStuffList(int organization_id)
         {
-            return await db.tbUsers
+            return await db.tbStaffs
                            .AsNoTracking()
-                           .Where(s => s.UserTypeId == (int)UserTypes.STAFF && s.OrganizationId == organization_id)
+                           .Where(s => s.OrganizationId == organization_id)
                            .Select(x => new IdValue
                            {
                                Id = x.Id,
@@ -103,18 +101,18 @@ namespace waPlanner.Services
                            ).ToListAsync();
         }
 
-        public async Task UpdateStaffStatus(int staff_id, byte status)
+        public async Task UpdateStaffStatus(viStaff staff, byte status)
         {
-            var sh = await db.tbUsers.FindAsync(staff_id);
+            var sh = await db.tbUsers.FindAsync(staff.Id);
             sh.Status = status;
             sh.UpdateUser = 1;
             sh.UpdateDate = DateTime.Now;
             await db.SaveChangesAsync();
         }
 
-        public async Task UpdateStaff(int staff_id, viStaff staff)
+        public async Task UpdateStaff(viStaff staff)
         {
-            var updateStaff = await db.tbUsers.FindAsync(staff_id);
+            var updateStaff = await db.tbStaffs.FindAsync(staff.Id);
 
             if (staff.BirthDay.HasValue)
                 updateStaff.BirthDay = staff.BirthDay.Value;
@@ -153,19 +151,18 @@ namespace waPlanner.Services
         }
         public async Task<viStaff> GetStaffById(int staff_id)
         {
-            return await db.tbUsers
+            return await db.tbStaffs
                 .AsNoTracking()
                 .Include(s => s.Organization)
                 .Include(s => s.Category)
-                .Include(s => s.UserType)
-                .Where(s => s.UserTypeId == 1 && s.Id == staff_id)
+                .Where(s => s.Id == staff_id)
                 .Select(x => new viStaff
                 {
                     Id = x.Id,
                     Name = x.Name,
                     Surname = x.Surname,
                     BirthDay = x.BirthDay,
-                    PhoneNum = x.PhoneNum,
+                    PhoneNum = x.PhoneNum ?? "Нет данных",
                     Patronymic = x.Patronymic,
                     TelegramId = x.TelegramId,
                     Online = x.Online,
@@ -176,8 +173,8 @@ namespace waPlanner.Services
                     CategoryId = x.CategoryId,
                     Category = x.Category.NameUz,
                     UserTypeId = (int)UserTypes.STAFF,
-                    UserType = x.UserType.NameUz,
-                    Photo = x.Photo
+                    Photo = x.Photo,
+                    Gender = x.Gender ?? "Нет данных"
                 }
                 ).FirstOrDefaultAsync();
         }

@@ -57,7 +57,7 @@ namespace waPlanner.TelegramBot.Utils
         }
         public static async Task RegistrateUserPlanner(long chat_id, TelegramBotValuesModel value, MyDbContext db)
         {
-            viStaffOrganizationId staff = await GetStaffIdByNameAsync(db, value.Stuff);
+            viStaffOrganizationId staff = await GetStaffIdByName(db, value.Stuff);
             int categoryId = await GetCategoryIdByName(db, value.Category);
             int userId = await GetUserId(chat_id, db);
             string[] userSelectedTime = value.Time.Split(":");
@@ -68,7 +68,7 @@ namespace waPlanner.TelegramBot.Utils
             var planner = new tbScheduler
             {
                 UserId = userId,
-                DoctorId = staff.StaffId,
+                StaffId = staff.StaffId,
                 AppointmentDateTime = plannerDate,
                 CategoryId = categoryId,
                 OrganizationId = staff.OrganizationId.Value,
@@ -95,11 +95,9 @@ namespace waPlanner.TelegramBot.Utils
                 Surname = "TelegramUser",
                 Name = value.UserName,
                 Patronymic = "",
-                UserTypeId = (int)UserTypes.TELEGRAM_USER,
                 PhoneNum = value.Phone,
-                Password = "123456",
                 CreateDate = DateTime.Now,
-                Status=1
+                Status = 1
             };  
             await db.tbUsers.AddAsync(telegramUser);
             await db.SaveChangesAsync();
@@ -111,7 +109,7 @@ namespace waPlanner.TelegramBot.Utils
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.TelegramId == chat_id);
 
-            if (result != null)                return true;
+            if (result != null) return true;
             return false;
         }
         public static async Task<int> GetCategoryIdByName(MyDbContext db, string name)
@@ -122,12 +120,12 @@ namespace waPlanner.TelegramBot.Utils
             return category.Id;
         }
 
-        public static async Task<viStaffOrganizationId> GetStaffIdByNameAsync(MyDbContext db, string name)
+        public static async Task<viStaffOrganizationId> GetStaffIdByName(MyDbContext db, string name)
         {
             var snp = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            var stuff = await db.tbUsers
+            var stuff = await db.tbStaffs
                 .AsNoTracking()
-                .Where(x => x.UserTypeId == (int)UserTypes.STAFF && x.Surname == snp[0] && x.Name == snp[1] && x.Patronymic == snp[2])
+                .Where(x => x.Surname == snp[0] && x.Name == snp[1] && x.Patronymic == snp[2])
                 .Select(x => new viStaffOrganizationId { StaffId = x.Id, OrganizationId = x.OrganizationId})
                 .FirstAsync();
             return stuff;
@@ -135,7 +133,7 @@ namespace waPlanner.TelegramBot.Utils
 
         public static async Task<List<IdValue>> GetStaffByCategory(MyDbContext db, string category)
         {
-            return await db.tbUsers
+            return await db.tbStaffs
                          .AsNoTracking()
                          .Include(i => i.Category)
                          .Where(x => x.UserTypeId == (int)UserTypes.STAFF && x.Category.NameUz == category)
@@ -145,7 +143,7 @@ namespace waPlanner.TelegramBot.Utils
 
         public static async Task<bool> CheckStaffByCategory(MyDbContext db, string category, string value)
         {
-            var list = await db.tbUsers
+            var list = await db.tbStaffs
                          .AsNoTracking()
                          .Include(i => i.Category)
                          .Where(x => x.UserTypeId == (int)UserTypes.STAFF && x.Category.NameUz == category)
@@ -162,15 +160,49 @@ namespace waPlanner.TelegramBot.Utils
 
         public static async Task<List<DateTime>> GetStaffBusyTime(MyDbContext db, TelegramBotValuesModel value)
         {
-            var staff = await GetStaffIdByNameAsync(db, value.Stuff);
+            var staff = await GetStaffIdByName(db, value.Stuff);
             return await db.tbSchedulers
                 .AsNoTracking()
-                .Where(x => x.DoctorId == staff.StaffId && x.AppointmentDateTime.Date == value.Calendar.Date)
+                .Where(x => x.StaffId == staff.StaffId && x.AppointmentDateTime.Date == value.Calendar.Date)
                 .Select(x => x.AppointmentDateTime)
                 .ToListAsync();
             
         }
 
+        public static async Task AddToFavorites(MyDbContext db, TelegramBotValuesModel value, long chat_id)
+        {
+            if (!await CheckFavorites(db, value, chat_id))
+            {
+                var staff = await GetStaffIdByName(db, value.Stuff);
+                var user = await GetUserId(chat_id, db);
+                var addFavorite = new tbFavorites();
+                addFavorite.StaffId = staff.StaffId;
+                addFavorite.UserId = user;
+                addFavorite.TelegramId = chat_id;
+                addFavorite.OrganizationId = staff.OrganizationId.Value;
+                addFavorite.Status = 1;
+                addFavorite.CreateDate = DateTime.Now;
+
+                await db.tbFavorites.AddAsync(addFavorite);
+                await db.SaveChangesAsync();
+            }
+            
+        }
+
+        public static async Task<bool> CheckFavorites(MyDbContext db, TelegramBotValuesModel value, long chat_id)
+        {
+            var staff = await GetStaffIdByName(db, value.Stuff);
+            var user = await GetUserId(chat_id, db);
+            var result = await db.tbFavorites
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.StaffId == staff.StaffId && x.UserId == user);
+
+            if (result is null)
+                return false;
+            return true;
+        }
+
+        
         //public static async Task<long> GetGroupId(MyDbContext db)
         //{
         //    var chat = await db.spOrganizations

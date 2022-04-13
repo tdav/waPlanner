@@ -48,9 +48,9 @@ namespace waPlanner.Services
                     Id = x.Id,
                     PatientId = x.User.Id,
                     PatientName = x.User.Name,
-                    StaffId = x.Doctor.Id,
-                    StaffName = $"{x.Doctor.Name} {x.Doctor.Surname}",
-                    Symptoms = x.AdInfo
+                    StaffId = x.Staff.Id,
+                    StaffName = $"{x.Staff.Name} {x.Staff.Surname}",
+                    Symptoms = x.AdInfo ?? "Нет данных"
                 })
                 .Take(20)
                 .ToListAsync();
@@ -61,13 +61,13 @@ namespace waPlanner.Services
             return await db.tbSchedulers
                 .AsNoTracking()
                 .Include(x => x.User)
-                .Where(x => x.User.UserTypeId == 2 && x.OrganizationId == organization_id)
+                .Where(x => x.OrganizationId == organization_id)
                 .OrderByDescending(x => x.CreateDate)
                 .Select(x => new viRecentSchedulers
                 {
                     Id = x.Id,
                     PersonName = x.User.Name,
-                    DpInfo = x.AdInfo,
+                    DpInfo = x.AdInfo ?? "Нет данных",
                     CreateDate = x.CreateDate
                 })
                 .Take(20)
@@ -80,8 +80,7 @@ namespace waPlanner.Services
             return await db.tbSchedulers
                 .AsNoTracking()
                 .Include(x => x.Category)
-                .Where(x => x.User.UserTypeId == (int)UserTypes.TELEGRAM_USER &&
-                       x.OrganizationId == organization_id &&
+                .Where(x => x.OrganizationId == organization_id &&
                        x.CreateDate >= DateTime.Now.Date.AddMonths(-1) &&
                        x.CreateDate <= DateTime.Now)
                 .GroupBy(g => new { g.Category.NameUz, g.CreateDate.Date })

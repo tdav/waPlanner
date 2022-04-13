@@ -21,34 +21,40 @@ namespace waPlanner.Controllers.v1
             this.service = service;
         }
 
-        [HttpPost("add_new_patient")]
+        [HttpPost("add_new_user")]
         public async Task AddNewPatient(viPatient patient)
         {
             await service.AddPatientsAsync(patient);
         }
 
-        [HttpPost("change_patient/{patient_id}")]
-        public async Task UpdatePatient(int patient_id, viPatient patient)
+        [HttpPost("change_user")]
+        public async Task UpdatePatient(viPatient patient)
         {
-            await service.UpdatePatient(patient_id, patient);
+            await service.UpdatePatient(patient);
         }
 
-        [HttpPost("change_patient_status{patient_id}/{status}")]
-        public async Task UpdatePatientStatus(int patient_id, byte status)
+        [HttpPost("change_user_status/{status}")]
+        public async Task UpdatePatientStatus(viPatient patient, byte status)
         {
-            await service.UpdatePatientStatus(patient_id, status);
+            await service.UpdatePatientStatus(patient, status);
         }
 
-        [HttpGet("get_patients/{organization_id}")]
+        [HttpGet("get_users/{organization_id}")]
         public async Task<List<viPatient>> GetPateintsAsync(int organization_id)
         {
             return await service.GetAllPateintsAsync(organization_id);
         }
 
-        [HttpGet("{patient_id}")]
-        public async Task<viPatient> GetAll(int patient_id)
+        [HttpGet("{user_id}")]
+        public async Task<viPatient> GetAll(int user_id)
         {
-            return await service.GetPatientAsync(patient_id);
+            return await service.GetPatientAsync(user_id);
+        }
+
+        [HttpGet("get_all")]
+        public async Task<viPatient[]> GetUsers()
+        {
+            return await service.GetUsers();
         }
     }
 }

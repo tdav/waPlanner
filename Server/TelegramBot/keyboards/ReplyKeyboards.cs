@@ -58,8 +58,10 @@ namespace waPlanner.TelegramBot.keyboards
             ReplyKeyboardMarkup markup = new(
                 new[]
                 {
-                        new KeyboardButton[] { "Main", "Test" },
-                        new KeyboardButton[] { "Test", "Test" },
+                        new KeyboardButton[] { "Сделать бронь📄" },
+                        new KeyboardButton[] { "Избранное🌟", "Настройки🛠" },
+                        new KeyboardButton[] { "Оcтавить отзыв💌", "О нас💬" },
+                        new KeyboardButton[] { "Контакты📱" },
                 })
             {
                 ResizeKeyboard = true
@@ -67,6 +69,7 @@ namespace waPlanner.TelegramBot.keyboards
 
             return markup;
         }
+
         public static async Task<Message> RequestContactAsync(ITelegramBotClient bot, long chat_id)
         {
             ReplyKeyboardMarkup markup = new(
@@ -85,6 +88,17 @@ namespace waPlanner.TelegramBot.keyboards
             return await bot.SendTextMessageAsync(chat_id, "Отправьте ваш действительный номер телефона, " +
                         "нажав на кнопку <b>(Отправить номер телефона📞)</b> или введите в следующем типе: <b>+998 xx xxx xxx xxx</b>",
                         replyMarkup: markup, parseMode: ParseMode.Html); ;
+        }
+
+        public static ReplyKeyboardMarkup SendConfirmKeyboards()
+        {
+            ReplyKeyboardMarkup markup = new(
+                new[]
+                {
+                    new KeyboardButton[]{"Да✅", "Нет❌"}
+                })
+            { ResizeKeyboard = true };
+            return markup;
         }
     }
 }

@@ -11,10 +11,10 @@ namespace waPlanner.Services
     public interface ISpecializationService
     {
         Task AddSpecializationAsync(viSpecialization spec);
-        Task UpdateSpecializationAsync(int spec_id, viSpecialization spec);
+        Task UpdateSpecializationAsync(viSpecialization spec);
         Task<spSpecialization[]> GetSpecializationsAsync();
         Task<spSpecialization> GetSpecializationByIdAsync(int spec_id);
-        Task ChangeSpecializationStatus(int spec_id, int status);
+        Task ChangeSpecializationStatus(viSpecialization spec, int status);
     }
     public class SpecializationService: ISpecializationService
     {
@@ -40,9 +40,9 @@ namespace waPlanner.Services
             await db.SaveChangesAsync();
         }
 
-        public async Task UpdateSpecializationAsync(int spec_id, viSpecialization spec)
+        public async Task UpdateSpecializationAsync(viSpecialization spec)
         {
-            var specialization = await db.spSpecializations.FindAsync(spec_id);
+            var specialization = await db.spSpecializations.FindAsync(spec.Id);
 
             specialization.NameLt = spec.NameLt;
             specialization.NameRu = spec.NameRu;
@@ -68,9 +68,9 @@ namespace waPlanner.Services
                 .FirstAsync(x => x.Id == spec_id);
         }
 
-        public async Task ChangeSpecializationStatus(int spec_id, int status)
+        public async Task ChangeSpecializationStatus(viSpecialization spec, int status)
         {
-            var specialization = await db.spSpecializations.FindAsync(spec_id);
+            var specialization = await db.spSpecializations.FindAsync(spec.Id);
             specialization.UpdateDate = DateTime.Now;
             specialization.UpdateUser = 1;
             specialization.Status = status;

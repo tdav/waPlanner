@@ -11,8 +11,8 @@ namespace waPlanner.Services
     public interface IOrganizationService
     {
         Task InsertOrganizationAsync(viOrganization organization);
-        Task UpdateOrganizationAsync(int organization_id, viOrganization organziation);
-        Task UpdateOrganizationStatus(int organization_id, int status);
+        Task UpdateOrganizationAsync(viOrganization organziation);
+        Task UpdateOrganizationStatus(viOrganization organziation, int status);
         Task<spOrganization> GetOrgByIdAsync(int id);
         Task<spOrganization[]> GetAllOrgsAsync();
     }
@@ -49,9 +49,9 @@ namespace waPlanner.Services
 
 
         }
-        public async Task UpdateOrganizationAsync(int organization_id, viOrganization organization)
+        public async Task UpdateOrganizationAsync(viOrganization organization)
         {
-            var updatedOrganization = await db.spOrganizations.FindAsync(organization_id);
+            var updatedOrganization = await db.spOrganizations.FindAsync(organization.SpecializationId);
 
             if (organization.ChatId.HasValue)
                 updatedOrganization.ChatId = organization.ChatId.Value;
@@ -74,14 +74,15 @@ namespace waPlanner.Services
             await db.SaveChangesAsync();
         }
 
-        public async Task UpdateOrganizationStatus(int organization_id, int status)
+        public async Task UpdateOrganizationStatus(viOrganization viOrganziation, int status)
         {
-            var organiztion = await db.spOrganizations.FindAsync(organization_id);
+            var organiztion = await db.spOrganizations.FindAsync(viOrganziation.SpecializationId);
             organiztion.Status = status;
             organiztion.UpdateDate = DateTime.Now;
             organiztion.UpdateUser = 1;
             await db.SaveChangesAsync();
         }
+
         public async Task<spOrganization> GetOrgByIdAsync(int organization_id)
         {
             return await db.spOrganizations.AsNoTracking().FirstAsync(x => x.Status == 1 && x.Id == organization_id);

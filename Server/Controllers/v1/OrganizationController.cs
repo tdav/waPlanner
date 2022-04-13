@@ -25,16 +25,16 @@ namespace waPlanner.Controllers.v1
             await service.InsertOrganizationAsync(organization);
         }
 
-        [HttpPost("change_organization/{organization_id}")]
-        public async Task UpdateOrganizationA(int organization_id, viOrganization organziation)
+        [HttpPost("change_organization")]
+        public async Task UpdateOrganizationA(viOrganization organziation)
         {
-            await service.UpdateOrganizationAsync(organization_id, organziation);
+            await service.UpdateOrganizationAsync(organziation);
         }
 
-        [HttpPost("change_organization_status/{organization_id}/{status}")]
-        public async Task ChangeStatus(int organization_id, int status)
+        [HttpPost("change_organization_status/{status}")]
+        public async Task ChangeStatus(viOrganization organziation, int status)
         {
-            await service.UpdateOrganizationStatus(organization_id, status);
+            await service.UpdateOrganizationStatus(organziation, status);
         }
 
         [HttpGet("Id")]

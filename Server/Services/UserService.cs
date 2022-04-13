@@ -12,11 +12,12 @@ namespace waPlanner.Services
 {
     public interface IUserService
     {
-        Task UpdatePatient(int patient_id, viPatient patient);
-        Task UpdatePatientStatus(int patient_id, byte status);
+        Task UpdatePatient(viPatient patient);
+        Task UpdatePatientStatus(viPatient viPatient, byte status);
         Task AddPatientsAsync(viPatient patient);
         Task<List<viPatient>> GetAllPateintsAsync(int organization_id);
         Task<viPatient> GetPatientAsync(int user_id);
+        Task<viPatient[]> GetUsers();
     }
     public class UserService : IUserService
     {
@@ -26,9 +27,9 @@ namespace waPlanner.Services
             this.db = myDb;
         }
 
-        public async Task UpdatePatient(int patient_id, viPatient vipatient)
+        public async Task UpdatePatient(viPatient vipatient)
         {
-            var patient = await db.tbUsers.FindAsync(patient_id);
+            var patient = await db.tbUsers.FindAsync(vipatient.Id);
 
             if(vipatient.Phone is not null)
                 patient.PhoneNum = vipatient.Phone;
@@ -45,27 +46,19 @@ namespace waPlanner.Services
             if(vipatient is not null)
                 patient.Gender = vipatient.Gender;
 
-            if(vipatient.AdInfo is not null)
-                patient.AdInfo = vipatient.AdInfo;
-
             if(vipatient.BirthDay.HasValue)
                 patient.BirthDay = vipatient.BirthDay.Value;
 
-            if(vipatient.Password is not null)
-                patient.Password = vipatient.Password;
-
             if(vipatient.Status.HasValue)
                 patient.Status = vipatient.Status.Value;
-
-            patient.UserTypeId = (int)UserTypes.TELEGRAM_USER;
             patient.UpdateDate = DateTime.Now;
             patient.UpdateUser = 1;
             await db.SaveChangesAsync();    
         }
 
-        public async Task UpdatePatientStatus(int patient_id, byte status)
+        public async Task UpdatePatientStatus(viPatient viPatient, byte status)
         {
-            var patient = await db.tbUsers.FindAsync(patient_id);
+            var patient = await db.tbUsers.FindAsync(viPatient.Id);
             patient.Status = status;
             patient.UpdateDate = DateTime.Now;
             patient.UpdateUser = 1;
@@ -77,15 +70,14 @@ namespace waPlanner.Services
             var newPatient = new tbUser
             {
                 Name = patient.Name,
+                Surname = patient.Surname,
+                Patronymic = patient.Patronymic,
                 Gender = patient.Gender,
-                AdInfo = patient.AdInfo,
-                PhoneNum = patient.Phone,
-                Password = "123456",
-                UserTypeId = (int)UserTypes.TELEGRAM_USER,
                 BirthDay = patient.BirthDay,
                 TelegramId = 0,
                 CreateDate = DateTime.Now,
-                CreateUser = 1
+                CreateUser = 1,
+                Status = 1
             };
             await db.tbUsers.AddAsync(newPatient);
             await db.SaveChangesAsync();
@@ -96,15 +88,15 @@ namespace waPlanner.Services
             return await db.tbSchedulers
                 .Include(x => x.User)
                 .AsNoTracking()
-                .Where(x => x.User.UserTypeId == (int)UserTypes.TELEGRAM_USER && x.OrganizationId == organization_id)
+                .Where(x => x.OrganizationId == organization_id)
                 .Select(x => new viPatient
                 {
                     Id = x.User.Id,
                     Name = x.User.Name,
-                    AdInfo = x.AdInfo,
+                    AdInfo = x.AdInfo ?? "Нет данных",
                     Phone = x.User.PhoneNum,
                     BirthDay = x.User.BirthDay,
-                    Gender = x.User.Gender
+                    Gender = x.User.Gender ?? "Нет данных"
                 })
                 .ToListAsync();
         }
@@ -113,18 +105,36 @@ namespace waPlanner.Services
         {
             return await db.tbUsers
                 .AsNoTracking()
-                .Where(x => x.Id == user_id && x.UserTypeId == (int)UserTypes.TELEGRAM_USER)
+                .Where(x => x.Id == user_id)
                 .Select(x => new viPatient
                 {
+                    Id = x.Id,
                     Name = x.Name,
                     Patronymic = x.Patronymic,
                     Surname = x.Surname,
-                    Gender = x.Gender,
-                    AdInfo = x.Gender,
-                    Phone = x.PhoneNum,
+                    Gender = x.Gender ?? "Нет данных",
+                    Phone = x.PhoneNum ?? "Нет Данных",
                     BirthDay = x.BirthDay,
                 })
-                .FirstAsync();
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<viPatient[]> GetUsers()
+        {
+            return await db.tbUsers
+                .AsNoTracking()
+                .Where(x => x.Status == 1)
+                .Select(x => new viPatient
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Patronymic = x.Patronymic,
+                    Surname = x.Surname,
+                    Gender = x.Gender ?? "Нет данных",
+                    Phone = x.PhoneNum ?? "Нет Данных",
+                    BirthDay = x.BirthDay,
+                })
+                .ToArrayAsync();
         }
     }
 }

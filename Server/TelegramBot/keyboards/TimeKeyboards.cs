@@ -64,12 +64,10 @@ namespace waPlanner.TelegramBot.keyboards
                         await bot.EditMessageTextAsync(chat_id, call.Message.MessageId, $"Выбрано время:<b>{data[1]}</b>", parseMode: ParseMode.Html);
                         if (await DbManipulations.CheckUser(chat_id, db))
                         {
-                            List<IdValue> services = await DbManipulations.SendSpecializations(db);
-                            var servicesButtons = ReplyKeyboards.SendKeyboards(services);
-                            ReplyKeyboardMarkup reply = new(servicesButtons) { ResizeKeyboard = true };
-                            await bot.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора", replyMarkup: reply);
+                            await bot.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора");
+                            await bot.SendTextMessageAsync(chat_id, "Хотите выбранного специалиста в избранное?", replyMarkup: ReplyKeyboards.SendConfirmKeyboards());
                             await DbManipulations.RegistrateUserPlanner(chat_id, cache, db);
-                            cache.State = PlannerStates.NONE;
+                            cache.State = PlannerStates.ADD_FAVORITES;
                             break;
                         }
                         else
@@ -78,7 +76,6 @@ namespace waPlanner.TelegramBot.keyboards
                             await ReplyKeyboards.RequestContactAsync(bot, chat_id);
                             break;
                         }
-
                     }
                 default:
                     {

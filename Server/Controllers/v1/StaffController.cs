@@ -40,15 +40,15 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpPost("change_status/{staff_id}/{status}")]
-        public async Task ChagneStaffStatus(int staff_id, byte status)
+        public async Task ChagneStaffStatus(viStaff staff, byte status)
         {
-            await service.UpdateStaffStatus(staff_id, status);
+            await service.UpdateStaffStatus(staff, status);
         }
 
-        [HttpPost("change_staff_info/{staff_id}")]
-        public async Task ChangeStaff(int staff_id, viStaff staff)
+        [HttpPost("change_staff_info")]
+        public async Task ChangeStaff(viStaff staff)
         {
-            await service.UpdateStaff(staff_id, staff);
+            await service.UpdateStaff(staff);
         }
         
         [HttpGet("get_staff_by_id/{staff_id}")]
