@@ -121,7 +121,7 @@ namespace waPlanner.TelegramBot.Utils
         }
 
         public static async Task<viStaffOrganizationId> GetStaffIdByName(MyDbContext db, string name)
-        {
+        {            
             var snp = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             var stuff = await db.tbStaffs
                 .AsNoTracking()

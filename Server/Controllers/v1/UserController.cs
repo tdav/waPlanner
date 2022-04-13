@@ -24,31 +24,31 @@ namespace waPlanner.Controllers.v1
         [HttpPost("add_new_user")]
         public async Task AddNewPatient(viPatient patient)
         {
-            await service.AddPatientsAsync(patient);
+            await service.AddAsync(patient);
         }
 
         [HttpPost("change_user")]
         public async Task UpdatePatient(viPatient patient)
         {
-            await service.UpdatePatient(patient);
+            await service.UpdateAsync(patient);
         }
 
         [HttpPost("change_user_status/{status}")]
         public async Task UpdatePatientStatus(viPatient patient, byte status)
         {
-            await service.UpdatePatientStatus(patient, status);
+            await service.SetStatusAsync(patient, status);
         }
 
         [HttpGet("get_users/{organization_id}")]
         public async Task<List<viPatient>> GetPateintsAsync(int organization_id)
         {
-            return await service.GetAllPateintsAsync(organization_id);
+            return await service.GetAllAsync(organization_id);
         }
 
         [HttpGet("{user_id}")]
         public async Task<viPatient> GetAll(int user_id)
         {
-            return await service.GetPatientAsync(user_id);
+            return await service.GetAsync(user_id);
         }
 
         [HttpGet("get_all")]

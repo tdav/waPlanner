@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -21,7 +22,14 @@ namespace waPlanner.Controllers.v1
             this.service = service;
         }
 
-        [HttpGet("get_stuffs_by_organization_id/{organization_id}")]
+        [AllowAnonymous]
+        [HttpPost("token")]
+        public ValueTask<Answer<TokenModel>> TokenAsync(LoginModel value)
+        {
+            return service.TokenAsync(value);
+        }
+
+        [HttpGet("get-by-organization_id/{organization_id}")]
         public  Task<List<viStaff>> GetStuffById(int organization_id)
         {
             return service.GetStaffByOrganizationId(organization_id);

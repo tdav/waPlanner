@@ -12,6 +12,7 @@ namespace waPlanner.Database
         #region dbSet
         public DbSet<spCategory> spCategories { get; set; }
         public DbSet<spOrganization> spOrganizations { get; set; }
+        public DbSet<spRole> spRoles { get; set; }
         public DbSet<spSpecialization> spSpecializations{ get; set; }
         public DbSet<spUserType> spUserTypes { get; set; }
         public DbSet<tbFavorites> tbFavorites { get; set; }
@@ -33,71 +34,7 @@ namespace waPlanner.Database
                 options.EnableDetailedErrors();
             }
         }
-
-        #region Audit Base Model
-        //public override int SaveChanges(bool acceptAllChangesOnSuccess)
-        //{
-        //    AuditEvent();
-        //    return base.SaveChanges(acceptAllChangesOnSuccess);
-        //}
-        //public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
-        //{
-        //    AuditEvent();
-        //    return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-        //}
-        //public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        //{
-        //    AuditEvent();
-        //    return base.SaveChangesAsync(cancellationToken);
-        //}
-        //public override int SaveChanges()
-        //{
-        //    AuditEvent();
-        //    return base.SaveChanges();
-        //}
-
-        //public int GetId()
-        //{
-        //    //var user = accessor.HttpContext.User.FindFirst(ClaimTypes.Sid);
-        //    //if (user == null)
-        //    //    return 1;  //Это когда новый пользователи
-        //    //else
-        //    //    return user.Value.ToInt();
-
-        //    return 1;
-        //}
-
-        //private void AuditEvent()
-        //{
-        //    ChangeTracker.DetectChanges();
-
-        //    var addList = ChangeTracker.Entries().Where(x => x.State == EntityState.Added);
-
-        //    var UserId = GetId();
-
-        //    foreach (var item in addList)
-        //    {
-        //        if (item.Entity is IBaseModel entity)
-        //        {
-        //            entity.Status = 1;
-        //            entity.CreateUser = UserId;
-        //            entity.CreateDate = DateTime.Now;
-        //        }
-        //    }
-
-        //    var updateList = ChangeTracker.Entries().Where(x => x.State == EntityState.Modified);
-
-        //    foreach (var item in updateList)
-        //    {
-        //        if (item.Entity is IBaseModel entity)
-        //        {
-        //            entity.UpdateUser = UserId;
-        //            entity.UpdateDate = DateTime.Now;
-        //        }
-        //    }
-        //}
-        #endregion
-
+ 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

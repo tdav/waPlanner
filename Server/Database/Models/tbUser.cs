@@ -6,12 +6,7 @@ using waPlanner.ModelViews;
 
 namespace waPlanner.Database.Models
 {
-    /// <summary>
-    /// Пользователь системы
-    /// Продавец 
-    /// Доставщик
-    /// Потребитель
-    /// </summary>
+    
     public class tbUser : BaseModel
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -27,14 +22,19 @@ namespace waPlanner.Database.Models
 
         [StringLength(100)]
         public string Patronymic { get; set; }
-         
-        [IndexColumn]
-        [StringLength(20)]
-        public string PhoneNum { get; set; }
-        public DateTime? BirthDay { get; set; }
-        public long? TelegramId { get; set; }
 
         [StringLength(20)]
         public string Gender { get; set; }
+        
+        public DateTime? BirthDay { get; set; }
+
+        [IndexColumn]
+        [StringLength(20)]
+        public string PhoneNum { get; set; }
+
+        public long? TelegramId { get; set; }
+
+        [StringLength(256)]
+        public string PhotoUrl { get; set; }
     }
 }

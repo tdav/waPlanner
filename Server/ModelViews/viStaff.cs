@@ -17,8 +17,8 @@ namespace waPlanner.ModelViews
         public int? OrganizationId { get; set; }
         public string Organization { get; set; }
 
-        public int UserTypeId { get; set; }
-        public string UserType { get; set; }
+        public int RoleId { get; set; }
+        public string Role { get; set; }
 
         public long? TelegramId { get; set; }
         public bool? Online { get; set; }

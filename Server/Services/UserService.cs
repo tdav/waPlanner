@@ -12,13 +12,14 @@ namespace waPlanner.Services
 {
     public interface IUserService
     {
-        Task UpdatePatient(viPatient patient);
-        Task UpdatePatientStatus(viPatient viPatient, byte status);
-        Task AddPatientsAsync(viPatient patient);
-        Task<List<viPatient>> GetAllPateintsAsync(int organization_id);
-        Task<viPatient> GetPatientAsync(int user_id);
-        Task<viPatient[]> GetUsers();
+        Task UpdateAsync(viPatient patient);
+        Task SetStatusAsync(viPatient viPatient, byte status);
+        Task AddAsync(viPatient patient);
+
+        Task<List<viPatient>> GetAllAsync(int organization_id);
+        Task<viPatient> GetAsync(int user_id);        
     }
+
     public class UserService : IUserService
     {
         private readonly MyDbContext db;
@@ -27,7 +28,7 @@ namespace waPlanner.Services
             this.db = myDb;
         }
 
-        public async Task UpdatePatient(viPatient vipatient)
+        public async Task UpdateAsync(viPatient vipatient)
         {
             var patient = await db.tbUsers.FindAsync(vipatient.Id);
 
@@ -56,7 +57,7 @@ namespace waPlanner.Services
             await db.SaveChangesAsync();    
         }
 
-        public async Task UpdatePatientStatus(viPatient viPatient, byte status)
+        public async Task SetStatusAsync(viPatient viPatient, byte status)
         {
             var patient = await db.tbUsers.FindAsync(viPatient.Id);
             patient.Status = status;
@@ -65,7 +66,7 @@ namespace waPlanner.Services
             await db.SaveChangesAsync();
         }
 
-        public async Task AddPatientsAsync(viPatient patient)
+        public async Task<int> AddPatientsAsync(viPatient patient)
         {
             var newPatient = new tbUser
             {
@@ -81,9 +82,11 @@ namespace waPlanner.Services
             };
             await db.tbUsers.AddAsync(newPatient);
             await db.SaveChangesAsync();
+
+            return newPatient.Id;
         }
 
-        public async Task<List<viPatient>> GetAllPateintsAsync(int organization_id)
+        public async Task<List<viPatient>> GetAllAsync(int organization_id)
         {
             return await db.tbSchedulers
                 .Include(x => x.User)
@@ -101,7 +104,7 @@ namespace waPlanner.Services
                 .ToListAsync();
         }
 
-        public async Task<viPatient> GetPatientAsync(int user_id)
+        public async Task<viPatient> GetAsync(int user_id)
         {
             return await db.tbUsers
                 .AsNoTracking()

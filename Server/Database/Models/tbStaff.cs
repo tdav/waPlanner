@@ -5,9 +5,13 @@ using waPlanner.ModelViews;
 
 namespace waPlanner.Database.Models
 {
-    public class tbStaff: BaseModel
+    /// <summary>
+    /// Тизим фойдаланувчилар (Доктор, Официант)
+    /// </summary>
+    public class tbStaff : BaseModel
     {
-         public int Id { get; set; }
+        public int Id { get; set; }
+
         [Required]
         [StringLength(100)]
         public string Surname { get; set; }
@@ -19,19 +23,23 @@ namespace waPlanner.Database.Models
         [StringLength(100)]
         public string Patronymic { get; set; }
 
-        [IndexColumn]
+        [IndexColumn(IsUnique =true)]
         [StringLength(20)]
         public string PhoneNum { get; set; }
 
         [IndexColumn]
         [Required]
         [StringLength(50)]
-        public string? Password { get; set; }
+        public string Password { get; set; }
 
         public DateTime? BirthDay { get; set; }
 
+        [StringLength(20)]
+        public string Gender { get; set; }
+
         [Required]
-        public int UserTypeId { get; set; }
+        public int RoleId { get; set; }
+        public virtual spRole Role { get; set; }
 
         public int? CategoryId { get; set; }
 
@@ -50,13 +58,10 @@ namespace waPlanner.Database.Models
         public int[] Availability { get; set; }
 
         [StringLength(256)]
-        public string Photo { get; set; }
+        public string PhotoUrl { get; set; }
 
         [StringLength(150)]
         public string AdInfo { get; set; }
-
-        [StringLength(20)]
-        public string Gender { get; set; }
 
 
     }
