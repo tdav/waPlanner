@@ -1,10 +1,10 @@
 ﻿namespace waPlanner.TelegramBot
 {
-    public enum UserTypes
+    public enum UserRoles
     {
-        STAFF = 1,
-        TELEGRAM_USER = 2,
-        SYSTEM_USER = 3
+        SUPER_ADMIN = 1,
+        ADMIN = 2,
+        STAFF = 3,
     }
     public enum PlannerStates
     {

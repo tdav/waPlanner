@@ -50,11 +50,5 @@ namespace waPlanner.Controllers.v1
         {
             return await service.GetAsync(user_id);
         }
-
-        [HttpGet("get_all")]
-        public async Task<viPatient[]> GetUsers()
-        {
-            return await service.GetUsers();
-        }
     }
 }

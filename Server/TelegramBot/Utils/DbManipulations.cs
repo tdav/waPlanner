@@ -136,7 +136,7 @@ namespace waPlanner.TelegramBot.Utils
             return await db.tbStaffs
                          .AsNoTracking()
                          .Include(i => i.Category)
-                         .Where(x => x.UserTypeId == (int)UserTypes.STAFF && x.Category.NameUz == category)
+                         .Where(x => x.RoleId == (int)UserRoles.STAFF && x.Category.NameUz == category)
                          .Select(x => new IdValue { Id = x.Id, Name = $"{x.Surname} {x.Name} {x.Patronymic}" })
                          .ToListAsync();
         }
@@ -146,7 +146,7 @@ namespace waPlanner.TelegramBot.Utils
             var list = await db.tbStaffs
                          .AsNoTracking()
                          .Include(i => i.Category)
-                         .Where(x => x.UserTypeId == (int)UserTypes.STAFF && x.Category.NameUz == category)
+                         .Where(x => x.RoleId == (int)UserRoles.STAFF && x.Category.NameUz == category)
                          .Select(x => new IdValue { Id = x.Id, Name = $"{x.Surname} {x.Name} {x.Patronymic}" })
                          .ToListAsync();
             return list.Any(x => x.Name == value);

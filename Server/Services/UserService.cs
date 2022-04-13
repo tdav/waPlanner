@@ -14,7 +14,7 @@ namespace waPlanner.Services
     {
         Task UpdateAsync(viPatient patient);
         Task SetStatusAsync(viPatient viPatient, byte status);
-        Task AddAsync(viPatient patient);
+        Task<int> AddAsync(viPatient patient);
 
         Task<List<viPatient>> GetAllAsync(int organization_id);
         Task<viPatient> GetAsync(int user_id);        
@@ -66,7 +66,7 @@ namespace waPlanner.Services
             await db.SaveChangesAsync();
         }
 
-        public async Task<int> AddPatientsAsync(viPatient patient)
+        public async Task<int> AddAsync(viPatient patient)
         {
             var newPatient = new tbUser
             {
@@ -120,24 +120,6 @@ namespace waPlanner.Services
                     BirthDay = x.BirthDay,
                 })
                 .FirstOrDefaultAsync();
-        }
-
-        public async Task<viPatient[]> GetUsers()
-        {
-            return await db.tbUsers
-                .AsNoTracking()
-                .Where(x => x.Status == 1)
-                .Select(x => new viPatient
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    Patronymic = x.Patronymic,
-                    Surname = x.Surname,
-                    Gender = x.Gender ?? "Нет данных",
-                    Phone = x.PhoneNum ?? "Нет Данных",
-                    BirthDay = x.BirthDay,
-                })
-                .ToArrayAsync();
         }
     }
 }
