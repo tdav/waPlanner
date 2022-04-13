@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
+using waPlanner.Extensions;
 using waPlanner.ModelViews;
 
 namespace waPlanner.Services
@@ -22,10 +23,11 @@ namespace waPlanner.Services
     public class CategoryService : ICategoryService
     {
         private readonly MyDbContext db;
-
-        public CategoryService(MyDbContext db)
+        private readonly IHttpContextAccessorExtensions accessor;
+        public CategoryService(MyDbContext db, IHttpContextAccessorExtensions accessor)
         {
             this.db = db;
+            this.accessor = accessor;
         }
 
         public async Task<viCategory> GetCategoryByIdAsync(int category_id)
@@ -117,6 +119,9 @@ namespace waPlanner.Services
         }
         public async Task<List<spCategory>> GetAllCategories()
         {
+
+            var uid = accessor.GetId();
+
             return await db.spCategories
                 .AsNoTracking()
                 .ToListAsync();

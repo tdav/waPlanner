@@ -32,6 +32,8 @@ namespace waPlanner
             var section = conf.GetSection("SystemVars");
             services.Configure<Vars>(section);
 
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<IHttpContextAccessorExtensions, HttpContextAccessorExtensions>();
 
             services.AddCompression(options => { options.Compressors = new List<ICompressor> { new GZipCompressor(CompressionLevel.Fastest), new DeflateCompressor(CompressionLevel.Fastest), new BrotliCompressor(CompressionLevel.Fastest) }; });
 

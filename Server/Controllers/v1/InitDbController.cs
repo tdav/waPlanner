@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
+using waPlanner.Utils;
 
 namespace waPlanner.Controllers.v1
 {
@@ -40,13 +41,28 @@ namespace waPlanner.Controllers.v1
 
                 #endregion
 
+                #region Add User
+                db.tbStaffs.Add(new tbStaff()
+                {
+                    Id = 1,
+                    BirthDay = DateTime.Now,
+                    CategoryId = 1,
+                    Gender = "1",
+                    PhoneNum = "string",
+                    Password = CHash.EncryptMD5("string"),
+                    Name = "Admin", Status = 1, CreateDate = DateTime.Now, CreateUser = 1 });
 
-                await tran.CommitAsync();
-            }
+            await db.SaveChangesAsync();
+
+            #endregion
+
+
+            await tran.CommitAsync();
+        }
             catch (Exception ee)
             {
                 await tran.RollbackAsync();
-                logger.LogError($"InitDbController.Post Error:{ee.Message}");
+        logger.LogError($"InitDbController.Post Error:{ee.Message}");
                 return "Error";
             }
 

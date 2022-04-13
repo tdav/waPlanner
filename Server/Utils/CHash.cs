@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace AsbtCore.UtilsV2
+namespace waPlanner.Utils
 {
     public static class CHash
     {

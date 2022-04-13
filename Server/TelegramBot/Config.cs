@@ -1,4 +1,4 @@
-﻿namespace waPlanner
+﻿namespace waPlanner.TelegramBot
 {
     public struct Config
     {

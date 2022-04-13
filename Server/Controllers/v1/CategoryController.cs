@@ -16,7 +16,7 @@ namespace waPlanner.Controllers.v1
     [SwaggerTag("Категория")]
     public class CategoryController : ControllerBase
     {
-        private readonly ICategoryService service;
+        private readonly ICategoryService service;        
 
         public CategoryController(ICategoryService service)
         {
@@ -32,6 +32,7 @@ namespace waPlanner.Controllers.v1
         [HttpGet("get_by_organization/{organization_id}")]
         public async Task<List<viCategory>> GetAll(int organization_id)
         {
+
             return await service.GetAllCategoryByOrgAsync(organization_id);
         }
 

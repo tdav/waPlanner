@@ -7,12 +7,12 @@ using waPlanner.ModelViews;
 using waPlanner.Database.Models;
 using waPlanner.TelegramBot;
 using System;
-using AsbtCore.UtilsV2;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Extensions.Configuration;
+using waPlanner.Utils;
 
 namespace waPlanner.Services
 {
@@ -21,10 +21,11 @@ namespace waPlanner.Services
         Task<List<viStaff>> GetStaffByOrganizationId(int organization_id);
         Task AddStaffAsync(viStaff user, int organization_id);
         Task<List<IdValue>> GetStuffList(int organization_id);
-        Task UpdateStaffStatus(viStaff staff, byte status);
+        Task SetStatusAsync(viStaff staff, byte status);
         Task UpdateStaff(viStaff staff);
         Task<viStaff> GetStaffById(int staff_id);
         ValueTask<Answer< TokenModel>> TokenAsync(LoginModel value);
+        ValueTask<AnswerBasic> ChangePaswwordAsync(ChangePasswordModel value);
     }
 
     public class StaffService: IStaffService
@@ -80,20 +81,21 @@ namespace waPlanner.Services
             newStaff.PhoneNum = staff.PhoneNum;
             newStaff.BirthDay = staff.BirthDay;
             newStaff.PhotoUrl = staff.Photo;
-            newStaff.RoleId = (int)UserRoles.STAFF;
+            newStaff.RoleId = 2;
             newStaff.CategoryId = staff.CategoryId;
 
             if (staff.OrganizationId != 0)
                 newStaff.OrganizationId = organization_id;
             else
                 newStaff.OrganizationId = 1;
+
             newStaff.TelegramId = staff.TelegramId;
             newStaff.Experience = staff.Experience;
             newStaff.Availability = staff.Availability;
             newStaff.CreateDate = DateTime.Now;
             newStaff.Gender = staff.Gender;
             newStaff.CreateUser = 1;
-            newStaff.Password = "123456";
+            newStaff.Password = CHash.EncryptMD5("123456"); ;
             newStaff.Status = 1;
 
             await db.tbStaffs.AddAsync(newStaff);
@@ -113,7 +115,7 @@ namespace waPlanner.Services
                            ).ToListAsync();
         }
 
-        public async Task UpdateStaffStatus(viStaff staff, byte status)
+        public async Task SetStatusAsync(viStaff staff, byte status)
         {
             var sh = await db.tbUsers.FindAsync(staff.Id);
             sh.Status = status;
@@ -244,5 +246,10 @@ namespace waPlanner.Services
 
             return modelToken;   
     }
-}
+
+        public ValueTask<AnswerBasic> ChangePaswwordAsync(ChangePasswordModel value)
+        {
+            return new AnswerBasic(true, "");
+        }
+    }
 }

@@ -51,7 +51,7 @@ namespace waPlanner.Controllers.v1
         [HttpPost("change_status/{staff_id}/{status}")]
         public async Task ChagneStaffStatus(viStaff staff, byte status)
         {
-            await service.UpdateStaffStatus(staff, status);
+            await service.SetStatusAsync(staff, status);
         }
 
         [HttpPost("change_staff_info")]
