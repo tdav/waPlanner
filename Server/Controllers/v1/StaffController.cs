@@ -9,10 +9,11 @@ using waPlanner.Services;
 
 namespace waPlanner.Controllers.v1
 {
-    [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     [ApiVersion("1.0")]
     [SwaggerTag("Персонал")]
+    [Route("api/[controller]")]
     public class StaffController: ControllerBase
     {
         private readonly IStaffService service;

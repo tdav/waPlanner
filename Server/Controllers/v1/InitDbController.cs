@@ -23,6 +23,8 @@ namespace waPlanner.Controllers.v1
             this.logger = logger;
         }
 
+
+#if DEBUG
         [HttpPost]
         public async ValueTask<string> Post([FromServices] MyDbContext db)
         {
@@ -50,5 +52,7 @@ namespace waPlanner.Controllers.v1
 
             return "OK";
         }
+#endif
+
     }
 }

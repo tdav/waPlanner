@@ -1,17 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using waPlanner.Database.Models;
 using waPlanner.ModelViews;
 using waPlanner.Services;
 
 namespace waPlanner.Controllers.v1
 {
-    [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     [ApiVersion("1.0")]
     [SwaggerTag("Пользователи")]
+    [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
         private readonly IUserService service;

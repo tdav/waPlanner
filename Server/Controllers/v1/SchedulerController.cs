@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Collections.Generic;
@@ -9,10 +10,11 @@ using waPlanner.Services;
 
 namespace waPlanner.Controllers.v1
 {
-    [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     [ApiVersion("1.0")]
     [SwaggerTag("Расписание")]
+    [Route("api/[controller]")]
     public class SchedulerController : ControllerBase
     {
         private readonly ISchedulerService service;

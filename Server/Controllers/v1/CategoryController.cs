@@ -9,6 +9,7 @@ using waPlanner.Services;
 
 namespace waPlanner.Controllers.v1
 {
+    [Authorize]
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/[controller]")]
