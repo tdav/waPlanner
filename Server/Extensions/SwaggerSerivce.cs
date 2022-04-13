@@ -82,22 +82,18 @@ namespace waPlanner.Extensions
         public static void AddMySwagger(this IServiceCollection services)
         {
             services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-
-
-
             services.AddSwaggerGen(c =>
             {
                 c.EnableAnnotations();
                 c.OperationFilter<SwaggerDefaultValues>();
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
                     Description = "Токен куйиш тартиби (Bearer <token>)",
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.ApiKey
                 });
-
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
                         new OpenApiSecurityScheme
@@ -105,19 +101,12 @@ namespace waPlanner.Extensions
                             Reference = new OpenApiReference
                             {
                                 Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
+                                Id = "Bearer",
                             },
-                            Scheme = "oauth2",
-                            Name = "Bearer",
-                            In = ParameterLocation.Header,
-
-                        },
-                        new List<string>()
-                    }
+                        }, new List<string>()
+                    },
                 });
             });
-
-            services.AddSwaggerGenNewtonsoftSupport();
         }
 
         public static void UseMySwagger(this IApplicationBuilder app, IApiVersionDescriptionProvider provider)
@@ -127,7 +116,7 @@ namespace waPlanner.Extensions
             {
                 foreach (var description in provider.ApiVersionDescriptions)
                 {
-                    // c.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
+                    c.EnablePersistAuthorization();
                     c.DefaultModelExpandDepth(2);
                     c.DefaultModelRendering(ModelRendering.Model);
                     c.DefaultModelsExpandDepth(-1);
