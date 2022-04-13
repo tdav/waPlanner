@@ -80,7 +80,7 @@ namespace waPlanner.Services
             newStaff.PhoneNum = staff.PhoneNum;
             newStaff.BirthDay = staff.BirthDay;
             newStaff.PhotoUrl = staff.Photo;
-            newStaff.RoleId = 2;
+            newStaff.RoleId = (int)UserRoles.STAFF;
             newStaff.CategoryId = staff.CategoryId;
 
             if (staff.OrganizationId != 0)
@@ -174,7 +174,7 @@ namespace waPlanner.Services
                     Name = x.Name,
                     Surname = x.Surname,
                     BirthDay = x.BirthDay,
-                    PhoneNum = x.PhoneNum ?? "Нет данных",
+                    PhoneNum = x.PhoneNum,
                     Patronymic = x.Patronymic,
                     TelegramId = x.TelegramId,
                     Online = x.Online,
@@ -186,14 +186,13 @@ namespace waPlanner.Services
                     Category = x.Category.NameUz,
                     RoleId = x.RoleId,
                     Photo = x.PhotoUrl,
-                    Gender = x.Gender ?? "Нет данных"
+                    Gender = x.Gender
                 }
                 ).FirstOrDefaultAsync();
         }
 
         public async ValueTask<Answer<TokenModel>> TokenAsync(LoginModel value)
-        {
-            
+        {            
             var hash_pasw = CHash.EncryptMD5(value.password);
             var user = await db.tbStaffs.FirstOrDefaultAsync(x => x.PhoneNum == value.phoneNum && x.Password == hash_pasw);
             if (user != null)

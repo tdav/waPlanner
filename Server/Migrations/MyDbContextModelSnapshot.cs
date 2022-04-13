@@ -156,6 +156,46 @@ namespace waPlanner.Migrations
                     b.ToTable("sp_organizations", (string)null);
                 });
 
+            modelBuilder.Entity("waPlanner.Database.Models.spRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("create_date");
+
+                    b.Property<int>("CreateUser")
+                        .HasColumnType("integer")
+                        .HasColumnName("create_user");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("update_date");
+
+                    b.Property<int?>("UpdateUser")
+                        .HasColumnType("integer")
+                        .HasColumnName("update_user");
+
+                    b.HasKey("Id")
+                        .HasName("pk_sp_roles");
+
+                    b.ToTable("sp_roles", (string)null);
+                });
+
             modelBuilder.Entity("waPlanner.Database.Models.spSpecialization", b =>
                 {
                     b.Property<int>("Id")
@@ -216,56 +256,6 @@ namespace waPlanner.Migrations
                         .HasDatabaseName("ix_sp_specializations_name_uz");
 
                     b.ToTable("sp_specializations", (string)null);
-                });
-
-            modelBuilder.Entity("waPlanner.Database.Models.spUserType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreateDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("create_date");
-
-                    b.Property<int>("CreateUser")
-                        .HasColumnType("integer")
-                        .HasColumnName("create_user");
-
-                    b.Property<string>("NameLt")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("name_lt");
-
-                    b.Property<string>("NameRu")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("name_ru");
-
-                    b.Property<string>("NameUz")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("name_uz");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
-                        .HasColumnName("status");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("update_date");
-
-                    b.Property<int?>("UpdateUser")
-                        .HasColumnType("integer")
-                        .HasColumnName("update_user");
-
-                    b.HasKey("Id")
-                        .HasName("pk_sp_user_types");
-
-                    b.ToTable("sp_user_types", (string)null);
                 });
 
             modelBuilder.Entity("waPlanner.Database.Models.tbFavorites", b =>
@@ -473,10 +463,14 @@ namespace waPlanner.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("phone_num");
 
-                    b.Property<string>("Photo")
+                    b.Property<string>("PhotoUrl")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)")
-                        .HasColumnName("photo");
+                        .HasColumnName("photo_url");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("role_id");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer")
@@ -500,10 +494,6 @@ namespace waPlanner.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("update_user");
 
-                    b.Property<int>("UserTypeId")
-                        .HasColumnType("integer")
-                        .HasColumnName("user_type_id");
-
                     b.HasKey("Id")
                         .HasName("pk_tb_staffs");
 
@@ -517,7 +507,11 @@ namespace waPlanner.Migrations
                         .HasDatabaseName("ix_tb_staffs_password");
 
                     b.HasIndex("PhoneNum")
+                        .IsUnique()
                         .HasDatabaseName("ix_tb_staffs_phone_num");
+
+                    b.HasIndex("RoleId")
+                        .HasDatabaseName("ix_tb_staffs_role_id");
 
                     b.ToTable("tb_staffs", (string)null);
                 });
@@ -563,6 +557,11 @@ namespace waPlanner.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("phone_num");
+
+                    b.Property<string>("PhotoUrl")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("photo_url");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer")
@@ -700,9 +699,18 @@ namespace waPlanner.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_tb_staffs_sp_organizations_organization_id");
 
+                    b.HasOne("waPlanner.Database.Models.spRole", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_tb_staffs_sp_roles_role_id");
+
                     b.Navigation("Category");
 
                     b.Navigation("Organization");
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("waPlanner.Database.Models.spOrganization", b =>

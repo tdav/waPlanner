@@ -218,18 +218,19 @@ namespace waPlanner.TelegramBot.handlers
                     }
                 case PlannerStates.ADD_FAVORITES:
                     {
-                        cache.State = PlannerStates.NONE;
+
                         if (msg == "Нет❌")
                         {
-                            break;
+
                         }
+                        
                         if(msg == "Да✅")
                         {
                             await DbManipulations.AddToFavorites(db, cache, chat_id);
-                            await Bot_.SendTextMessageAsync(chat_id, $"Специалист <b>{cache.Stuff}</b> был добавлен в избранное", parseMode: ParseMode.Html);
-                            await Bot_.SendTextMessageAsync(chat_id, "Что пожелаете?☺️", replyMarkup: ReplyKeyboards.MainMenu());
-                            return;
+                            await Bot_.SendTextMessageAsync(chat_id, $"Специалист <b>{cache.Stuff}</b> добавлен в избранное", parseMode: ParseMode.Html);
                         }
+                        cache.State = PlannerStates.NONE;
+                        await Bot_.SendTextMessageAsync(chat_id, "Что пожелаете?☺️", replyMarkup: ReplyKeyboards.MainMenu());
                         break;
                     }
                 default:

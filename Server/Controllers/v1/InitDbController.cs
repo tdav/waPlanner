@@ -12,7 +12,7 @@ namespace waPlanner.Controllers.v1
     [Authorize]
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [SwaggerTag("Фойдаланувчилар тури")]
     public class InitDbController : ControllerBase
     {
@@ -32,8 +32,8 @@ namespace waPlanner.Controllers.v1
             {
 
                 #region Add Roles
-                db.spRoles.Add(new spRole() { Id = 1, Name = "Admin", Status = 1, CreateDate = DateTime.Now, CreateUser = 1 });
-                db.spRoles.Add(new spRole() { Id = 2, Name = "User", Status = 1, CreateDate = DateTime.Now, CreateUser = 1 });
+                db.spRoles.Add(new spRole() { Id = 2, Name = "Admin", Status = 1, CreateDate = DateTime.Now, CreateUser = 1 });
+                db.spRoles.Add(new spRole() { Id = 3, Name = "User", Status = 1, CreateDate = DateTime.Now, CreateUser = 1 });
                 await db.SaveChangesAsync();
 
                 #endregion
@@ -47,7 +47,6 @@ namespace waPlanner.Controllers.v1
                 logger.LogError($"InitDbController.Post Error:{ee.Message}");
                 return "Error";
             }
-
 
             return "OK";
         }
