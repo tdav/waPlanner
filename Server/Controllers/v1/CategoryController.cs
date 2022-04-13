@@ -12,7 +12,7 @@ namespace waPlanner.Controllers.v1
     [Authorize]
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [SwaggerTag("Категория")]
     public class CategoryController : ControllerBase
     {
@@ -29,11 +29,11 @@ namespace waPlanner.Controllers.v1
             return await service.GetCategoryByIdAsync(category_id);
         }
 
-        [HttpGet("get_by_organization/{organization_id}")]
-        public async Task<List<viCategory>> GetAll(int organization_id)
+        [HttpGet("get_all_categories")]
+        public async Task<viCategory[]> GetAll()
         {
 
-            return await service.GetAllCategoryByOrgAsync(organization_id);
+            return await service.GetAllCategoriesAsync();
         }
 
         [HttpPost]
@@ -42,7 +42,7 @@ namespace waPlanner.Controllers.v1
             await service.AddCategoryAsync(value);
         }
 
-        [HttpPost("change_category")]
+        [HttpPost("change")]
         public async Task Update([FromBody] viCategory value)
         {
             await service.UpdateAsync(value);
@@ -52,12 +52,6 @@ namespace waPlanner.Controllers.v1
         public async Task ChangeCategoryStatus([FromBody] viCategory value, int status)
         {
             await service.ChangeCategoryStatus(value, status);
-        }
-
-        [HttpGet]
-        public async Task<List<spCategory>> GetAllCats()
-        {
-            return await service.GetAllCategories();
         }
     }
 }

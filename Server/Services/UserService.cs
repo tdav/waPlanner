@@ -5,26 +5,28 @@ using System.Linq;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
+using waPlanner.Extensions;
 using waPlanner.ModelViews;
-using waPlanner.TelegramBot;
 
 namespace waPlanner.Services
 {
     public interface IUserService
     {
         Task UpdateAsync(viPatient patient);
-        Task SetStatusAsync(viPatient viPatient, byte status);
+        Task SetStatusAsync(viPatient viPatient, int status);
         Task<int> AddAsync(viPatient patient);
 
-        Task<List<viPatient>> GetAllAsync(int organization_id);
+        Task<viPatient[]> GetAllAsync();
         Task<viPatient> GetAsync(int user_id);        
     }
 
     public class UserService : IUserService
     {
         private readonly MyDbContext db;
-        public UserService(MyDbContext myDb)
+        private readonly IHttpContextAccessorExtensions accessor;
+        public UserService(MyDbContext myDb, IHttpContextAccessorExtensions accessor)
         {
+            this.accessor = accessor;
             this.db = myDb;
         }
 
@@ -57,7 +59,7 @@ namespace waPlanner.Services
             await db.SaveChangesAsync();    
         }
 
-        public async Task SetStatusAsync(viPatient viPatient, byte status)
+        public async Task SetStatusAsync(viPatient viPatient, int status)
         {
             var patient = await db.tbUsers.FindAsync(viPatient.Id);
             patient.Status = status;
@@ -68,6 +70,7 @@ namespace waPlanner.Services
 
         public async Task<int> AddAsync(viPatient patient)
         {
+            var uid = accessor.GetId();
             var newPatient = new tbUser
             {
                 Name = patient.Name,
@@ -86,12 +89,13 @@ namespace waPlanner.Services
             return newPatient.Id;
         }
 
-        public async Task<List<viPatient>> GetAllAsync(int organization_id)
+        public async Task<viPatient[]> GetAllAsync()
         {
+            int org_id = accessor.GetOrgId();
             return await db.tbSchedulers
                 .Include(x => x.User)
                 .AsNoTracking()
-                .Where(x => x.OrganizationId == organization_id)
+                .Where(x => x.OrganizationId == org_id)
                 .Select(x => new viPatient
                 {
                     Id = x.User.Id,
@@ -101,7 +105,7 @@ namespace waPlanner.Services
                     BirthDay = x.User.BirthDay,
                     Gender = x.User.Gender ?? "Нет данных"
                 })
-                .ToListAsync();
+                .ToArrayAsync();
         }
 
         public async Task<viPatient> GetAsync(int user_id)

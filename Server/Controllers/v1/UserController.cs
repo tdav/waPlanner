@@ -12,7 +12,7 @@ namespace waPlanner.Controllers.v1
     [ApiController]
     [ApiVersion("1.0")]
     [SwaggerTag("Пользователи")]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class UserController : ControllerBase
     {
         private readonly IUserService service;
@@ -22,28 +22,28 @@ namespace waPlanner.Controllers.v1
             this.service = service;
         }
 
-        [HttpPost("add_new_user")]
+        [HttpPost("add_new")]
         public async Task AddNewPatient(viPatient patient)
         {
             await service.AddAsync(patient);
         }
 
-        [HttpPost("change_user")]
+        [HttpPost("change")]
         public async Task UpdatePatient(viPatient patient)
         {
             await service.UpdateAsync(patient);
         }
 
-        [HttpPost("change_user_status/{status}")]
+        [HttpPost("change_status/{status}")]
         public async Task UpdatePatientStatus(viPatient patient, byte status)
         {
             await service.SetStatusAsync(patient, status);
         }
 
-        [HttpGet("get_users/{organization_id}")]
-        public async Task<List<viPatient>> GetPateintsAsync(int organization_id)
+        [HttpGet("get_all")]
+        public async Task<viPatient[]> GetPateintsAsync()
         {
-            return await service.GetAllAsync(organization_id);
+            return await service.GetAllAsync();
         }
 
         [HttpGet("{user_id}")]

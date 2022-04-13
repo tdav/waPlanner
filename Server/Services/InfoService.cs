@@ -6,43 +6,49 @@ using System.Collections.Generic;
 using waPlanner.ModelViews;
 using System;
 using waPlanner.TelegramBot;
+using waPlanner.Extensions;
 
 namespace waPlanner.Services
 {
     public interface IInfoService
     {
-        Task<int> GetTotalTodayAppointments(int organization_id);
-        Task<int> GetTotalWeekAppointments(int organization_id);
-        Task<List<viAppointmentsModel>> GetTodayAppointments(int organization_id);
-        Task<List<viRecentSchedulers>> GetRecentUsers(int organization_id);
-        Task<List<viSchedulerDiagramma>> GetSchedulerDiagramma(int organization_id);
+        Task<int> GetTotalTodayAppointments();
+        Task<int> GetTotalWeekAppointments();
+        Task<List<viAppointmentsModel>> GetTodayAppointments();
+        Task<List<viRecentSchedulers>> GetRecentUsers();
+        Task<List<viSchedulerDiagramma>> GetSchedulerDiagramma();
     }
     public class InfoService : IInfoService
     {
         private readonly MyDbContext db;
-        public InfoService(MyDbContext db)
+        private readonly IHttpContextAccessorExtensions accessor;
+        public InfoService(MyDbContext db, IHttpContextAccessorExtensions accessor)
         {
+            this.accessor = accessor;
             this.db = db;
         }
-        public async Task<int> GetTotalTodayAppointments(int organization_id)
+        public async Task<int> GetTotalTodayAppointments()
         {
-            return await db.tbSchedulers.CountAsync(x => x.AppointmentDateTime.Date == DateTime.Now.Date && x.OrganizationId == organization_id);
+            int org_id = accessor.GetOrgId();
+            return await db.tbSchedulers.CountAsync(x => x.AppointmentDateTime.Date == DateTime.Now.Date && x.OrganizationId == org_id);
         }
 
-        public async Task<int> GetTotalWeekAppointments(int organization_id)
+        public async Task<int> GetTotalWeekAppointments()
         {
+            int org_id = accessor.GetOrgId();
             return await db.tbSchedulers.CountAsync(x => x.AppointmentDateTime.Date >= DateTime.Now.Date.AddDays(-7) &&
                                                          x.AppointmentDateTime.Date <= DateTime.Now.Date &&
-                                                         x.OrganizationId == organization_id);
+                                                         x.OrganizationId == org_id);
         }
 
-        public async Task<List<viAppointmentsModel>> GetTodayAppointments(int organization_id)
+        public async Task<List<viAppointmentsModel>> GetTodayAppointments()
         {
+            int org_id = accessor.GetOrgId();
             return await db.tbSchedulers
                 .AsNoTracking()
                 .Include(x => x.User)
                 .Include(x => x.Organization)
-                .Where(x => x.OrganizationId == organization_id && x.AppointmentDateTime.Date == DateTime.Now.Date)
+                .Where(x => x.OrganizationId == org_id && x.AppointmentDateTime.Date == DateTime.Now.Date)
                 .Select(x => new viAppointmentsModel
                 {
                     Id = x.Id,
@@ -56,12 +62,13 @@ namespace waPlanner.Services
                 .ToListAsync();
         }
 
-        public async Task<List<viRecentSchedulers>> GetRecentUsers(int organization_id)
+        public async Task<List<viRecentSchedulers>> GetRecentUsers()
         {
+            int org_id = accessor.GetOrgId();
             return await db.tbSchedulers
                 .AsNoTracking()
                 .Include(x => x.User)
-                .Where(x => x.OrganizationId == organization_id)
+                .Where(x => x.OrganizationId == org_id)
                 .OrderByDescending(x => x.CreateDate)
                 .Select(x => new viRecentSchedulers
                 {
@@ -75,12 +82,13 @@ namespace waPlanner.Services
 
         }
 
-        public async Task<List<viSchedulerDiagramma>> GetSchedulerDiagramma(int organization_id)
+        public async Task<List<viSchedulerDiagramma>> GetSchedulerDiagramma()
         {
+            int org_id = accessor.GetOrgId();
             return await db.tbSchedulers
                 .AsNoTracking()
                 .Include(x => x.Category)
-                .Where(x => x.OrganizationId == organization_id &&
+                .Where(x => x.OrganizationId == org_id &&
                        x.CreateDate >= DateTime.Now.Date.AddMonths(-1) &&
                        x.CreateDate <= DateTime.Now)
                 .GroupBy(g => new { g.Category.NameUz, g.CreateDate.Date })

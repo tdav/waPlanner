@@ -12,7 +12,7 @@ namespace waPlanner.Controllers.v1
     [Authorize]
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [SwaggerTag("Категория")]
     public class SpecializationController
     {
@@ -28,7 +28,7 @@ namespace waPlanner.Controllers.v1
             await service.AddSpecializationAsync(spec);
         }
 
-        [HttpPost("change_spec")]
+        [HttpPost("change")]
         public async Task UpdateSpecialization([FromBody] viSpecialization spec)
         {
             await service.UpdateSpecializationAsync( spec);
@@ -46,7 +46,7 @@ namespace waPlanner.Controllers.v1
             return await service.GetSpecializationsAsync();
         }
 
-        [HttpGet("get_spec/{spec_id}")]
+        [HttpGet("get/{spec_id}")]
         public async Task<spSpecialization> GetSpecialization(int spec_id)
         {
             return await service.GetSpecializationByIdAsync(spec_id);

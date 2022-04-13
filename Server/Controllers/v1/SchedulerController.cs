@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using waPlanner.Database.Models;
 using waPlanner.ModelViews;
 using waPlanner.Services;
 
@@ -14,7 +11,7 @@ namespace waPlanner.Controllers.v1
     [ApiController]
     [ApiVersion("1.0")]
     [SwaggerTag("Расписание")]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class SchedulerController : ControllerBase
     {
         private readonly ISchedulerService service;
@@ -35,8 +32,8 @@ namespace waPlanner.Controllers.v1
             await service.UpdateSchedulerAsync(scheduler);
         }
 
-        [HttpPost("change_scheduler_status/{status}")]
-        public async Task UpdateSchedulerStatus([FromBody] viScheduler scheduler, byte status)
+        [HttpPost("change_status/{status}")]
+        public async Task UpdateSchedulerStatus([FromBody] viScheduler scheduler, int status)
         {
             await service.UpdateSchedulerStatus(scheduler, status);
         }
@@ -47,10 +44,10 @@ namespace waPlanner.Controllers.v1
             return await service.GetSchedulerByIdAsync(scheduler_id);
         }
 
-        [HttpGet("get_by_organization/{organization_id}")]
-        public async Task<viEvents[]> GetSchedulers(int organization_id)
+        [HttpGet("get_by_organization")]
+        public async Task<viEvents[]> GetSchedulers()
         {
-            return await service.GetAllSchedulersByOrgAsync(organization_id);
+            return await service.GetAllSchedulersByOrgAsync();
         }
     }
 }

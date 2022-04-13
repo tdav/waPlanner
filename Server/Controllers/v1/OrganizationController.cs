@@ -12,7 +12,7 @@ namespace waPlanner.Controllers.v1
     [ApiController]
     [ApiVersion("1.0")]
     [SwaggerTag("Организация")]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class OrganizationController : ControllerBase
     {
         private readonly IOrganizationService service;
@@ -27,13 +27,13 @@ namespace waPlanner.Controllers.v1
             await service.InsertOrganizationAsync(organization);
         }
 
-        [HttpPost("change_organization")]
+        [HttpPost("change")]
         public async Task UpdateOrganizationA(viOrganization organziation)
         {
             await service.UpdateOrganizationAsync(organziation);
         }
 
-        [HttpPost("change_organization_status/{status}")]
+        [HttpPost("change_status/{status}")]
         public async Task ChangeStatus(viOrganization organziation, int status)
         {
             await service.UpdateOrganizationStatus(organziation, status);

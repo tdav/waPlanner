@@ -10,7 +10,7 @@ namespace waPlanner.Services
 {
     public interface IOrganizationService
     {
-        Task InsertOrganizationAsync(viOrganization organization);
+        Task<int> InsertOrganizationAsync(viOrganization organization);
         Task UpdateOrganizationAsync(viOrganization organziation);
         Task UpdateOrganizationStatus(viOrganization organziation, int status);
         Task<spOrganization> GetOrgByIdAsync(int id);
@@ -23,7 +23,7 @@ namespace waPlanner.Services
         {
             this.db = db;
         }
-        public async Task InsertOrganizationAsync(viOrganization organization)
+        public async Task<int> InsertOrganizationAsync(viOrganization organization)
         {
             var addOrganization = new spOrganization();
 
@@ -47,7 +47,7 @@ namespace waPlanner.Services
             await db.spOrganizations.AddAsync(addOrganization);
             await db.SaveChangesAsync();
 
-
+            return addOrganization.Id;
         }
         public async Task UpdateOrganizationAsync(viOrganization organization)
         {

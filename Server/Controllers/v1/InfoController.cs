@@ -21,34 +21,34 @@ namespace waPlanner.Controllers.v1
             this.service = service;
         }
 
-        [HttpGet("total_today_appointments/{organization_id}")]
-        public Task<int> GetTotalTodayAppointments(int organization_id)
+        [HttpGet("total_today_appointments")]
+        public Task<int> GetTotalTodayAppointments()
         {
-            return service.GetTotalTodayAppointments(organization_id);
+            return service.GetTotalTodayAppointments();
         }
 
-        [HttpGet("week_appointments/{organization_id}")]
-        public Task<int> GetTotalWeekAppointments(int organization_id)
+        [HttpGet("week_appointments")]
+        public Task<int> GetTotalWeekAppointments()
         {
-            return service.GetTotalWeekAppointments(organization_id);
+            return service.GetTotalWeekAppointments();
         }
 
-        [HttpGet("today_appointments/{organization_id}")]
-        public Task<List<viAppointmentsModel>> GetTodayAppointments(int organization_id)
+        [HttpGet("today_appointments")]
+        public Task<List<viAppointmentsModel>> GetTodayAppointments()
         {
-            return service.GetTodayAppointments(organization_id);
+            return service.GetTodayAppointments();
         }
 
-        [HttpGet("recent_users/{organization_id}")]
-        public Task<List<viRecentSchedulers>> GetRecentUsers(int organization_id)
+        [HttpGet("recent_users")]
+        public Task<List<viRecentSchedulers>> GetRecentUsers()
         {
-            return service.GetRecentUsers(organization_id);
+            return service.GetRecentUsers();
         }
 
-        [HttpGet("scheduler_diagramma{organization_id}")]
-        public Task<List<viSchedulerDiagramma>> GetSchedulerDiagramma(int organization_id)
+        [HttpGet("scheduler_diagramma")]
+        public Task<List<viSchedulerDiagramma>> GetSchedulerDiagramma()
         {
-            return service.GetSchedulerDiagramma(organization_id);
+            return service.GetSchedulerDiagramma();
         }
     }
 }

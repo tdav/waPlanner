@@ -13,6 +13,8 @@ namespace waPlanner.Extensions
         string GetUserFullName();
         string GetUserPhone();
         string GetUserIp();
+        int GetOrgId();
+        int GetRoleId();
     }
 
     public class HttpContextAccessorExtensions : IHttpContextAccessorExtensions
@@ -63,6 +65,16 @@ namespace waPlanner.Extensions
         {
             var role = accessor.HttpContext.User.FindFirst(ClaimTypes.Role);
             return role.Value;
+        }
+
+        public int GetOrgId()
+        {
+            return Convert.ToInt32(accessor.HttpContext.User.FindFirstValue("OrganizationId"));
+        }
+
+        public int GetRoleId()
+        {
+            return Convert.ToInt32(accessor.HttpContext.User.FindFirstValue("RoleId"));
         }
     }
 }

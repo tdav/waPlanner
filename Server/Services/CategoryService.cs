@@ -7,17 +7,17 @@ using waPlanner.Database;
 using waPlanner.Database.Models;
 using waPlanner.Extensions;
 using waPlanner.ModelViews;
+using waPlanner.TelegramBot;
 
 namespace waPlanner.Services
 {
     public interface ICategoryService
     {
-        Task AddCategoryAsync(viCategory value);
+        Task<int> AddCategoryAsync(viCategory value);
         Task UpdateAsync(viCategory value);
-        Task<List<viCategory>> GetAllCategoryByOrgAsync(int organization_id);
+        Task<viCategory[]> GetAllCategoriesAsync();
         Task ChangeCategoryStatus(viCategory value, int status);
         Task<viCategory> GetCategoryByIdAsync(int category_id);
-        Task<List<spCategory>> GetAllCategories();
     }
 
     public class CategoryService : ICategoryService
@@ -48,49 +48,56 @@ namespace waPlanner.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<List<viCategory>> GetAllCategoryByOrgAsync(int organization_id)
+        public async Task<viCategory[]> GetAllCategoriesAsync()
         {
+            int org_id = accessor.GetOrgId();
             return await db.spCategories
                 .AsNoTracking()
-                .Where(x => x.OrganizationId == organization_id)
+                .Where(x => x.OrganizationId == org_id)
                 .Select(x => new viCategory
                 {
                     Id = x.Id,
                     NameLt = x.NameLt,
                     NameRu = x.NameRu,
                     NameUz = x.NameUz,
-                    OrganizationId = organization_id,
+                    OrganizationId = org_id,
                     Organization = x.Organization.Name,
                     Status = x.Status,
                 })
-                .ToListAsync();
+                .ToArrayAsync();
         }
 
-        public async Task AddCategoryAsync(viCategory value)
+        public async Task<int> AddCategoryAsync(viCategory value)
         {
             var category = new spCategory();
-            
-            if(value.OrganizationId.HasValue)
-                category.OrganizationId = value.OrganizationId;
+            int user_id = accessor.GetId();
+            int org_id = accessor.GetOrgId();
+            int role_id = accessor.GetRoleId();
 
-            if(value.Status.HasValue)
+            if (role_id == (int)UserRoles.SUPER_ADMIN)
+                org_id = value.OrganizationId.Value;
+
+            if (value.Status.HasValue)
                 category.Status = value.Status.Value;
 
+            category.OrganizationId = org_id;
             category.NameRu = value.NameRu;
             category.NameUz = value.NameUz;
             category.NameLt = value.NameLt;
             category.CreateDate = DateTime.Now;
-            category.CreateUser = 1;
+            category.CreateUser = user_id;
             db.spCategories.Add(category);
             await db.SaveChangesAsync();
+
+            return category.Id;
         }
 
         public async Task UpdateAsync(viCategory value)
         {
             var category = await db.spCategories.FindAsync(value.Id);
+            int org_id = accessor.GetOrgId();
 
-            if (value.OrganizationId.HasValue)
-                category.OrganizationId = value.OrganizationId;
+            category.OrganizationId = org_id;
 
             if (value.Status.HasValue)
                 category.Status = value.Status.Value;
@@ -116,15 +123,6 @@ namespace waPlanner.Services
             category.UpdateDate = DateTime.Now;
             category.UpdateUser = 1;
             await db.SaveChangesAsync();
-        }
-        public async Task<List<spCategory>> GetAllCategories()
-        {
-
-            var uid = accessor.GetId();
-
-            return await db.spCategories
-                .AsNoTracking()
-                .ToListAsync();
         }
     }
 }

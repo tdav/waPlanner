@@ -13,15 +13,16 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Extensions.Configuration;
 using waPlanner.Utils;
+using waPlanner.Extensions;
 
 namespace waPlanner.Services
 {
     public interface IStaffService
     {
-        Task<List<viStaff>> GetStaffByOrganizationId(int organization_id);
-        Task AddStaffAsync(viStaff user, int organization_id);
-        Task<List<IdValue>> GetStuffList(int organization_id);
-        Task SetStatusAsync(viStaff staff, byte status);
+        Task<viStaff[]> GetStaffByOrganizationId();
+        Task<int> AddStaffAsync(viStaff user);
+        Task<List<IdValue>> GetStuffList(int category_id);
+        Task SetStatusAsync(viStaff staff, int status);
         Task UpdateStaff(viStaff staff);
         Task<viStaff> GetStaffById(int staff_id);
         ValueTask<Answer< TokenModel>> TokenAsync(LoginModel value);
@@ -32,22 +33,25 @@ namespace waPlanner.Services
     {
         private readonly MyDbContext db;
         private readonly IConfiguration conf;
+        private readonly IHttpContextAccessorExtensions accessor;
 
-        public StaffService(MyDbContext db, IConfiguration conf)
+        public StaffService(MyDbContext db, IConfiguration conf, IHttpContextAccessorExtensions accessor)
         {
+            this.accessor = accessor;
             this.db = db;
             this.conf = conf;
         }
 
 
 
-        public async Task<List<viStaff>> GetStaffByOrganizationId(int organization_id)
+        public async Task<viStaff[]> GetStaffByOrganizationId()
         {
+            int org_id = accessor.GetOrgId();
             return await db.tbStaffs
                 .AsNoTracking()
                 .Include(s => s.Organization)
                 .Include(s => s.Category)
-                .Where(s => s.OrganizationId == organization_id)
+                .Where(s => s.OrganizationId == org_id)
                 .Select(x=> new viStaff
                 {
                     Id = x.Id,
@@ -68,45 +72,53 @@ namespace waPlanner.Services
                     Photo = x.PhotoUrl,
                     Gender = x.Gender
                 }
-                ).ToListAsync();
+                ).ToArrayAsync();
         }
 
-        public async Task AddStaffAsync(viStaff staff, int organization_id)
+        public async Task<int> AddStaffAsync(viStaff staff)
         {
+            int org_id = accessor.GetOrgId();
+            int user_id = accessor.GetId();
+            int role_id = accessor.GetRoleId();
             var newStaff = new tbStaff();
+            int staff_role = (int)UserRoles.STAFF;
 
+            if (role_id == (int)UserRoles.SUPER_ADMIN)
+            {
+                staff_role = staff.RoleId;
+                org_id = staff.OrganizationId.Value;
+            }
             newStaff.Surname = staff.Surname;
             newStaff.Name = staff.Name;
             newStaff.Patronymic = staff.Patronymic;
             newStaff.PhoneNum = staff.PhoneNum;
             newStaff.BirthDay = staff.BirthDay;
             newStaff.PhotoUrl = staff.Photo;
-            newStaff.RoleId = 2;
+            newStaff.OrganizationId = org_id;
             newStaff.CategoryId = staff.CategoryId;
-
-            if (staff.OrganizationId != 0)
-                newStaff.OrganizationId = organization_id;
-            else
-                newStaff.OrganizationId = 1;
-
+            newStaff.RoleId = staff_role;
+            
             newStaff.TelegramId = staff.TelegramId;
             newStaff.Experience = staff.Experience;
             newStaff.Availability = staff.Availability;
             newStaff.CreateDate = DateTime.Now;
             newStaff.Gender = staff.Gender;
-            newStaff.CreateUser = 1;
-            newStaff.Password = CHash.EncryptMD5("123456"); ;
+            newStaff.CreateUser = user_id;
+            newStaff.Password = CHash.EncryptMD5(staff.Password);
             newStaff.Status = 1;
 
             await db.tbStaffs.AddAsync(newStaff);
             await db.SaveChangesAsync();
+
+            return newStaff.Id;
         }
 
-        public async Task<List<IdValue>> GetStuffList(int organization_id)
+        public async Task<List<IdValue>> GetStuffList(int category_id)
         {
+            int org_id = accessor.GetOrgId();
             return await db.tbStaffs
                            .AsNoTracking()
-                           .Where(s => s.OrganizationId == organization_id)
+                           .Where(s => s.OrganizationId == org_id && s.CategoryId == category_id)
                            .Select(x => new IdValue
                            {
                                Id = x.Id,
@@ -115,9 +127,9 @@ namespace waPlanner.Services
                            ).ToListAsync();
         }
 
-        public async Task SetStatusAsync(viStaff staff, byte status)
+        public async Task SetStatusAsync(viStaff staff, int status)
         {
-            var sh = await db.tbUsers.FindAsync(staff.Id);
+            var sh = await db.tbStaffs.FindAsync(staff.Id);
             sh.Status = status;
             sh.UpdateUser = 1;
             sh.UpdateDate = DateTime.Now;
@@ -127,6 +139,9 @@ namespace waPlanner.Services
         public async Task UpdateStaff(viStaff staff)
         {
             var updateStaff = await db.tbStaffs.FindAsync(staff.Id);
+            int org_id = accessor.GetOrgId();
+
+            updateStaff.OrganizationId = org_id;
 
             if (staff.BirthDay.HasValue)
                 updateStaff.BirthDay = staff.BirthDay.Value;
@@ -158,7 +173,7 @@ namespace waPlanner.Services
             if (staff.Gender is not null)
                 updateStaff.Gender = staff.Gender;
 
-            updateStaff.RoleId = staff.RoleId;
+            updateStaff.RoleId = (int)UserRoles.STAFF;
             updateStaff.UpdateDate = DateTime.Now;
             updateStaff.UpdateUser = 1;
             await db.SaveChangesAsync();
@@ -208,14 +223,13 @@ namespace waPlanner.Services
 
         public TokenModel GenerateToken(tbStaff user)
         {
-            var roles = string.Join(',', user.Role);
             var claims = new ClaimsIdentity(new Claim[]
                            {
                                        new Claim(ClaimTypes.Sid, user.Id.ToString()),
                                        new Claim(ClaimTypes.Name, $"{user.Surname} {user.Name} {user.Patronymic}"),
-                                       new Claim(ClaimTypes.Role, roles),
                                        new Claim(ClaimTypes.MobilePhone, user.PhoneNum),
                                        new Claim("OrganizationId", user.OrganizationId.ToString()),
+                                       new Claim("RoleId", user.RoleId.ToString()),
                            });
 
             var str = conf["SystemVars:PrivateKeyString"];
@@ -240,14 +254,14 @@ namespace waPlanner.Services
                 id = user.Id,
                 token = tokenHandler.WriteToken(token),
                 userName = $"{user.Surname} {user.Name} {user.Patronymic}",
-                roles = roles,
+                roleId = user.RoleId,
                 orgId = user.OrganizationId.Value
             };
 
             return modelToken;   
     }
 
-        public ValueTask<AnswerBasic> ChangePaswwordAsync(ChangePasswordModel value)
+        public async ValueTask<AnswerBasic> ChangePaswwordAsync(ChangePasswordModel value)
         {
             return new AnswerBasic(true, "");
         }

@@ -13,7 +13,7 @@ namespace waPlanner.Controllers.v1
     [ApiController]
     [ApiVersion("1.0")]
     [SwaggerTag("Персонал")]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class StaffController: ControllerBase
     {
         private readonly IStaffService service;
@@ -30,41 +30,47 @@ namespace waPlanner.Controllers.v1
             return service.TokenAsync(value);
         }
 
-        [HttpGet("get-by-organization_id/{organization_id}")]
-        public  Task<List<viStaff>> GetStuffById(int organization_id)
+        [HttpGet("get_by_organization_id")]
+        public  Task<viStaff[]> GetStuffById()
         {
-            return service.GetStaffByOrganizationId(organization_id);
+            return service.GetStaffByOrganizationId();
         }
 
-        [HttpGet("get_stuff_name_list/{organization_id}")]
-        public Task<List<IdValue>> GetStuffList(int organization_id)
+        [HttpGet("get_name_list/{category_id}")]
+        public Task<List<IdValue>> GetStuffList(int category_id)
         {
-            return service.GetStuffList(organization_id);
+            return service.GetStuffList(category_id);
         }
 
-        [HttpPost("add_staff")]
-        public async Task AddStaff(viStaff staff, int organization_id)
+        [HttpPost("add")]
+        public async Task AddStaff(viStaff staff)
         {
-            await service.AddStaffAsync(staff, organization_id);
+            await service.AddStaffAsync(staff);
         }
 
         [HttpPost("change_status/{staff_id}/{status}")]
-        public async Task ChagneStaffStatus(viStaff staff, byte status)
+        public async Task ChagneStaffStatus(viStaff staff, int status)
         {
             await service.SetStatusAsync(staff, status);
         }
 
-        [HttpPost("change_staff_info")]
+        [HttpPost("change")]
         public async Task ChangeStaff(viStaff staff)
         {
             await service.UpdateStaff(staff);
         }
         
-        [HttpGet("get_staff_by_id/{staff_id}")]
+        [HttpGet("get/{staff_id}")]
         public Task<viStaff> GetStaffById(int staff_id)
         {
             return service.GetStaffById(staff_id);
         }
+
+        //[HttpPost("change_password")]
+        //public async ValueTask<AnswerBasic> ChangePassword()
+        //{
+        //    return await service.ChangePaswwordAsync();
+        //}
     }
     
 }
