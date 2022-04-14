@@ -13,7 +13,7 @@ namespace waPlanner.TelegramBot.keyboards
 {
     public class CalendarKeyboards
     {
-        public static InlineKeyboardMarkup SendCalendar(ref DateTime date)
+        public static InlineKeyboardMarkup Calendar(ref DateTime date)
         {
             string[] daysWeek = { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" };
             string IGNORE = $"i;i";
@@ -37,6 +37,7 @@ namespace waPlanner.TelegramBot.keyboards
 
             for (int i = 1; i <= iterations; i++)
             {
+
                 if (i < padLeftDays)
                 {
                     buttons.Add(InlineKeyboardButton.WithCallbackData(" ", IGNORE));
@@ -70,10 +71,12 @@ namespace waPlanner.TelegramBot.keyboards
             InlineKeyboardMarkup calendar = new(keyboards);
             return calendar;
         }
+
         public static string[] SeparateCallbackData(string data)
         {
             return data.Split(";");
         }
+
         public static async Task OnCalendarProcess(CallbackQuery call, ReplyKeyboardMarkup back, MyDbContext db)
         {
             long chat_id = call.Message.Chat.Id;
@@ -90,14 +93,14 @@ namespace waPlanner.TelegramBot.keyboards
             {
                 case "NEXT-MONTH":
                     {
-                        await bot.EditMessageReplyMarkupAsync(chat_id, messageId, SendCalendar(ref date));
+                        await bot.EditMessageReplyMarkupAsync(chat_id, messageId, Calendar(ref date));
                         break;
                     }
                 case "PREV-MONTH":
                     {
                         if(date.Month >= DateTime.Now.Month)
                         {
-                            await bot.EditMessageReplyMarkupAsync(chat_id, messageId, SendCalendar(ref date));
+                            await bot.EditMessageReplyMarkupAsync(chat_id, messageId, Calendar(ref date));
                             break;
                         }
                         break;
@@ -132,6 +135,13 @@ namespace waPlanner.TelegramBot.keyboards
                 default:
                     break;
             }
+        }
+
+        public static async Task SendCalendar(TelegramBotClient bot, long chat_id, ReplyKeyboardMarkup back)
+        {
+            var date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            await bot.SendTextMessageAsync(chat_id, "Выберите удобное для вас число.", replyMarkup: back);
+            await bot.SendTextMessageAsync(chat_id, "Календарь", replyMarkup: Calendar(ref date));
         }
     }
 }

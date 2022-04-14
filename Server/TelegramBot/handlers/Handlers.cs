@@ -47,19 +47,7 @@ namespace waPlanner.TelegramBot.handlers
                 await HandleErrorAsync(bot, exception, cancellationToken);
             }
         }
-        private static async Task BotOnMessageReceived(Message message)
-        {
-            long chat_id = message.Chat.Id;
-
-            using (var db = new MyDbContextFactory().CreateDbContext(null))
-            {
-                if (!Program.Cache.TryGetValue(chat_id, out var obj))
-                {
-                    Program.Cache[chat_id] = new TelegramBotValuesModel { State = PlannerStates.NONE, };
-                }
-                await OnStateChanged(chat_id, db, message, back);
-            }
-        }
+        
         public static async Task BotOnCallbackQueryReceived(CallbackQuery call)
         {
             using var db = new MyDbContextFactory().CreateDbContext(null);
@@ -71,17 +59,36 @@ namespace waPlanner.TelegramBot.handlers
                 await CalendarKeyboards.OnCalendarProcess(call, back, db);
         }
 
-        public static async Task OnStateChanged(long chat_id, MyDbContext db, Message message, ReplyKeyboardMarkup back)
+        private static async Task BotOnMessageReceived(Message message)
+        {
+            long chat_id = message.Chat.Id;
+
+            using (var db = new MyDbContextFactory().CreateDbContext(null))
+            {
+                if (!Program.Cache.TryGetValue(chat_id, out var obj))
+                {
+                    Program.Cache[chat_id] = new TelegramBotValuesModel { State = PlannerStates.NONE, };
+                }
+                var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
+                await OnStateChanged(chat_id, db, message, cache);
+            }
+        }
+
+        public static async Task OnStateChanged(long chat_id, MyDbContext db, Message message, TelegramBotValuesModel cache)
         {
             List<IdValue> menu = null;
             string message_for_user = "";
             string msg = message.Text;
-            var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
 
-            if (msg == "⬅️Назад")
+            if (msg == Commands.back_)
             {
                 switch (cache.State)
                 {
+                    case PlannerStates.SELECT_FAVORITES:
+                        {
+                            cache.State = PlannerStates.NONE;
+                            break;
+                        }
                     case PlannerStates.ORGANIZATION:
                         {
                             cache.State = PlannerStates.NONE;
@@ -126,7 +133,10 @@ namespace waPlanner.TelegramBot.handlers
                 }
             }
 
-            if (msg == "Сделать бронь📄")
+            if (msg == Commands.favorites_)
+                cache.State = PlannerStates.FAVORITES;
+
+            if (msg == Commands.reservation_)
                 cache.State = PlannerStates.SPECIALIZATION;
 
             switch (cache.State)
@@ -136,6 +146,38 @@ namespace waPlanner.TelegramBot.handlers
                         await Bot_.SendTextMessageAsync(chat_id, "Что пожелаете?☺️", replyMarkup: ReplyKeyboards.MainMenu());
                         return;
                     }
+                case PlannerStates.FAVORITES:
+                    {
+                        menu = await DbManipulations.SendFavorites(db, chat_id);
+                        if (menu.Count > 0)
+                        {
+                            cache.State = PlannerStates.SELECT_FAVORITES;
+                            message_for_user = "Выберите специалиста";
+                            break;
+                        }
+                        else
+                        {
+                            await Bot_.SendTextMessageAsync(chat_id, "Список пуст");
+                            break;
+                        }
+                        
+                    }
+                case PlannerStates.SELECT_FAVORITES:
+                    {
+                        cache.Staff = msg != "⬅️Назад" ? msg : cache.Staff;
+                        viStaffInfo staffInfo = await DbManipulations.GetStaffInfoByName(db, cache.Staff);
+                        if (staffInfo is not null)
+                        {
+                            cache.Specialization = staffInfo.Specialization;
+                            cache.Organization = staffInfo.Organization;
+                            cache.Category = staffInfo.Category;
+                            cache.Staff = staffInfo.Staff;
+                            await CalendarKeyboards.SendCalendar(Bot_, chat_id, back);
+                        }
+                        break;
+                    }
+
+
                 case PlannerStates.SPECIALIZATION: 
                     {
                         menu = await DbManipulations.SendSpecializations(db);
@@ -175,10 +217,8 @@ namespace waPlanner.TelegramBot.handlers
                     {
                         if (!await DbManipulations.CheckStaffByCategory(db, cache.Category, msg) && msg != "⬅️Назад") return;
 
-                        cache.Stuff = msg != "⬅️Назад" ? msg : cache.Stuff;
-                        var date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-                        await Bot_.SendTextMessageAsync(chat_id, "Выберите удобное для вас число.", replyMarkup: back);
-                        await Bot_.SendTextMessageAsync(chat_id, "Календарь", replyMarkup: CalendarKeyboards.SendCalendar(ref date));
+                        cache.Staff = msg != "⬅️Назад" ? msg : cache.Staff;
+                        await CalendarKeyboards.SendCalendar(Bot_, chat_id, back);
                         return;
                     }
                 case PlannerStates.PHONE:
@@ -227,7 +267,7 @@ namespace waPlanner.TelegramBot.handlers
                         if(msg == "Да✅")
                         {
                             await DbManipulations.AddToFavorites(db, cache, chat_id);
-                            await Bot_.SendTextMessageAsync(chat_id, $"Специалист <b>{cache.Stuff}</b> добавлен в избранное", parseMode: ParseMode.Html);
+                            await Bot_.SendTextMessageAsync(chat_id, $"Специалист <b>{cache.Staff}</b> добавлен в избранное", parseMode: ParseMode.Html);
                         }
                         cache.State = PlannerStates.NONE;
                         await Bot_.SendTextMessageAsync(chat_id, "Что пожелаете?☺️", replyMarkup: ReplyKeyboards.MainMenu());
@@ -245,11 +285,6 @@ namespace waPlanner.TelegramBot.handlers
                 await Bot_.SendTextMessageAsync(chat_id, message_for_user, replyMarkup: markup);
                 return;
             }
-        }
-
-        public async Task OnCommands(string command, long chat_id)
-        {
-
         }
     }
 }

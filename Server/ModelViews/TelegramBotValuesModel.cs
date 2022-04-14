@@ -8,7 +8,7 @@ namespace waPlanner.ModelViews
         public string Specialization { get; set; }
         public string Organization { get; set; }
         public string Category { get; set; }
-        public string Stuff { get; set; }
+        public string Staff { get; set; }
         public DateTime Calendar { get; set; }
         public string Time { get; set; }
         public string Phone { get; set; }

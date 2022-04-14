@@ -20,5 +20,6 @@
         ADD_FAVORITES = 9,
 
         FAVORITES = 21,
+        SELECT_FAVORITES = 22,
     }
 }
