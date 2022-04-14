@@ -57,7 +57,7 @@ namespace waPlanner.TelegramBot.handlers
                 {
                     Program.Cache[chat_id] = new TelegramBotValuesModel { State = PlannerStates.NONE, };
                 }
-                await OnStateChange(chat_id, db, message, back);
+                await OnStateChanged(chat_id, db, message, back);
             }
         }
         public static async Task BotOnCallbackQueryReceived(CallbackQuery call)
@@ -71,7 +71,7 @@ namespace waPlanner.TelegramBot.handlers
                 await CalendarKeyboards.OnCalendarProcess(call, back, db);
         }
 
-        public static async Task OnStateChange(long chat_id, MyDbContext db, Message message, ReplyKeyboardMarkup back)
+        public static async Task OnStateChanged(long chat_id, MyDbContext db, Message message, ReplyKeyboardMarkup back)
         {
             List<IdValue> menu = null;
             string message_for_user = "";

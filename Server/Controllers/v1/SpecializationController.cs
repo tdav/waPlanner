@@ -34,8 +34,8 @@ namespace waPlanner.Controllers.v1
             await service.UpdateSpecializationAsync( spec);
         }
 
-        [HttpPost("change_status/{status}")]
-        public async Task ChangeStatus([FromBody] viSpecialization spec, int status)
+        [HttpPost("change/{spec}/{status}")]
+        public async Task ChangeStatus(int spec, int status)
         {
             await service.ChangeSpecializationStatus(spec, status);
         }
@@ -46,7 +46,7 @@ namespace waPlanner.Controllers.v1
             return await service.GetSpecializationsAsync();
         }
 
-        [HttpGet("get/{spec_id}")]
+        [HttpGet("{spec_id}")]
         public async Task<spSpecialization> GetSpecialization(int spec_id)
         {
             return await service.GetSpecializationByIdAsync(spec_id);

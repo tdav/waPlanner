@@ -33,8 +33,9 @@ namespace waPlanner.Services
         public async Task UpdateAsync(viPatient vipatient)
         {
             var patient = await db.tbUsers.FindAsync(vipatient.Id);
+            int user_id = accessor.GetId();
 
-            if(vipatient.Phone is not null)
+            if (vipatient.Phone is not null)
                 patient.PhoneNum = vipatient.Phone;
 
             if(vipatient.Name is not null)
@@ -55,22 +56,23 @@ namespace waPlanner.Services
             if(vipatient.Status.HasValue)
                 patient.Status = vipatient.Status.Value;
             patient.UpdateDate = DateTime.Now;
-            patient.UpdateUser = 1;
+            patient.UpdateUser = user_id;
             await db.SaveChangesAsync();    
         }
 
         public async Task SetStatusAsync(viPatient viPatient, int status)
         {
+            int user_id = accessor.GetId();
             var patient = await db.tbUsers.FindAsync(viPatient.Id);
             patient.Status = status;
             patient.UpdateDate = DateTime.Now;
-            patient.UpdateUser = 1;
+            patient.UpdateUser = user_id;
             await db.SaveChangesAsync();
         }
 
         public async Task<int> AddAsync(viPatient patient)
         {
-            var uid = accessor.GetId();
+            var user_id = accessor.GetId();
             var newPatient = new tbUser
             {
                 Name = patient.Name,
@@ -80,7 +82,7 @@ namespace waPlanner.Services
                 BirthDay = patient.BirthDay,
                 TelegramId = 0,
                 CreateDate = DateTime.Now,
-                CreateUser = 1,
+                CreateUser = user_id,
                 Status = 1
             };
             await db.tbUsers.AddAsync(newPatient);

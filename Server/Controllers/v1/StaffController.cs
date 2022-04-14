@@ -30,25 +30,25 @@ namespace waPlanner.Controllers.v1
             return service.TokenAsync(value);
         }
 
-        [HttpGet("get_by_organization_id")]
+        [HttpGet("by_organization_id")]
         public  Task<viStaff[]> GetStuffById()
         {
             return service.GetStaffByOrganizationId();
         }
 
-        [HttpGet("get_name_list/{category_id}")]
+        [HttpGet("name_list/{category_id}")]
         public Task<List<IdValue>> GetStuffList(int category_id)
         {
             return service.GetStuffList(category_id);
         }
 
-        [HttpPost("add")]
+        [HttpPost()]
         public async Task AddStaff(viStaff staff)
         {
             await service.AddStaffAsync(staff);
         }
 
-        [HttpPost("change_status/{staff_id}/{status}")]
+        [HttpPost("change/{status}")]
         public async Task ChagneStaffStatus(viStaff staff, int status)
         {
             await service.SetStatusAsync(staff, status);
@@ -60,7 +60,7 @@ namespace waPlanner.Controllers.v1
             await service.UpdateStaff(staff);
         }
         
-        [HttpGet("get/{staff_id}")]
+        [HttpGet("{staff_id}")]
         public Task<viStaff> GetStaffById(int staff_id)
         {
             return service.GetStaffById(staff_id);

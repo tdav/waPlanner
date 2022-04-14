@@ -77,9 +77,7 @@ namespace waPlanner.Services
             if (role_id == (int)UserRoles.SUPER_ADMIN)
                 org_id = value.OrganizationId.Value;
 
-            if (value.Status.HasValue)
-                category.Status = value.Status.Value;
-
+            category.Status = 1;
             category.OrganizationId = org_id;
             category.NameRu = value.NameRu;
             category.NameUz = value.NameUz;
@@ -96,6 +94,7 @@ namespace waPlanner.Services
         {
             var category = await db.spCategories.FindAsync(value.Id);
             int org_id = accessor.GetOrgId();
+            int user_id = accessor.GetId();
 
             category.OrganizationId = org_id;
 
@@ -112,16 +111,19 @@ namespace waPlanner.Services
                 category.NameLt = value.NameLt;
 
             category.UpdateDate = DateTime.Now;
-            category.UpdateUser = 1;
+            category.UpdateUser = user_id;
             await db.SaveChangesAsync();
         }
 
         public async Task ChangeCategoryStatus(viCategory value, int status)
         {
-            var category = await db.spCategories.FindAsync(value.Id);
+            int user_id = accessor.GetId();
+            int org_id = accessor.GetOrgId();
+            var get_category = await db.spCategories.AsNoTracking().FirstAsync(c => c.Id == value.Id && c.OrganizationId == org_id);
+            var category = await db.spCategories.FindAsync(get_category.Id);
             category.Status = status;
             category.UpdateDate = DateTime.Now;
-            category.UpdateUser = 1;
+            category.UpdateUser = user_id;
             await db.SaveChangesAsync();
         }
     }

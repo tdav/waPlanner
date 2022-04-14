@@ -51,7 +51,7 @@ namespace waPlanner.Services
                 .AsNoTracking()
                 .Include(s => s.Organization)
                 .Include(s => s.Category)
-                .Where(s => s.OrganizationId == org_id)
+                .Where(s => s.OrganizationId == org_id && s.RoleId == (int)UserRoles.STAFF)
                 .Select(x=> new viStaff
                 {
                     Id = x.Id,
@@ -77,17 +77,22 @@ namespace waPlanner.Services
 
         public async Task<int> AddStaffAsync(viStaff staff)
         {
-            int org_id = accessor.GetOrgId();
+            var newStaff = new tbStaff();
+
             int user_id = accessor.GetId();
             int role_id = accessor.GetRoleId();
-            var newStaff = new tbStaff();
             int staff_role = (int)UserRoles.STAFF;
+            int org_id = accessor.GetOrgId();
 
             if (role_id == (int)UserRoles.SUPER_ADMIN)
             {
                 staff_role = staff.RoleId;
                 org_id = staff.OrganizationId.Value;
             }
+
+            if (staff.CategoryId.HasValue)
+                newStaff.CategoryId = staff.CategoryId;
+
             newStaff.Surname = staff.Surname;
             newStaff.Name = staff.Name;
             newStaff.Patronymic = staff.Patronymic;
@@ -95,9 +100,7 @@ namespace waPlanner.Services
             newStaff.BirthDay = staff.BirthDay;
             newStaff.PhotoUrl = staff.Photo;
             newStaff.OrganizationId = org_id;
-            newStaff.CategoryId = staff.CategoryId;
             newStaff.RoleId = staff_role;
-            
             newStaff.TelegramId = staff.TelegramId;
             newStaff.Experience = staff.Experience;
             newStaff.Availability = staff.Availability;
@@ -118,7 +121,7 @@ namespace waPlanner.Services
             int org_id = accessor.GetOrgId();
             return await db.tbStaffs
                            .AsNoTracking()
-                           .Where(s => s.OrganizationId == org_id && s.CategoryId == category_id)
+                           .Where(s => s.OrganizationId == org_id && s.CategoryId == category_id && s.RoleId == (int)UserRoles.STAFF)
                            .Select(x => new IdValue
                            {
                                Id = x.Id,
@@ -129,9 +132,10 @@ namespace waPlanner.Services
 
         public async Task SetStatusAsync(viStaff staff, int status)
         {
+            int user_id = accessor.GetId();
             var sh = await db.tbStaffs.FindAsync(staff.Id);
             sh.Status = status;
-            sh.UpdateUser = 1;
+            sh.UpdateUser = user_id;
             sh.UpdateDate = DateTime.Now;
             await db.SaveChangesAsync();
         }
@@ -140,8 +144,9 @@ namespace waPlanner.Services
         {
             var updateStaff = await db.tbStaffs.FindAsync(staff.Id);
             int org_id = accessor.GetOrgId();
-
-            updateStaff.OrganizationId = org_id;
+            int user_id = accessor.GetId();
+            int role_id = accessor.GetRoleId();
+            int staff_role = (int)UserRoles.STAFF;
 
             if (staff.BirthDay.HasValue)
                 updateStaff.BirthDay = staff.BirthDay.Value;
@@ -173,9 +178,16 @@ namespace waPlanner.Services
             if (staff.Gender is not null)
                 updateStaff.Gender = staff.Gender;
 
-            updateStaff.RoleId = (int)UserRoles.STAFF;
+            if (role_id == (int)UserRoles.SUPER_ADMIN)
+            {
+                staff_role = staff.RoleId;
+                org_id = staff.OrganizationId.Value;
+            }
+
+            updateStaff.OrganizationId = org_id;
+            updateStaff.RoleId = staff_role;
             updateStaff.UpdateDate = DateTime.Now;
-            updateStaff.UpdateUser = 1;
+            updateStaff.UpdateUser = user_id;
             await db.SaveChangesAsync();
         }
         public async Task<viStaff> GetStaffById(int staff_id)
@@ -255,9 +267,9 @@ namespace waPlanner.Services
                 token = tokenHandler.WriteToken(token),
                 userName = $"{user.Surname} {user.Name} {user.Patronymic}",
                 roleId = user.RoleId,
-                orgId = user.OrganizationId.Value
             };
-
+            if (user.OrganizationId.HasValue)
+                modelToken.orgId = user.OrganizationId.Value;
             return modelToken;   
     }
 

@@ -33,10 +33,10 @@ namespace waPlanner.Controllers.v1
             await service.UpdateOrganizationAsync(organziation);
         }
 
-        [HttpPost("change_status/{status}")]
-        public async Task ChangeStatus(viOrganization organziation, int status)
+        [HttpPost("change/{organization}/{status}")]
+        public async Task ChangeStatus(int organization, int status)
         {
-            await service.UpdateOrganizationStatus(organziation, status);
+            await service.UpdateOrganizationStatus(organization, status);
         }
 
         [HttpGet("Id")]

@@ -40,48 +40,11 @@ namespace waPlanner.Controllers.v1
                 await db.SaveChangesAsync();
                 #endregion
 
-                #region Add Specialization
-                db.spSpecializations.Add(new spSpecialization() { Id = 1, NameLt = "admin", NameRu = "admin", NameUz = "admin", CreateDate = DateTime.Now, CreateUser = 1 });
-                await db.SaveChangesAsync();
-                #endregion
-
-                #region Add Org
-                db.spOrganizations.Add(new spOrganization()
-                {
-                    Id = 1,
-                    Name = "admin",
-                    ChatId = 0,
-                    Address = "admin",
-                    Latitude = 0,
-                    Longitude = 0,
-                    CreateDate = DateTime.Now,
-                    CreateUser = 0,
-                    SpecializationId = 1
-                });
-                await db.SaveChangesAsync();
-                #endregion
-
-                #region Add Cat
-                db.spCategories.Add(new spCategory()
-                {
-                    Id = 1,
-                    NameUz = "admin",
-                    NameRu = "admin",
-                    NameLt = "admin",
-                    OrganizationId = 1,
-                    CreateDate = DateTime.Now,
-                    CreateUser = 1
-                });
-                await db.SaveChangesAsync();
-                #endregion
-
                 #region Add User
                 db.tbStaffs.Add(new tbStaff()
                 {
                     Id = 1,
                     BirthDay = DateTime.Now,
-                    CategoryId = 1,
-                    OrganizationId = 1,
                     RoleId = 1,
                     Gender = "m",
                     PhoneNum = "+998977764669",
@@ -95,12 +58,9 @@ namespace waPlanner.Controllers.v1
                     Status = 1, 
                     CreateDate = DateTime.Now, 
                     CreateUser = 1
-                });;
-
+                });
                 await db.SaveChangesAsync();
-
                 #endregion
-
 
             await tran.CommitAsync();
         }

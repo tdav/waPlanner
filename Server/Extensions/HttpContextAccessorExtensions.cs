@@ -69,6 +69,9 @@ namespace waPlanner.Extensions
 
         public int GetOrgId()
         {
+            var org_id = accessor.HttpContext.User.FindFirstValue("OrganizationId");
+            if (org_id == "")
+                return 0;
             return Convert.ToInt32(accessor.HttpContext.User.FindFirstValue("OrganizationId"));
         }
 

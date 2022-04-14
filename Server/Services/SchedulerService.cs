@@ -31,6 +31,7 @@ namespace waPlanner.Services
         {
             var addScheduler = new tbScheduler();
             int org_id = accessor.GetOrgId();
+            int user_id = accessor.GetId();
 
             if (scheduler.UserId.HasValue)
                 addScheduler.UserId = scheduler.UserId.Value;
@@ -48,7 +49,7 @@ namespace waPlanner.Services
 
             addScheduler.AdInfo = scheduler.AdInfo;
             addScheduler.Status = 1;
-            addScheduler.CreateUser = 1;
+            addScheduler.CreateUser = user_id;
             addScheduler.CreateDate = DateTime.Now;
             await db.tbSchedulers.AddAsync(addScheduler);
             await db.SaveChangesAsync();
