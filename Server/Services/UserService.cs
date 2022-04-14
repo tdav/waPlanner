@@ -102,11 +102,12 @@ namespace waPlanner.Services
                 {
                     Id = x.User.Id,
                     Name = x.User.Name,
-                    AdInfo = x.AdInfo ?? "Нет данных",
+                    AdInfo = x.AdInfo,
                     Phone = x.User.PhoneNum,
                     BirthDay = x.User.BirthDay,
-                    Gender = x.User.Gender ?? "Нет данных"
+                    Gender = x.User.Gender
                 })
+                .Distinct()
                 .ToArrayAsync();
         }
 
