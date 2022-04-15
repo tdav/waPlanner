@@ -144,12 +144,12 @@ namespace waPlanner.TelegramBot.handlers
                 case PlannerStates.NONE:
                     {
                         await Bot_.SendTextMessageAsync(chat_id, "Что пожелаете?☺️", replyMarkup: ReplyKeyboards.MainMenu());
-                        return;
+                        break;
                     }
                 case PlannerStates.FAVORITES:
                     {
                         menu = await DbManipulations.SendFavorites(db, chat_id);
-                        if (menu.Count > 0)
+                        if (menu is not null && menu.Count > 0)
                         {
                             cache.State = PlannerStates.SELECT_FAVORITES;
                             message_for_user = "Выберите специалиста";
@@ -250,13 +250,19 @@ namespace waPlanner.TelegramBot.handlers
                     {
                         cache.UserName = msg;
                         await Bot_.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора");
-                        cache.State = PlannerStates.ADD_FAVORITES;
-                        await Bot_.SendTextMessageAsync(chat_id, "Хотите выбранного специалиста в избранное?", replyMarkup: ReplyKeyboards.SendConfirmKeyboards());
                         await DbManipulations.FinishProcessAsync(chat_id, cache, db);
                         await DbManipulations.RegistrateUserPlanner(chat_id, cache, db);
+                        if (!await DbManipulations.CheckFavorites(db, cache.Staff, chat_id))
+                        {
+                            cache.State = PlannerStates.ADD_FAVORITES;
+                            await Bot_.SendTextMessageAsync(chat_id, "Хотите добавить выбранного специалиста в избранное?", replyMarkup: ReplyKeyboards.SendConfirmKeyboards());
+                            break;
+                        }
+                        cache.State = PlannerStates.NONE;
+                        await Bot_.SendTextMessageAsync(chat_id, "Что пожелаете?☺️", replyMarkup: ReplyKeyboards.MainMenu());
                         break;
                     }
-                case PlannerStates.ADD_FAVORITES:
+                case PlannerStates.ADD_FAVORITES: 
                     {
 
                         if (msg == "Нет❌")

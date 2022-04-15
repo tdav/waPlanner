@@ -14,7 +14,9 @@ namespace waPlanner.TelegramBot.Utils
         public static async Task<List<IdValue>> SendFavorites(MyDbContext db, long chat_id)
         {
             int user_id = await GetUserId(chat_id, db);
-            return await db.tbFavorites
+            if (user_id != 0)
+            {
+                return await db.tbFavorites
                 .AsNoTracking()
                 .Where(f => f.UserId == user_id)
                 .Select(f => new IdValue
@@ -23,6 +25,8 @@ namespace waPlanner.TelegramBot.Utils
                     Name = $"{f.Staff.Surname} {f.Staff.Name} {f.Staff.Patronymic}"
                 })
                 .ToListAsync();
+            }
+            return null;
         }
 
         public static async Task<List<IdValue>> SendSpecializations(MyDbContext db)
@@ -96,8 +100,10 @@ namespace waPlanner.TelegramBot.Utils
 
         private static async Task<int> GetUserId(long chat_id, MyDbContext db)
         {
-            var user_id = await db.tbUsers.AsNoTracking().FirstAsync(x => x.TelegramId == chat_id);
-            return user_id.Id;
+            var user_id = await db.tbUsers.AsNoTracking().FirstOrDefaultAsync(x => x.TelegramId == chat_id);
+            if(user_id is not null)
+                return user_id.Id;
+            return 0;
         }
 
         public static async Task FinishProcessAsync(long chat_id, TelegramBotValuesModel value, MyDbContext db)
@@ -200,29 +206,35 @@ namespace waPlanner.TelegramBot.Utils
             
         }
 
+        public static async Task<int> CheckFreeDay(MyDbContext db, string staff_name, DateTime date)
+        {
+            var staff = await GetStaffInfoByName(db, staff_name);
+            return await db.tbSchedulers
+                .AsNoTracking()
+                .Where(x => x.StaffId == staff.StaffId && x.AppointmentDateTime.Date == date.Date)
+                .CountAsync();
+        }
+
         public static async Task AddToFavorites(MyDbContext db, TelegramBotValuesModel value, long chat_id)
         {
-            if (!await CheckFavorites(db, value, chat_id))
-            {
-                var staff = await GetStaffInfoByName(db, value.Staff);
-                var user = await GetUserId(chat_id, db);
-                var addFavorite = new tbFavorites();
-                addFavorite.StaffId = staff.StaffId.Value;
-                addFavorite.UserId = user;
-                addFavorite.TelegramId = chat_id;
-                addFavorite.OrganizationId = staff.OrganizationId.Value;
-                addFavorite.Status = 1;
-                addFavorite.CreateDate = DateTime.Now;
+            var staff = await GetStaffInfoByName(db, value.Staff);
+            var user = await GetUserId(chat_id, db);
+            var addFavorite = new tbFavorites();
+            addFavorite.StaffId = staff.StaffId.Value;
+            addFavorite.UserId = user;
+            addFavorite.TelegramId = chat_id;
+            addFavorite.OrganizationId = staff.OrganizationId.Value;
+            addFavorite.Status = 1;
+            addFavorite.CreateDate = DateTime.Now;
 
-                await db.tbFavorites.AddAsync(addFavorite);
-                await db.SaveChangesAsync();
-            }
+            await db.tbFavorites.AddAsync(addFavorite);
+            await db.SaveChangesAsync();
             
         }
 
-        public static async Task<bool> CheckFavorites(MyDbContext db, TelegramBotValuesModel value, long chat_id)
+        public static async Task<bool> CheckFavorites(MyDbContext db, string value, long chat_id)
         {
-            var staff = await GetStaffInfoByName(db, value.Staff);
+            var staff = await GetStaffInfoByName(db, value);
             var user = await GetUserId(chat_id, db);
             var result = await db.tbFavorites
                 .AsNoTracking()

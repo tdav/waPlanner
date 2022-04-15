@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using waPlanner.Database.Models;
 using waPlanner.ModelViews;
 using waPlanner.Services;
 
@@ -36,7 +37,7 @@ namespace waPlanner.Controllers.v1
             return service.GetStaffByOrganizationId();
         }
 
-        [HttpGet("name_list/{category_id}")]
+        [HttpGet("{category_id}/name_list")]
         public Task<List<IdValue>> GetStuffList(int category_id)
         {
             return service.GetStuffList(category_id);
@@ -48,7 +49,7 @@ namespace waPlanner.Controllers.v1
             await service.AddStaffAsync(staff);
         }
 
-        [HttpPost("change/{status}")]
+        [HttpPost("{status}/change")]
         public async Task ChagneStaffStatus(viStaff staff, int status)
         {
             await service.SetStatusAsync(staff, status);
@@ -65,6 +66,18 @@ namespace waPlanner.Controllers.v1
         {
             return service.GetStaffById(staff_id);
         }
+
+        [HttpGet("{name}/search")]
+        public Task<viStaff[]> SearchStaff(string name)
+        {
+            return service.SearchStaffAsync(name);
+        }
+
+        //[HttpGet("{staff_id}/availability")]
+        //public Task<viStaffAvailability> GetAvailability(int staff_id)
+        //{
+        //    return service.GetStaffAvailabilityAsync(staff_id);
+        //}
 
         //[HttpPost("change_password")]
         //public async ValueTask<AnswerBasic> ChangePassword()

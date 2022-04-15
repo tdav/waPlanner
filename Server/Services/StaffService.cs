@@ -20,11 +20,13 @@ namespace waPlanner.Services
     public interface IStaffService
     {
         Task<viStaff[]> GetStaffByOrganizationId();
-        Task<int> AddStaffAsync(viStaff user);
+        Task AddStaffAsync(viStaff user);
         Task<List<IdValue>> GetStuffList(int category_id);
         Task SetStatusAsync(viStaff staff, int status);
         Task UpdateStaff(viStaff staff);
         Task<viStaff> GetStaffById(int staff_id);
+        Task<viStaff[]> SearchStaffAsync(string name);
+        //Task<viStaffAvailability> GetStaffAvailabilityAsync(int staff_id);
         ValueTask<Answer< TokenModel>> TokenAsync(LoginModel value);
         ValueTask<AnswerBasic> ChangePaswwordAsync(ChangePasswordModel value);
     }
@@ -71,11 +73,12 @@ namespace waPlanner.Services
                     RoleId = x.RoleId,
                     Photo = x.PhotoUrl,
                     Gender = x.Gender
-                }
-                ).ToArrayAsync();
+                })
+                .Take(20)
+                .ToArrayAsync();
         }
 
-        public async Task<int> AddStaffAsync(viStaff staff)
+        public async Task AddStaffAsync(viStaff staff)
         {
             var newStaff = new tbStaff();
 
@@ -109,11 +112,10 @@ namespace waPlanner.Services
             newStaff.CreateUser = user_id;
             newStaff.Password = CHash.EncryptMD5(staff.Password);
             newStaff.Status = 1;
+            newStaff.Online = true;
 
             await db.tbStaffs.AddAsync(newStaff);
             await db.SaveChangesAsync();
-
-            return newStaff.Id;
         }
 
         public async Task<List<IdValue>> GetStuffList(int category_id)
@@ -121,7 +123,7 @@ namespace waPlanner.Services
             int org_id = accessor.GetOrgId();
             return await db.tbStaffs
                            .AsNoTracking()
-                           .Where(s => s.OrganizationId == org_id && s.CategoryId == category_id && s.RoleId == (int)UserRoles.STAFF)
+                           .Where(s => s.OrganizationId == org_id && s.CategoryId == category_id && s.RoleId == (int)UserRoles.STAFF && s.Status == 1)
                            .Select(x => new IdValue
                            {
                                Id = x.Id,
@@ -148,35 +150,38 @@ namespace waPlanner.Services
             int role_id = accessor.GetRoleId();
             int staff_role = (int)UserRoles.STAFF;
 
-            if (staff.BirthDay.HasValue)
+            //if (staff.BirthDay.HasValue)
                 updateStaff.BirthDay = staff.BirthDay.Value;
 
-            if (staff.CategoryId.HasValue)
+            //if (staff.CategoryId.HasValue)
                 updateStaff.CategoryId = staff.CategoryId.Value;
 
-            if (staff.Experience.HasValue)
+            //if (staff.Experience.HasValue)
                 updateStaff.Experience = staff.Experience.Value;
 
-            if(staff.Status.HasValue)
+            //if(staff.Status.HasValue)
                 updateStaff.Status = staff.Status.Value;
 
-            if(staff.Surname is not null)
+            //if(staff.Surname is not null)
                 updateStaff.Surname = staff.Surname;
 
-            if(staff.Name is not null)
+            //if(staff.Name is not null)
                 updateStaff.Name = staff.Name;
 
-            if(staff.Patronymic is not null)
+            //if(staff.Patronymic is not null)
                 updateStaff.Patronymic = staff.Patronymic;
 
-            if(staff.Password is not null)
+            //if(staff.Password is not null)
                 updateStaff.Password = staff.Password;
 
-            if(staff.PhoneNum is not null)
+            //if(staff.PhoneNum is not null)
                 updateStaff.PhoneNum = staff.PhoneNum;
 
-            if (staff.Gender is not null)
+            //if (staff.Gender is not null)
                 updateStaff.Gender = staff.Gender;
+
+            //if (staff.Online.HasValue)
+                updateStaff.Online = staff.Online;
 
             if (role_id == (int)UserRoles.SUPER_ADMIN)
             {
@@ -219,6 +224,56 @@ namespace waPlanner.Services
                 }
                 ).FirstOrDefaultAsync();
         }
+
+        public async Task<viStaff[]> SearchStaffAsync(string name)
+        {
+            int org_id = accessor.GetOrgId();
+            return await (from s in db.tbStaffs
+                         where EF.Functions.ILike(s.Surname, $"%{name}%")
+                         || EF.Functions.ILike(s.Name, $"%{name}%")
+                         || EF.Functions.ILike(s.Patronymic, $"%{name}%")
+                         select s)
+                        .AsNoTracking()
+                        .Where(x => x.Status == 1 && x.RoleId == (int)UserRoles.STAFF && x.OrganizationId == org_id)
+                        .Select(x => new viStaff
+                        {
+                            Id = x.Id,
+                            Name = x.Name,
+                            Surname = x.Surname,
+                            BirthDay = x.BirthDay,
+                            PhoneNum = x.PhoneNum,
+                            Patronymic = x.Patronymic,
+                            TelegramId = x.TelegramId,
+                            Online = x.Online,
+                            Availability = x.Availability,
+                            Experience = x.Experience,
+                            OrganizationId = x.OrganizationId,
+                            Organization = x.Organization.Name,
+                            CategoryId = x.CategoryId,
+                            Category = x.Category.NameUz,
+                            RoleId = x.RoleId,
+                            Photo = x.PhotoUrl,
+                            Gender = x.Gender
+                        })
+                        .ToArrayAsync();
+        }
+
+        //public async Task<viStaffAvailability> GetStaffAvailabilityAsync(int staff_id)
+        //{
+        //    int org_id = accessor.GetOrgId();
+        //    return await db.tbStaffs
+        //        .AsNoTracking()
+        //        .Where(x => x.OrganizationId == org_id &&
+        //        x.Id == staff_id
+        //        && x.Status == 1
+        //        && x.RoleId == (int)UserRoles.STAFF)
+        //        .Select(x => new viStaffAvailability
+        //        {
+        //            StaffId = x.Id,
+        //            Availability = x.Availability
+        //        })
+        //        .FirstOrDefaultAsync();
+        //}
 
         public async ValueTask<Answer<TokenModel>> TokenAsync(LoginModel value)
         {            

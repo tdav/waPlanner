@@ -65,9 +65,15 @@ namespace waPlanner.TelegramBot.keyboards
                         if (await DbManipulations.CheckUser(chat_id, db))
                         {
                             await bot.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора");
-                            await bot.SendTextMessageAsync(chat_id, "Хотите выбранного специалиста в избранное?", replyMarkup: ReplyKeyboards.SendConfirmKeyboards());
                             await DbManipulations.RegistrateUserPlanner(chat_id, cache, db);
-                            cache.State = PlannerStates.ADD_FAVORITES;
+                            if (!await DbManipulations.CheckFavorites(db, cache.Staff, chat_id))
+                            {
+                                await bot.SendTextMessageAsync(chat_id, "Хотите выбранного специалиста в избранное?", replyMarkup: ReplyKeyboards.SendConfirmKeyboards());
+                                cache.State = PlannerStates.ADD_FAVORITES;
+                                break;
+                            }
+                            cache.State = PlannerStates.NONE;
+                            await bot.SendTextMessageAsync(chat_id, "Что пожелаете?☺️", replyMarkup: ReplyKeyboards.MainMenu());
                             break;
                         }
                         else
@@ -79,7 +85,7 @@ namespace waPlanner.TelegramBot.keyboards
                     }
                 default:
                     {
-                        await bot.AnswerCallbackQueryAsync(call.Id, cacheTime: 600);
+                        await bot.AnswerCallbackQueryAsync(call.Id, "Пустая иконка означает, что время уже занято", true);
                         break;
                     }
             }

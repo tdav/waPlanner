@@ -1,8 +1,11 @@
-﻿namespace waPlanner.ModelViews
+﻿using System;
+
+namespace waPlanner.ModelViews
 {
     public class viAppointmentsModel
     {
         public int Id { get; set; }
+        public DateTime AppointmentTime { get; set; }
         public int PatientId { get; set; }
         public string PatientName { get; set; }
         public int StaffId { get; set; }
