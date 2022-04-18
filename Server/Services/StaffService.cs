@@ -26,6 +26,7 @@ namespace waPlanner.Services
         Task UpdateStaff(viStaff staff);
         Task<viStaff> GetStaffById(int staff_id);
         Task<viStaff[]> SearchStaffAsync(string name);
+        Task SetActivity(viStaff staff, bool online);
         //Task<viStaffAvailability> GetStaffAvailabilityAsync(int staff_id);
         ValueTask<Answer< TokenModel>> TokenAsync(LoginModel value);
         ValueTask<AnswerBasic> ChangePaswwordAsync(ChangePasswordModel value);
@@ -135,10 +136,20 @@ namespace waPlanner.Services
         public async Task SetStatusAsync(viStaff staff, int status)
         {
             int user_id = accessor.GetId();
-            var sh = await db.tbStaffs.FindAsync(staff.Id);
-            sh.Status = status;
-            sh.UpdateUser = user_id;
-            sh.UpdateDate = DateTime.Now;
+            var st = await db.tbStaffs.FindAsync(staff.Id);
+            st.Status = status;
+            st.UpdateUser = user_id;
+            st.UpdateDate = DateTime.Now;
+            await db.SaveChangesAsync();
+        }
+
+        public async Task SetActivity(viStaff staff, bool activity)
+        {
+            int user_id = accessor.GetId();
+            var st = await db.tbStaffs.FindAsync(staff.Id);
+            st.Online = activity;
+            st.UpdateDate = DateTime.Now;
+            st.UpdateUser = user_id;
             await db.SaveChangesAsync();
         }
 

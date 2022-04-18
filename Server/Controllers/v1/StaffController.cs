@@ -73,6 +73,12 @@ namespace waPlanner.Controllers.v1
             return service.SearchStaffAsync(name);
         }
 
+        [HttpPost("{activity}/set")]
+        public async Task SetActivity(viStaff staff, bool activity)
+        {
+            await service.SetActivity(staff, activity);
+        }
+
         //[HttpGet("{staff_id}/availability")]
         //public Task<viStaffAvailability> GetAvailability(int staff_id)
         //{

@@ -67,9 +67,10 @@ namespace waPlanner.TelegramBot.handlers
             {
                 if (!Program.Cache.TryGetValue(chat_id, out var obj))
                 {
-                    Program.Cache[chat_id] = new TelegramBotValuesModel { State = PlannerStates.NONE, };
+                    Program.Cache[chat_id] = new TelegramBotValuesModel { State = PlannerStates.NONE };
                 }
                 var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
+                await OnCommands(cache, message.Text, chat_id, db);
                 await OnStateChanged(chat_id, db, message, cache);
             }
         }
@@ -80,69 +81,21 @@ namespace waPlanner.TelegramBot.handlers
             string message_for_user = "";
             string msg = message.Text;
 
-            if (msg == Commands.back_)
-            {
-                switch (cache.State)
-                {
-                    case PlannerStates.SELECT_FAVORITES:
-                        {
-                            cache.State = PlannerStates.NONE;
-                            break;
-                        }
-                    case PlannerStates.ORGANIZATION:
-                        {
-                            cache.State = PlannerStates.NONE;
-                            break;
-                        }
-                    case PlannerStates.CATEGORY:
-                        {
-                            cache.State = PlannerStates.SPECIALIZATION;
-                            break;
-                        }
-                    case PlannerStates.STUFF:
-                        {
-                            cache.State = PlannerStates.ORGANIZATION;
-                            break;
-                        }
-                    case PlannerStates.CHOOSE_DATE:
-                        {
-                            cache.State = PlannerStates.CATEGORY;
-                            break;
-                        }
-                    case PlannerStates.CHOOSE_TIME:
-                        {
-                            cache.State = PlannerStates.CHOOSE_DATE;
-                            break;
-                        }
-                    case PlannerStates.PHONE:
-                        {
-                            cache.State = PlannerStates.CHOOSE_TIME;
-                            await Bot_.SendTextMessageAsync(chat_id, msg, replyMarkup: back);
-                            await Bot_.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
-                            return;
-                        }
-                    case PlannerStates.USERNAME:
-                        {
-                            cache.State = PlannerStates.PHONE;
-                            break;
-                        }
-                    default:
-                        {
-                            break;
-                        }
-                }
-            }
-
-            if (msg == Commands.favorites_)
-                cache.State = PlannerStates.FAVORITES;
-
-            if (msg == Commands.reservation_)
-                cache.State = PlannerStates.SPECIALIZATION;
-
             switch (cache.State)
             {
                 case PlannerStates.NONE:
                     {
+                        await Bot_.SendTextMessageAsync(chat_id, "Выберите язык\nTilni tanlang", replyMarkup: ReplyKeyboards.SendLanguages());
+                        cache.State = PlannerStates.MAIN_MENU;
+                        break;
+                    }
+                case PlannerStates.MAIN_MENU:
+                    {
+                        if (msg == "Русский🇷🇺")
+                            cache.Lang = "ru";
+                        else if (msg == "O'zbekcha🇺🇿")
+                            cache.Lang = "uz";
+                        else return;
                         await Bot_.SendTextMessageAsync(chat_id, "Что пожелаете?☺️", replyMarkup: ReplyKeyboards.MainMenu());
                         break;
                     }
@@ -291,6 +244,67 @@ namespace waPlanner.TelegramBot.handlers
                 await Bot_.SendTextMessageAsync(chat_id, message_for_user, replyMarkup: markup);
                 return;
             }
+        }
+        public static async Task OnCommands(TelegramBotValuesModel cache, string msg, long chat_id, MyDbContext db)
+        {
+            if (msg == Commands.back_)
+            {
+                switch (cache.State)
+                {
+                    case PlannerStates.SELECT_FAVORITES:
+                        {
+                            cache.State = PlannerStates.MAIN_MENU;
+                            break;
+                        }
+                    case PlannerStates.ORGANIZATION:
+                        {
+                            cache.State = PlannerStates.MAIN_MENU;
+                            break;
+                        }
+                    case PlannerStates.CATEGORY:
+                        {
+                            cache.State = PlannerStates.SPECIALIZATION;
+                            break;
+                        }
+                    case PlannerStates.STUFF:
+                        {
+                            cache.State = PlannerStates.ORGANIZATION;
+                            break;
+                        }
+                    case PlannerStates.CHOOSE_DATE:
+                        {
+                            cache.State = PlannerStates.CATEGORY;
+                            break;
+                        }
+                    case PlannerStates.CHOOSE_TIME:
+                        {
+                            cache.State = PlannerStates.CHOOSE_DATE;
+                            break;
+                        }
+                    case PlannerStates.PHONE:
+                        {
+                            cache.State = PlannerStates.CHOOSE_TIME;
+                            await Bot_.SendTextMessageAsync(chat_id, msg, replyMarkup: back);
+                            await Bot_.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
+                            return;
+                        }
+                    case PlannerStates.USERNAME:
+                        {
+                            cache.State = PlannerStates.PHONE;
+                            break;
+                        }
+                    default:
+                        {
+                            break;
+                        }
+                }
+            }
+
+            if (msg == Commands.favorites_)
+                cache.State = PlannerStates.FAVORITES;
+
+            if (msg == Commands.reservation_)
+                cache.State = PlannerStates.SPECIALIZATION;
         }
     }
 }

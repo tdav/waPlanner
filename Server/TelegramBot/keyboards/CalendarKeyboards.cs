@@ -110,6 +110,12 @@ namespace waPlanner.TelegramBot.keyboards
                     {
                         if (date >= DateTime.Today)
                         {
+                            int[] staff_avail = await DbManipulations.CheckStaffAvailability(db, cache.Staff);
+                            if (staff_avail[(int)date.DayOfWeek] == 0)
+                            {
+                                await bot.AnswerCallbackQueryAsync(call.Id, "В этот день специалист не работает", true);
+                                return;
+                            }
                             var freeDay = await DbManipulations.CheckFreeDay(db, cache.Staff, date);
                             if (freeDay < 16)
                             {
