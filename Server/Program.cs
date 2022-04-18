@@ -6,12 +6,14 @@ using Serilog.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using waPlanner.ModelViews;
 using waPlanner.TelegramBot;
 
 namespace waPlanner
 {
     public class Program
     {
+        public static LangsModel langs;
         public static Dictionary<long, object> Cache = new Dictionary<long, object>();
         public static void Main(string[] args)
         {
@@ -49,6 +51,7 @@ namespace waPlanner
                       .ConfigureAppConfiguration(configuration =>
                       {
                           configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                          configuration.AddJsonFile("lang.json", optional: false, reloadOnChange: true);
                       })
                       .UseSerilog();
         }
@@ -60,6 +63,7 @@ namespace waPlanner
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile("lang.json", optional: false, reloadOnChange: true)
                 .Build();
 
             Log.Logger = new LoggerConfiguration()

@@ -13,6 +13,7 @@ using waPlanner.TelegramBot.keyboards;
 using waPlanner.TelegramBot.Utils;
 using System.Text.RegularExpressions;
 
+
 namespace waPlanner.TelegramBot.handlers
 {
     public class Handlers
@@ -22,6 +23,8 @@ namespace waPlanner.TelegramBot.handlers
 
         public static Task HandleErrorAsync(ITelegramBotClient bot, Exception exception, CancellationToken cancellationToken)
         {
+            
+
             var ErrorMessage = exception switch
             {
                 ApiRequestException apiRequestException => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
@@ -30,6 +33,7 @@ namespace waPlanner.TelegramBot.handlers
             Console.WriteLine(ErrorMessage);
             return Task.CompletedTask;
         }
+
         public static async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken cancellationToken)
         {
             var handler = update.Type switch
@@ -62,6 +66,9 @@ namespace waPlanner.TelegramBot.handlers
         private static async Task BotOnMessageReceived(Message message)
         {
             long chat_id = message.Chat.Id;
+
+            Program.langs.Get("", "");
+
 
             using (var db = new MyDbContextFactory().CreateDbContext(null))
             {

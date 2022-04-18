@@ -29,8 +29,8 @@ namespace waPlanner
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var section = conf.GetSection("SystemVars");
-            services.Configure<Vars>(section);
+            services.AddOptions();            
+            services.Configure<Vars>(conf.GetSection("SystemVars")); 
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IHttpContextAccessorExtensions, HttpContextAccessorExtensions>();
