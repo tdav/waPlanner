@@ -22,10 +22,10 @@ namespace waPlanner.Controllers.v1
             this.service = service;
         }
 
-        [HttpPost("add_new")]
-        public async Task AddNewPatient(viPatient patient)
+        [HttpPost("new")]
+        public async Task<viPatient> AddNewPatient(viPatient patient)
         {
-            await service.AddAsync(patient);
+           return await service.AddAsync(patient);
         }
 
         [HttpPost("change")]
@@ -34,13 +34,13 @@ namespace waPlanner.Controllers.v1
             await service.UpdateAsync(patient);
         }
 
-        [HttpPost("change_status/{status}")]
+        [HttpPost("{status}/change")]
         public async Task UpdatePatientStatus(viPatient patient, byte status)
         {
             await service.SetStatusAsync(patient, status);
         }
 
-        [HttpGet("get_all")]
+        [HttpGet("all")]
         public async Task<viPatient[]> GetPateintsAsync()
         {
             return await service.GetAllAsync();

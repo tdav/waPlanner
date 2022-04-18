@@ -16,6 +16,8 @@ namespace waPlanner.TelegramBot.keyboards
         public static async Task<InlineKeyboardMarkup> SendTimeKeyboards(MyDbContext db, TelegramBotValuesModel value)
         {
             var doctorsDate = await DbManipulations.GetStaffBusyTime(db, value);
+            int[] staff_avail = await DbManipulations.CheckStaffAvailability(db, value.Staff);
+            int dayOfWeek = (int)value.Calendar.DayOfWeek;
 
             List<string> appointmentTime = new();
             List<DateTime> appointmentDate = new();
@@ -27,10 +29,17 @@ namespace waPlanner.TelegramBot.keyboards
 
             TimeSpan time = new(10, 0, 0);
             TimeSpan offset = new(0, 30, 0);
+            int row_limit = 4;
+
+            if(staff_avail[dayOfWeek] == 2)
+            {
+                time = new(14, 0, 0);
+                row_limit = 2;
+            }
 
             var keyboards = new List<List<InlineKeyboardButton>>();
 
-            for (int row = 0; row < 4; row++)
+            for (int row = 0; row < row_limit; row++)
             {
                 var times_row = new List<InlineKeyboardButton>();
                 for (int col = 0; col < 4; col++)
@@ -65,9 +74,15 @@ namespace waPlanner.TelegramBot.keyboards
                         if (await DbManipulations.CheckUser(chat_id, db))
                         {
                             await bot.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора");
-                            await bot.SendTextMessageAsync(chat_id, "Хотите выбранного специалиста в избранное?", replyMarkup: ReplyKeyboards.SendConfirmKeyboards());
                             await DbManipulations.RegistrateUserPlanner(chat_id, cache, db);
-                            cache.State = PlannerStates.ADD_FAVORITES;
+                            if (!await DbManipulations.CheckFavorites(db, cache.Staff, chat_id))
+                            {
+                                await bot.SendTextMessageAsync(chat_id, "Хотите выбранного специалиста в избранное?", replyMarkup: ReplyKeyboards.SendConfirmKeyboards());
+                                cache.State = PlannerStates.ADD_FAVORITES;
+                                break;
+                            }
+                            cache.State = PlannerStates.NONE;
+                            await bot.SendTextMessageAsync(chat_id, "Что пожелаете?☺️", replyMarkup: ReplyKeyboards.MainMenu());
                             break;
                         }
                         else
@@ -79,7 +94,7 @@ namespace waPlanner.TelegramBot.keyboards
                     }
                 default:
                     {
-                        await bot.AnswerCallbackQueryAsync(call.Id, cacheTime: 600);
+                        await bot.AnswerCallbackQueryAsync(call.Id, "Пустая иконка означает, что время уже занято", true);
                         break;
                     }
             }

@@ -29,7 +29,7 @@ namespace waPlanner.Controllers.v1
             return await service.GetCategoryByIdAsync(category_id);
         }
 
-        [HttpGet("get_all_categories")]
+        [HttpGet("all_categories")]
         public async Task<viCategory[]> GetAll()
         {
 
@@ -48,7 +48,7 @@ namespace waPlanner.Controllers.v1
             await service.UpdateAsync(value);
         }
 
-        [HttpPost("change_status/{status}")]
+        [HttpPost("{status}/change")]
         public async Task ChangeCategoryStatus([FromBody] viCategory value, int status)
         {
             await service.ChangeCategoryStatus(value, status);

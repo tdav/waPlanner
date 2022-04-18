@@ -52,11 +52,12 @@ namespace waPlanner.Services
                 .Select(x => new viAppointmentsModel
                 {
                     Id = x.Id,
+                    AppointmentTime = x.AppointmentDateTime,
                     PatientId = x.User.Id,
-                    PatientName = x.User.Name,
+                    PatientName = $"{x.User.Surname} {x.User.Name} {x.User.Patronymic}",
                     StaffId = x.Staff.Id,
-                    StaffName = $"{x.Staff.Name} {x.Staff.Surname}",
-                    Symptoms = x.AdInfo ?? "Нет данных"
+                    StaffName = $"{x.Staff.Surname} {x.Staff.Name} {x.Staff.Patronymic}",
+                    Symptoms = x.AdInfo
                 })
                 .Take(20)
                 .ToListAsync();
@@ -74,12 +75,11 @@ namespace waPlanner.Services
                 {
                     Id = x.Id,
                     PersonName = x.User.Name,
-                    DpInfo = x.AdInfo ?? "Нет данных",
+                    DpInfo = x.AdInfo,
                     CreateDate = x.CreateDate
                 })
                 .Take(20)
                 .ToListAsync();
-
         }
 
         public async Task<List<viSchedulerDiagramma>> GetSchedulerDiagramma()
@@ -89,14 +89,14 @@ namespace waPlanner.Services
                 .AsNoTracking()
                 .Include(x => x.Category)
                 .Where(x => x.OrganizationId == org_id &&
-                       x.CreateDate >= DateTime.Now.Date.AddMonths(-1) &&
-                       x.CreateDate <= DateTime.Now)
-                .GroupBy(g => new { g.Category.NameUz, g.CreateDate.Date })
+                       x.AppointmentDateTime >= DateTime.Now.Date.AddMonths(-1) &&
+                       x.AppointmentDateTime.Date.Month <= DateTime.Now.Date.Month)
+                .GroupBy(g => new { g.Category.NameUz, g.AppointmentDateTime.Date })
                 .Select(x => new viSchedulerDiagramma
                 {
                     Cnt = x.Count(),
                     Category = x.Key.NameUz,
-                    CreateDate = x.Key.Date
+                    AppointmentDate = x.Key.Date
                 })
                 .ToListAsync();
         }

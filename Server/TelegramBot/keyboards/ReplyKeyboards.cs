@@ -4,14 +4,28 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
-using waPlanner.Database;
 using waPlanner.ModelViews;
-using waPlanner.TelegramBot.Utils;
+
 
 namespace waPlanner.TelegramBot.keyboards
 {
     public class ReplyKeyboards
     {
+        public static ReplyKeyboardMarkup SendLanguages()
+        {
+            ReplyKeyboardMarkup markup = new(
+                new[]
+                {
+                        new KeyboardButton[] { "Русский🇷🇺" },
+                        new KeyboardButton[] { "O'zbekcha🇺🇿" }
+                })
+            {
+                ResizeKeyboard = true
+            };
+
+            return markup;
+        }
+
         public static List<List<KeyboardButton>> SendKeyboards(List<IdValue> items, int columns = 2)
         {
             var keyboards = new List<List<KeyboardButton>>();
@@ -28,26 +42,6 @@ namespace waPlanner.TelegramBot.keyboards
                 }
             }
           
-            if (keyboards.Count != 0 || keyboards.Count % 2 == 0)
-                keyboards.Add(buttons);
-            return keyboards;
-        }
-
-        public static List<List<KeyboardButton>> GetMenu((List<IdValue> list, bool IsCategory) menu, int columns = 2)
-        {
-            var keyboards = new List<List<KeyboardButton>>();
-            var buttons = new List<KeyboardButton>();
-
-            foreach (var item in menu.list)
-            {
-                buttons.Add(new KeyboardButton(item.Name));
-
-                if(buttons.Count % columns == 0)
-                {
-                    keyboards.Add(buttons);
-                    buttons = new List<KeyboardButton>();
-                }
-            }
             if (keyboards.Count != 0 || keyboards.Count % 2 == 0)
                 keyboards.Add(buttons);
             return keyboards;

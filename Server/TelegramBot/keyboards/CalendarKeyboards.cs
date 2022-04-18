@@ -7,7 +7,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 using Telegram.Bot.Types.Enums;
 using waPlanner.Database;
 using waPlanner.ModelViews;
-
+using waPlanner.TelegramBot.Utils;
 
 namespace waPlanner.TelegramBot.keyboards
 {
@@ -110,19 +110,35 @@ namespace waPlanner.TelegramBot.keyboards
                     {
                         if (date >= DateTime.Today)
                         {
-                            cache.State = PlannerStates.CHOOSE_TIME;
-                            cache.Calendar = date;
-                            try
+                            int[] staff_avail = await DbManipulations.CheckStaffAvailability(db, cache.Staff);
+                            if (staff_avail[(int)date.DayOfWeek] == 0)
                             {
-                                await bot.DeleteMessageAsync(chat_id, messageId);
+                                await bot.AnswerCallbackQueryAsync(call.Id, "В этот день специалист не работает", true);
+                                return;
                             }
-                            catch
+                            var freeDay = await DbManipulations.CheckFreeDay(db, cache.Staff, date);
+                            if (freeDay < 16)
                             {
-                                
+                                cache.State = PlannerStates.CHOOSE_TIME;
+                                cache.Calendar = date;
+                                try
+                                {
+                                    await bot.DeleteMessageAsync(chat_id, messageId);
+                                }
+                                catch
+                                {
+
+                                }
+                                await bot.SendTextMessageAsync(chat_id, $"Выбрана дата: <b>{date.ToShortDateString()}</b>", replyMarkup: back, parseMode: ParseMode.Html);
+                                await bot.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
+                                return;
                             }
-                            await bot.SendTextMessageAsync(chat_id, $"Выбрана дата: <b>{date.ToShortDateString()}</b>", replyMarkup: back, parseMode: ParseMode.Html);
-                            await bot.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
-                            return;
+                            else
+                            {
+                                await bot.AnswerCallbackQueryAsync(call.Id, "В это число у этого специалиста забронирован весь день", true);
+                                return;
+                            }
+                        
                         }
                         await bot.AnswerCallbackQueryAsync(call.Id, "Нельзя выбирать старую дату!", true);
                         break;

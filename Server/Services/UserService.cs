@@ -14,7 +14,7 @@ namespace waPlanner.Services
     {
         Task UpdateAsync(viPatient patient);
         Task SetStatusAsync(viPatient viPatient, int status);
-        Task<int> AddAsync(viPatient patient);
+        Task<viPatient> AddAsync(viPatient patient);
 
         Task<viPatient[]> GetAllAsync();
         Task<viPatient> GetAsync(int user_id);        
@@ -24,10 +24,10 @@ namespace waPlanner.Services
     {
         private readonly MyDbContext db;
         private readonly IHttpContextAccessorExtensions accessor;
-        public UserService(MyDbContext myDb, IHttpContextAccessorExtensions accessor)
+        public UserService(MyDbContext db, IHttpContextAccessorExtensions accessor)
         {
             this.accessor = accessor;
-            this.db = myDb;
+            this.db = db;
         }
 
         public async Task UpdateAsync(viPatient vipatient)
@@ -70,7 +70,7 @@ namespace waPlanner.Services
             await db.SaveChangesAsync();
         }
 
-        public async Task<int> AddAsync(viPatient patient)
+        public async Task<viPatient> AddAsync(viPatient patient)
         {
             var user_id = accessor.GetId();
             var newPatient = new tbUser
@@ -88,7 +88,16 @@ namespace waPlanner.Services
             await db.tbUsers.AddAsync(newPatient);
             await db.SaveChangesAsync();
 
-            return newPatient.Id;
+            return new viPatient
+            {
+                Id = patient.Id,
+                Name = patient.Name,
+                Patronymic = patient.Patronymic,
+                Surname = patient.Surname,
+                Gender = patient.Gender,
+                Phone = patient.Phone,
+                BirthDay = patient.BirthDay,
+            };
         }
 
         public async Task<viPatient[]> GetAllAsync()
@@ -102,11 +111,12 @@ namespace waPlanner.Services
                 {
                     Id = x.User.Id,
                     Name = x.User.Name,
-                    AdInfo = x.AdInfo ?? "Нет данных",
+                    AdInfo = x.AdInfo,
                     Phone = x.User.PhoneNum,
                     BirthDay = x.User.BirthDay,
-                    Gender = x.User.Gender ?? "Нет данных"
+                    Gender = x.User.Gender
                 })
+                .Distinct()
                 .ToArrayAsync();
         }
 
@@ -121,8 +131,8 @@ namespace waPlanner.Services
                     Name = x.Name,
                     Patronymic = x.Patronymic,
                     Surname = x.Surname,
-                    Gender = x.Gender ?? "Нет данных",
-                    Phone = x.PhoneNum ?? "Нет Данных",
+                    Gender = x.Gender,
+                    Phone = x.PhoneNum,
                     BirthDay = x.BirthDay,
                 })
                 .FirstOrDefaultAsync();

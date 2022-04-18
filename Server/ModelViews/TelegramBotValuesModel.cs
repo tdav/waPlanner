@@ -13,6 +13,7 @@ namespace waPlanner.ModelViews
         public string Time { get; set; }
         public string Phone { get; set; }
         public string UserName { get; set; }
+        public string Lang { get; set; }
 
         public PlannerStates State { get; set; }
 
