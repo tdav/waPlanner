@@ -49,10 +49,10 @@ namespace waPlanner.Controllers.v1
             await service.AddStaffAsync(staff);
         }
 
-        [HttpPost("{status}/change")]
-        public async Task ChagneStaffStatus(viStaff staff, int status)
+        [HttpPost("{staff_id}/{status}/change")]
+        public async Task ChagneStaffStatus(int staff_id, int status)
         {
-            await service.SetStatusAsync(staff, status);
+            await service.SetStatusAsync(staff_id, status);
         }
 
         [HttpPost("change")]
@@ -73,10 +73,10 @@ namespace waPlanner.Controllers.v1
             return service.SearchStaffAsync(name);
         }
 
-        [HttpPost("{activity}/set")]
-        public async Task SetActivity(viStaff staff, bool activity)
+        [HttpPost("{staff_id}/{activity}/set")]
+        public async Task SetActivity(int staff_id, bool activity)
         {
-            await service.SetActivity(staff, activity);
+            await service.SetActivity(staff_id, activity);
         }
 
         //[HttpGet("{staff_id}/availability")]

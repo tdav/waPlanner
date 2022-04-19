@@ -75,7 +75,7 @@ namespace waPlanner.TelegramBot.keyboards
                         {
                             await bot.SendTextMessageAsync(chat_id, Program.langs[cache.Lang]["BID"]);
                             await DbManipulations.RegistrateUserPlanner(chat_id, cache, db);
-                            await Utils.Utils.OnFinish(cache, bot, db);
+                            await Utils.Utils.SendOrder(cache, bot, db);
                             if (!await DbManipulations.CheckFavorites(db, cache.Staff, chat_id))
                             {
                                 await bot.SendTextMessageAsync(chat_id, Program.langs[cache.Lang]["ADD_FAVORITES"], replyMarkup: ReplyKeyboards.SendConfirmKeyboards(cache.Lang));

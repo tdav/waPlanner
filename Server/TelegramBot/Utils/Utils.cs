@@ -20,7 +20,7 @@ namespace waPlanner.TelegramBot.Utils
             return false;
         }
 
-        public static async Task OnFinish(TelegramBotValuesModel cache, ITelegramBotClient bot, MyDbContext db)
+        public static async Task SendOrder(TelegramBotValuesModel cache, ITelegramBotClient bot, MyDbContext db)
         {
             long group_id = await DbManipulations.GetGroupId(db, cache.Organization);
             string order = $"Новое поступление\n\n" +

@@ -13,7 +13,7 @@ namespace waPlanner.Services
     public interface IUserService
     {
         Task UpdateAsync(viPatient patient);
-        Task SetStatusAsync(viPatient viPatient, int status);
+        Task SetStatusAsync(int patient, int status);
         Task<viPatient> AddAsync(viPatient patient);
 
         Task<viPatient[]> GetAllAsync();
@@ -60,10 +60,10 @@ namespace waPlanner.Services
             await db.SaveChangesAsync();    
         }
 
-        public async Task SetStatusAsync(viPatient viPatient, int status)
+        public async Task SetStatusAsync(int patient_id, int status)
         {
             int user_id = accessor.GetId();
-            var patient = await db.tbUsers.FindAsync(viPatient.Id);
+            var patient = await db.tbUsers.FindAsync(patient_id);
             patient.Status = status;
             patient.UpdateDate = DateTime.Now;
             patient.UpdateUser = user_id;

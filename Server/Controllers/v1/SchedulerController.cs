@@ -32,10 +32,10 @@ namespace waPlanner.Controllers.v1
             await service.UpdateSchedulerAsync(scheduler);
         }
 
-        [HttpPost("{status}/change_status")]
-        public async Task UpdateSchedulerStatus([FromBody] viScheduler scheduler, int status)
+        [HttpPost("{scheduler_id}/{status}/change_status")]
+        public async Task UpdateSchedulerStatus(int scheduler_id, int status)
         {
-            await service.UpdateSchedulerStatus(scheduler, status);
+            await service.UpdateSchedulerStatus(scheduler_id, status);
         }
 
         [HttpGet("{scheduler_id}")]

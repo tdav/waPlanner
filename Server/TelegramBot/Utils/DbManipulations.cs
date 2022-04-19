@@ -257,8 +257,6 @@ namespace waPlanner.TelegramBot.Utils
             await db.SaveChangesAsync();
         }
 
-        public
-
         public static async Task<long> GetGroupId(MyDbContext db, string org_name)
         {
             var chat = await db.spOrganizations

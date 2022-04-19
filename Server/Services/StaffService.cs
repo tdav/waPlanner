@@ -22,11 +22,11 @@ namespace waPlanner.Services
         Task<viStaff[]> GetStaffByOrganizationId();
         Task AddStaffAsync(viStaff user);
         Task<List<IdValue>> GetStuffList(int category_id);
-        Task SetStatusAsync(viStaff staff, int status);
+        Task SetStatusAsync(int staff_id, int status);
         Task UpdateStaff(viStaff staff);
         Task<viStaff> GetStaffById(int staff_id);
         Task<viStaff[]> SearchStaffAsync(string name);
-        Task SetActivity(viStaff staff, bool online);
+        Task SetActivity(int staff_id, bool online);
         //Task<viStaffAvailability> GetStaffAvailabilityAsync(int staff_id);
         ValueTask<Answer< TokenModel>> TokenAsync(LoginModel value);
         ValueTask<AnswerBasic> ChangePaswwordAsync(ChangePasswordModel value);
@@ -133,20 +133,20 @@ namespace waPlanner.Services
                            ).ToListAsync();
         }
 
-        public async Task SetStatusAsync(viStaff staff, int status)
+        public async Task SetStatusAsync(int staff_id, int status)
         {
             int user_id = accessor.GetId();
-            var st = await db.tbStaffs.FindAsync(staff.Id);
+            var st = await db.tbStaffs.FindAsync(staff_id);
             st.Status = status;
             st.UpdateUser = user_id;
             st.UpdateDate = DateTime.Now;
             await db.SaveChangesAsync();
         }
 
-        public async Task SetActivity(viStaff staff, bool activity)
+        public async Task SetActivity(int staff_id, bool activity)
         {
             int user_id = accessor.GetId();
-            var st = await db.tbStaffs.FindAsync(staff.Id);
+            var st = await db.tbStaffs.FindAsync(staff_id);
             st.Online = activity;
             st.UpdateDate = DateTime.Now;
             st.UpdateUser = user_id;
