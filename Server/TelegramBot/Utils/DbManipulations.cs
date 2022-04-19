@@ -99,7 +99,7 @@ namespace waPlanner.TelegramBot.Utils
             await db.SaveChangesAsync();
         }
 
-        private static async Task<int> GetUserId(long chat_id, MyDbContext db)
+        public static async Task<int> GetUserId(long chat_id, MyDbContext db)
         {
             var user_id = await db.tbUsers.AsNoTracking().FirstOrDefaultAsync(x => x.TelegramId == chat_id);
             if(user_id is not null)
@@ -240,13 +240,31 @@ namespace waPlanner.TelegramBot.Utils
             return true;
         }
 
-        
-        //public static async Task<long> GetGroupId(MyDbContext db)
-        //{
-        //    var chat = await db.spOrganizations
-        //        .AsNoTracking()
-        //        .FirstAsync(x => x.TypeId == 1);
-        //    return chat.Id;
-        //}
+        public static async Task UpdateUserName(MyDbContext db, long chat_id, string name)
+        {
+            var user_id = await GetUserId(chat_id, db);
+            var user = new tbUser() { Id = user_id, Name = name };
+            db.tbUsers.Attach(user);
+            db.Entry(user).Property(x => x.Name).IsModified = true;
+            await db.SaveChangesAsync();
+        }
+        public static async Task UpdateUserPhone(MyDbContext db, long chat_id, string phone)
+        {
+            var user_id = await GetUserId(chat_id, db);
+            var user = new tbUser() { Id = user_id, PhoneNum = phone };
+            db.tbUsers.Attach(user);
+            db.Entry(user).Property(x => x.PhoneNum).IsModified = true;
+            await db.SaveChangesAsync();
+        }
+
+        public
+
+        public static async Task<long> GetGroupId(MyDbContext db, string org_name)
+        {
+            var chat = await db.spOrganizations
+                .AsNoTracking()
+                .FirstAsync(x => x.Name == org_name);
+            return chat.ChatId;
+        }
     }
 }

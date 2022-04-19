@@ -113,7 +113,7 @@ namespace waPlanner.TelegramBot.keyboards
                             int[] staff_avail = await DbManipulations.CheckStaffAvailability(db, cache.Staff);
                             if (staff_avail[(int)date.DayOfWeek] == 0)
                             {
-                                await bot.AnswerCallbackQueryAsync(call.Id, "В этот день специалист не работает", true);
+                                await bot.AnswerCallbackQueryAsync(call.Id, Program.langs[cache.Lang]["BUSY_DATE"], true);
                                 return;
                             }
                             var freeDay = await DbManipulations.CheckFreeDay(db, cache.Staff, date);
@@ -129,18 +129,18 @@ namespace waPlanner.TelegramBot.keyboards
                                 {
 
                                 }
-                                await bot.SendTextMessageAsync(chat_id, $"Выбрана дата: <b>{date.ToShortDateString()}</b>", replyMarkup: back, parseMode: ParseMode.Html);
-                                await bot.SendTextMessageAsync(chat_id, "Выберите удобное для вас время.", replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
+                                await bot.SendTextMessageAsync(chat_id, $"{Program.langs[cache.Lang]["CHOOSEN_DATE"]} <b>{date.ToShortDateString()}</b>", replyMarkup: back, parseMode: ParseMode.Html);
+                                await bot.SendTextMessageAsync(chat_id, Program.langs[cache.Lang]["CUZY_TIME"], replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
                                 return;
                             }
                             else
                             {
-                                await bot.AnswerCallbackQueryAsync(call.Id, "В это число у этого специалиста забронирован весь день", true);
+                                await bot.AnswerCallbackQueryAsync(call.Id, Program.langs[cache.Lang]["BOOKED_ALL_DAY"], true);
                                 return;
                             }
                         
                         }
-                        await bot.AnswerCallbackQueryAsync(call.Id, "Нельзя выбирать старую дату!", true);
+                        await bot.AnswerCallbackQueryAsync(call.Id, Program.langs[cache.Lang]["OLD_DATE"], true);
                         break;
                     }
                 case "i":
@@ -153,11 +153,11 @@ namespace waPlanner.TelegramBot.keyboards
             }
         }
 
-        public static async Task SendCalendar(TelegramBotClient bot, long chat_id, ReplyKeyboardMarkup back)
+        public static async Task SendCalendar(TelegramBotClient bot, long chat_id, ReplyKeyboardMarkup back, string lg)
         {
             var date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            await bot.SendTextMessageAsync(chat_id, "Выберите удобное для вас число.", replyMarkup: back);
-            await bot.SendTextMessageAsync(chat_id, "Календарь", replyMarkup: Calendar(ref date));
+            await bot.SendTextMessageAsync(chat_id, Program.langs[lg]["CUZY_DATE"], replyMarkup: back);
+            await bot.SendTextMessageAsync(chat_id, Program.langs[lg]["CALENDAR"], replyMarkup: Calendar(ref date));
         }
     }
 }

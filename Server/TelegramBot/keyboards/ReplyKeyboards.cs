@@ -47,15 +47,15 @@ namespace waPlanner.TelegramBot.keyboards
             return keyboards;
         }
 
-        public static ReplyKeyboardMarkup MainMenu()
+        public static ReplyKeyboardMarkup MainMenu(string lg)
         {
             ReplyKeyboardMarkup markup = new(
                 new[]
                 {
-                        new KeyboardButton[] { "Сделать бронь📄" },
-                        new KeyboardButton[] { "Избранное🌟", "Настройки🛠" },
-                        new KeyboardButton[] { "Оcтавить отзыв💌", "О нас💬" },
-                        new KeyboardButton[] { "Контакты📱" },
+                        new KeyboardButton[] { Program.langs[lg]["book"] },
+                        new KeyboardButton[] { Program.langs[lg]["favorites"], Program.langs[lg]["settings"] },
+                        new KeyboardButton[] { Program.langs[lg]["feedback"], Program.langs[lg]["about_us"] },
+                        new KeyboardButton[] { Program.langs[lg]["contacts"] },
                 })
             {
                 ResizeKeyboard = true
@@ -64,32 +64,45 @@ namespace waPlanner.TelegramBot.keyboards
             return markup;
         }
 
-        public static async Task<Message> RequestContactAsync(ITelegramBotClient bot, long chat_id)
+        public static ReplyKeyboardMarkup Settings(string lg)
+        {
+            ReplyKeyboardMarkup markup = new(
+                new[]
+                {
+                        new KeyboardButton[] { Program.langs[lg]["change_name"], Program.langs[lg]["change_lang"] },
+                        new KeyboardButton[] { Program.langs[lg]["change_phone"], Program.langs[lg]["back"] }
+                })
+            {
+                ResizeKeyboard = true
+            };
+            return markup;
+        }
+
+        public static async Task<Message> RequestContactAsync(ITelegramBotClient bot, long chat_id, string lg)
         {
             ReplyKeyboardMarkup markup = new(
                 new[]
                 {
                     new[]
                     {
-                        KeyboardButton.WithRequestContact("Отправить номер телефона📞")
+                        KeyboardButton.WithRequestContact(Program.langs[lg]["SEND_CONTACT"])
                     },
                     new[]
                     {
-                        new KeyboardButton("⬅️Назад")
+                        new KeyboardButton(Program.langs[lg]["back"])
                     }
                 })
             { ResizeKeyboard = true};
-            return await bot.SendTextMessageAsync(chat_id, "Отправьте ваш действительный номер телефона, " +
-                        "нажав на кнопку <b>(Отправить номер телефона📞)</b> или введите в следующем типе: <b>+998 xx xxx xxx xxx</b>",
+            return await bot.SendTextMessageAsync(chat_id, Program.langs[lg]["CONTACT_MESSAGE"],
                         replyMarkup: markup, parseMode: ParseMode.Html); ;
         }
 
-        public static ReplyKeyboardMarkup SendConfirmKeyboards()
+        public static ReplyKeyboardMarkup SendConfirmKeyboards(string lg)
         {
             ReplyKeyboardMarkup markup = new(
                 new[]
                 {
-                    new KeyboardButton[]{"Да✅", "Нет❌"}
+                    new KeyboardButton[]{ Program.langs[lg]["YES"], Program.langs[lg]["NO"] }
                 })
             { ResizeKeyboard = true };
             return markup;

@@ -22,5 +22,11 @@
 
         FAVORITES = 21,
         SELECT_FAVORITES = 22,
+
+        SETTINGS = 31,
+        PREPARE_CHANGE_NAME = 32,
+        CHANGE_NAME = 33,
+        CHANGE_PHONE = 34,
+        CHANGE_LANG = 35
     }
 }

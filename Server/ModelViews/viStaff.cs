@@ -18,13 +18,12 @@ namespace waPlanner.ModelViews
         public string Organization { get; set; }
 
         public int RoleId { get; set; }
-        public string Role { get; set; }
+        //public string Role { get; set; }
 
         public long? TelegramId { get; set; }
         public bool? Online { get; set; }
         public DateTime? Experience { get; set; }
         public int[] Availability { get; set; }
-        public DateTime CreateDate { get; set; }
         public string Photo { get; set; }
         public string Password { get; set; }
         public int? Status { get; set; }

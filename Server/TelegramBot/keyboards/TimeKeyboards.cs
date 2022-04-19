@@ -70,31 +70,32 @@ namespace waPlanner.TelegramBot.keyboards
                 case "TIME":
                     {
                         cache.Time = data[1];
-                        await bot.EditMessageTextAsync(chat_id, call.Message.MessageId, $"Выбрано время:<b>{data[1]}</b>", parseMode: ParseMode.Html);
+                        await bot.EditMessageTextAsync(chat_id, call.Message.MessageId, $"{Program.langs[cache.Lang]["CHOOSEN_TIME"]} <b>{data[1]}</b>", parseMode: ParseMode.Html);
                         if (await DbManipulations.CheckUser(chat_id, db))
                         {
-                            await bot.SendTextMessageAsync(chat_id, "Ваша заявка принята, ждите звонка от оператора");
+                            await bot.SendTextMessageAsync(chat_id, Program.langs[cache.Lang]["BID"]);
                             await DbManipulations.RegistrateUserPlanner(chat_id, cache, db);
+                            await Utils.Utils.OnFinish(cache, bot, db);
                             if (!await DbManipulations.CheckFavorites(db, cache.Staff, chat_id))
                             {
-                                await bot.SendTextMessageAsync(chat_id, "Хотите выбранного специалиста в избранное?", replyMarkup: ReplyKeyboards.SendConfirmKeyboards());
+                                await bot.SendTextMessageAsync(chat_id, Program.langs[cache.Lang]["ADD_FAVORITES"], replyMarkup: ReplyKeyboards.SendConfirmKeyboards(cache.Lang));
                                 cache.State = PlannerStates.ADD_FAVORITES;
                                 break;
                             }
                             cache.State = PlannerStates.NONE;
-                            await bot.SendTextMessageAsync(chat_id, "Что пожелаете?☺️", replyMarkup: ReplyKeyboards.MainMenu());
+                            await bot.SendTextMessageAsync(chat_id, Program.langs[cache.Lang]["NONE"], replyMarkup: ReplyKeyboards.MainMenu(cache.Lang));
                             break;
                         }
                         else
                         {
                             cache.State = PlannerStates.PHONE;
-                            await ReplyKeyboards.RequestContactAsync(bot, chat_id);
+                            await ReplyKeyboards.RequestContactAsync(bot, chat_id, cache.Lang);
                             break;
                         }
                     }
                 default:
                     {
-                        await bot.AnswerCallbackQueryAsync(call.Id, "Пустая иконка означает, что время уже занято", true);
+                        await bot.AnswerCallbackQueryAsync(call.Id, Program.langs[cache.Lang]["EMPTY_ICON"], true);
                         break;
                     }
             }

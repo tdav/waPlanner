@@ -64,7 +64,7 @@ namespace waPlanner.Services
                     PhoneNum = x.PhoneNum,
                     Patronymic = x.Patronymic,
                     TelegramId = x.TelegramId,
-                    Online = x.Online,
+                    Online = x.Online.HasValue,
                     Availability = x.Availability,
                     Experience = x.Experience,
                     OrganizationId = x.OrganizationId,
@@ -170,22 +170,22 @@ namespace waPlanner.Services
             //if (staff.Experience.HasValue)
                 updateStaff.Experience = staff.Experience.Value;
 
-            //if(staff.Status.HasValue)
+            if (staff.Status.HasValue)
                 updateStaff.Status = staff.Status.Value;
 
-            //if(staff.Surname is not null)
-                updateStaff.Surname = staff.Surname;
+            //if (staff.Surname is not null)
+            updateStaff.Surname = staff.Surname;
 
-            //if(staff.Name is not null)
+            //if (staff.Name is not null)
                 updateStaff.Name = staff.Name;
 
-            //if(staff.Patronymic is not null)
+            //if (staff.Patronymic is not null)
                 updateStaff.Patronymic = staff.Patronymic;
 
-            //if(staff.Password is not null)
+            if (staff.Password is not null)
                 updateStaff.Password = staff.Password;
 
-            //if(staff.PhoneNum is not null)
+            //if (staff.PhoneNum is not null)
                 updateStaff.PhoneNum = staff.PhoneNum;
 
             //if (staff.Gender is not null)
@@ -200,6 +200,7 @@ namespace waPlanner.Services
                 org_id = staff.OrganizationId.Value;
             }
 
+            updateStaff.Availability = staff.Availability;
             updateStaff.OrganizationId = org_id;
             updateStaff.RoleId = staff_role;
             updateStaff.UpdateDate = DateTime.Now;
@@ -222,7 +223,7 @@ namespace waPlanner.Services
                     PhoneNum = x.PhoneNum,
                     Patronymic = x.Patronymic,
                     TelegramId = x.TelegramId,
-                    Online = x.Online,
+                    Online = x.Online.Value,
                     Availability = x.Availability,
                     Experience = x.Experience,
                     OrganizationId = x.OrganizationId,
@@ -255,7 +256,7 @@ namespace waPlanner.Services
                             PhoneNum = x.PhoneNum,
                             Patronymic = x.Patronymic,
                             TelegramId = x.TelegramId,
-                            Online = x.Online,
+                            Online = x.Online.Value,
                             Availability = x.Availability,
                             Experience = x.Experience,
                             OrganizationId = x.OrganizationId,
