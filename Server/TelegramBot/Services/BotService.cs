@@ -1,81 +1,73 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Telegram.Bot;
-using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 using waPlanner.Database;
 using waPlanner.ModelViews;
-using System.Collections.Generic;
-using Telegram.Bot.Types.ReplyMarkups;
+using waPlanner.TelegramBot.handlers;
 using waPlanner.TelegramBot.keyboards;
-using waPlanner.TelegramBot.Utils;
-using System.Text.RegularExpressions;
 
-
-namespace waPlanner.TelegramBot.handlers
+namespace waPlanner.TelegramBot.Services
 {
-    public class Handlers
+    public interface IBotService
     {
-        public static TelegramBotClient bot = StartBot.Bot;
+        Task HandleAsync(ITelegramBotClient bot, Update[] updates, CancellationToken token);
+    }
+
+    public class BotService : IBotService
+    {
+        private readonly IServiceProvider provider;
+        private readonly LangsModel lang;
+        private ITelegramBotClient bot;
+
+        public BotService(IServiceProvider provider, IOptions<LangsModel> options)
+        {
+            this.provider = provider;
+            this.lang = options.Value;
+        }
+
         public static string choose_lang = "Выберите язык\nTilni tanlang";
 
-
-        public static Task HandleErrorAsync(ITelegramBotClient bot, Exception exception, CancellationToken cancellationToken)
+        public Task HandleAsync(ITelegramBotClient bot, Update[] updates, CancellationToken token)
         {
-            
+            this.bot = bot;
+            foreach (Update update in updates)
+            {
+                 
 
-            var ErrorMessage = exception switch
-            {
-                ApiRequestException apiRequestException => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
-                _ => exception.ToString()
-            };
-            Console.WriteLine(ErrorMessage);
-            return Task.CompletedTask;
-        }
-
-        public static async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken cancellationToken)
-        {
-            var handler = update.Type switch
-            {
-                UpdateType.Message => BotOnMessageReceived(update.Message!),
-                UpdateType.CallbackQuery => BotOnCallbackQueryReceived(update.CallbackQuery!),
-                UpdateType.MyChatMember => BotOnMyChatMemeber(update)
-            };
-
-            try
-            {
-                await handler;
-            }
-            catch (Exception exception)
-            {
-                await HandleErrorAsync(bot, exception, cancellationToken);
+                
             }
         }
-        
-        public static async Task BotOnMyChatMemeber(Update update)
+
+
+        private async Task BotOnCallbackQueryReceived(CallbackQuery call)
         {
-            Console.WriteLine(update.MyChatMember.Chat.Id); 
+            using var scope = provider.CreateScope();
+            {
+                var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+                
+                var cache = Program.Cache[call.Message.Chat.Id] as TelegramBotValuesModel;
+                ReplyKeyboardMarkup back = new(new[] { new KeyboardButton(Program.langs[cache.Lang]["back"]) }) { ResizeKeyboard = true };
+                if (cache.State == PlannerStates.CHOOSE_TIME)
+                    await TimeKeyboards.OnTimeProcess(call, bot, db);
+                else
+                    await CalendarKeyboards.OnCalendarProcess(call, back, db);
+            }
         }
 
-        public static async Task BotOnCallbackQueryReceived(CallbackQuery call)
-        {
-            using var db = new MyDbContextFactory().CreateDbContext(null);
-            var cache = Program.Cache[call.Message.Chat.Id] as TelegramBotValuesModel;
-            ReplyKeyboardMarkup back = new(new[] { new KeyboardButton(Program.langs[cache.Lang]["back"]) }) { ResizeKeyboard = true };
-            if (cache.State == PlannerStates.CHOOSE_TIME)
-                await TimeKeyboards.OnTimeProcess(call, bot, db);
-            else
-                await CalendarKeyboards.OnCalendarProcess(call, back, db);
-        }
-
-        private static async Task BotOnMessageReceived(Message message)
+        private  async Task BotOnMessageReceived(Message message)
         {
             long chat_id = message.Chat.Id;
 
-            using (var db = new MyDbContextFactory().CreateDbContext(null))
+            using var scope = provider.CreateScope();
             {
+                var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+
                 if (!Program.Cache.TryGetValue(chat_id, out var obj))
                 {
                     Program.Cache[chat_id] = new TelegramBotValuesModel { State = PlannerStates.NONE };
@@ -90,12 +82,12 @@ namespace waPlanner.TelegramBot.handlers
 
 
 
-        public static async Task OnStateChanged(long chat_id, MyDbContext db, Message message, TelegramBotValuesModel cache)
+        private async Task OnStateChanged(long chat_id, MyDbContext db, Message message, TelegramBotValuesModel cache)
         {
             List<IdValue> menu = null;
             string message_for_user = "";
             string msg = message.Text;
-            
+
             switch (cache.State)
             {
                 case PlannerStates.NONE:
@@ -129,7 +121,7 @@ namespace waPlanner.TelegramBot.handlers
                             await bot.SendTextMessageAsync(chat_id, Program.langs[cache.Lang]["EMPTY_LIST"]);
                             break;
                         }
-                        
+
                     }
                 case PlannerStates.SELECT_FAVORITES:
                     {
@@ -192,11 +184,11 @@ namespace waPlanner.TelegramBot.handlers
                             ReplyKeyboardMarkup back = new(new[] { new KeyboardButton(Program.langs.Get(cache.Lang, "back")) }) { ResizeKeyboard = true };
                             await bot.SendTextMessageAsync(chat_id, Program.langs[cache.Lang]["ON_CHANGE_PHONE"], parseMode: ParseMode.Html, replyMarkup: back);
                             return;
-                        }     
+                        }
                         break;
                     }
 
-                case PlannerStates.SPECIALIZATION: 
+                case PlannerStates.SPECIALIZATION:
                     {
                         menu = await DbManipulations.SendSpecializations(db);
                         message_for_user = Program.langs[cache.Lang]["CHOOSE_SERVICE"];
@@ -249,7 +241,7 @@ namespace waPlanner.TelegramBot.handlers
                         }
 
                         if (Utils.Utils.CheckPhone(msg))
-                              phoneNumber = msg;
+                            phoneNumber = msg;
                         else
                         {
                             await ReplyKeyboards.RequestContactAsync(bot, chat_id, cache.Lang);
@@ -278,19 +270,19 @@ namespace waPlanner.TelegramBot.handlers
                         await bot.SendTextMessageAsync(chat_id, Program.langs[cache.Lang]["NONE"], replyMarkup: ReplyKeyboards.MainMenu(cache.Lang));
                         break;
                     }
-                case PlannerStates.ADD_FAVORITES: 
+                case PlannerStates.ADD_FAVORITES:
                     {
 
                         if (msg == Program.langs[cache.Lang]["NO"])
                         {
 
                         }
-                        
-                        if(msg == Program.langs[cache.Lang]["YES"])
+
+                        if (msg == Program.langs[cache.Lang]["YES"])
                         {
                             await DbManipulations.AddToFavorites(db, cache, chat_id);
-                            await bot.SendTextMessageAsync(chat_id, 
-                                $"{Program.langs[cache.Lang]["SPECIALIST"]} <b>{cache.Staff}</b> {Program.langs[cache.Lang]["INTO_FAVORITES"]}", 
+                            await bot.SendTextMessageAsync(chat_id,
+                                $"{Program.langs[cache.Lang]["SPECIALIST"]} <b>{cache.Staff}</b> {Program.langs[cache.Lang]["INTO_FAVORITES"]}",
                                 parseMode: ParseMode.Html);
                         }
                         cache.State = PlannerStates.NONE;
@@ -300,7 +292,7 @@ namespace waPlanner.TelegramBot.handlers
                 default:
                     break;
             }
-            
+
             if (menu is not null)
             {
                 var buttons = ReplyKeyboards.SendKeyboards(menu);
@@ -426,8 +418,8 @@ namespace waPlanner.TelegramBot.handlers
                 }
                 cache.State = PlannerStates.CHANGE_PHONE;
                 return;
-            }    
+            }
         }
+
     }
 }
-
