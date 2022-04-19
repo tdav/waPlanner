@@ -16,6 +16,7 @@ using System.Linq;
 using waPlanner.Extensions;
 using waPlanner.ModelViews;
 using waPlanner.Services;
+using waPlanner.TelegramBot.Services;
 using ZNetCS.AspNetCore.Compression;
 using ZNetCS.AspNetCore.Compression.Compressors;
 
@@ -30,7 +31,12 @@ namespace waPlanner
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();            
-            services.Configure<Vars>(conf.GetSection("SystemVars")); 
+            services.Configure<Vars>(conf.GetSection("SystemVars"));
+            services.Configure<LangsModel>(conf.GetSection("SystemLangs"));
+
+
+            services.AddSingleton<IBotService, BotService>();
+            services.AddHostedService<TelegramBotBackgroundService>();
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IHttpContextAccessorExtensions, HttpContextAccessorExtensions>();

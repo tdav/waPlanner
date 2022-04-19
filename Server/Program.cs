@@ -38,7 +38,7 @@ namespace waPlanner
         {
 
 #if DEBUG
-            StartBot.BotStart();
+          StartBot.BotStart();
 #endif
 
 

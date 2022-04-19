@@ -85,7 +85,7 @@ namespace waPlanner.TelegramBot.keyboards
             string[] data = SeparateCallbackData(call.Data);
             string action = data[0];
             
-            var bot = handlers.Handlers.Bot_;
+            var bot = handlers.Handlers.bot;
             var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
             
             DateTime.TryParse(data[1], out var date);
