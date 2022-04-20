@@ -27,7 +27,6 @@ namespace waPlanner.TelegramBot.Services
         private readonly IServiceProvider provider;
         private readonly LangsModel lang;
         private ITelegramBotClient bot;
-        private IDbManipulations DbManipulations;
 
         public BotService(IServiceProvider provider, IOptions<LangsModel> options)
         {
@@ -51,23 +50,30 @@ namespace waPlanner.TelegramBot.Services
         {
             this.bot = bot;
 
-            foreach (var mu in updates)
-            {
-                if (mu != null)
-                    switch (mu.Type)    
-                        cas
-            }
-
-
-            var handler = updates[0].Type switch
-            {
-                UpdateType.Message => BotOnMessageReceived(updates[0].Message),
-                UpdateType.CallbackQuery => BotOnCallbackQueryReceived(updates[0].CallbackQuery)
-            };
 
             try
-            {
-                await handler;
+            {                
+                foreach (var mu in updates)
+                {
+                    if (mu != null)
+                    {
+                        using (var scope = provider.CreateScope())
+                        {
+                           var db = scope.ServiceProvider.GetRequiredService<IDbManipulations>();
+
+                            switch (mu.Type)
+                            {
+                                case UpdateType.Message:
+                                    await BotOnMessageReceivedAsync(mu.Message, db);
+                                    break;
+
+                                case UpdateType.CallbackQuery:
+                                    await BotOnCallbackQueryReceivedAsync(mu.CallbackQuery, db);
+                                    break;
+                            }
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -76,7 +82,7 @@ namespace waPlanner.TelegramBot.Services
         }
 
 
-        private async Task BotOnCallbackQueryReceived(CallbackQuery call)
+        private async Task BotOnCallbackQueryReceivedAsync(CallbackQuery call, IDbManipulations db)
         {
             var cache = Program.Cache[call.Message.Chat.Id] as TelegramBotValuesModel;
             ReplyKeyboardMarkup back = new(new[] { new KeyboardButton(lang[cache.Lang]["back"]) }) { ResizeKeyboard = true };
@@ -86,7 +92,7 @@ namespace waPlanner.TelegramBot.Services
                 await CalendarKeyboards.OnCalendarProcess(call, back, DbManipulations, bot, lang);
         }
 
-        private async Task BotOnMessageReceived(Message message)
+        private async Task BotOnMessageReceivedAsync(Message message, IDbManipulations db)
         {
             long chat_id = message.Chat.Id;
 
