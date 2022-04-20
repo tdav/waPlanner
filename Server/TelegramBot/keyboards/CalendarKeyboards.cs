@@ -153,7 +153,7 @@ namespace waPlanner.TelegramBot.keyboards
             }
         }
 
-        public static async Task SendCalendar(TelegramBotClient bot, long chat_id, ReplyKeyboardMarkup back, string lg)
+        public static async Task SendCalendar(ITelegramBotClient bot, long chat_id, ReplyKeyboardMarkup back, string lg)
         {
             var date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
             await bot.SendTextMessageAsync(chat_id, Program.langs[lg]["CUZY_DATE"], replyMarkup: back);

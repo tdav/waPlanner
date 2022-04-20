@@ -267,7 +267,7 @@ namespace waPlanner.TelegramBot.handlers
                         await bot.SendTextMessageAsync(chat_id, Program.langs[cache.Lang]["BID"]);
                         await DbManipulations.FinishProcessAsync(chat_id, cache, db);
                         await DbManipulations.RegistrateUserPlanner(chat_id, cache, db);
-                        await Utils.Utils.SendOrder(cache, Bot_, db);
+                        await Utils.Utils.SendOrder(cache, bot, db);
                         if (!await DbManipulations.CheckFavorites(db, cache.Staff, chat_id))
                         {
                             cache.State = PlannerStates.ADD_FAVORITES;

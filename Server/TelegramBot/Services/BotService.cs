@@ -33,14 +33,13 @@ namespace waPlanner.TelegramBot.Services
 
         public static string choose_lang = "Выберите язык\nTilni tanlang";
 
-        public Task HandleAsync(ITelegramBotClient bot, Update[] updates, CancellationToken token)
+        public async Task HandleAsync(ITelegramBotClient bot, Update[] updates, CancellationToken token)
         {
             this.bot = bot;
             foreach (Update update in updates)
             {
-                 
-
-                
+                await BotOnCallbackQueryReceived(update.CallbackQuery);
+                await BotOnMessageReceived(update.Message);
             }
         }
 
@@ -302,7 +301,7 @@ namespace waPlanner.TelegramBot.Services
                 return;
             }
         }
-        public static async Task OnCommands(TelegramBotValuesModel cache, string msg, long chat_id, MyDbContext db)
+        private async Task OnCommands(TelegramBotValuesModel cache, string msg, long chat_id, MyDbContext db)
         {
             if (Commands.back.Contains(msg))
             {
