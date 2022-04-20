@@ -6,12 +6,28 @@ using waPlanner.Database;
 using waPlanner.Database.Models;
 using waPlanner.ModelViews;
 using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace waPlanner.TelegramBot.Utils
 {
-    public static class DbManipulations
+    public interface IDbManipulations
     {
-        public static async Task<List<IdValue>> SendFavorites(MyDbContext db, long chat_id)
+        Task<List<IdValue>> SendFavorites(long chat_id);
+        Task<List<IdValue>> SendSpecializations();
+    }
+
+    public class DbManipulations : IDbManipulations, IDisposable
+    {
+        private readonly MyDbContext db;
+
+        public DbManipulations(IServiceProvider provider)
+        {
+            var scope = provider.CreateScope();
+            db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            scope.Dispose();
+        }
+
+        public async Task<List<IdValue>> SendFavorites(MyDbContext db, long chat_id)
         {
             int user_id = await GetUserId(chat_id, db);
             if (user_id != 0)
@@ -29,12 +45,12 @@ namespace waPlanner.TelegramBot.Utils
             return null;
         }
 
-        public static async Task<List<IdValue>> SendSpecializations(MyDbContext db)
+        public async Task<List<IdValue>> SendSpecializations(MyDbContext db)
         {
             return await db.spSpecializations
                 .AsNoTracking()
                 .Where(x => x.Status == 1)
-                .Select(x => new IdValue { Id = x.Id, Name = x.NameUz})
+                .Select(x => new IdValue { Id = x.Id, Name = x.NameUz })
                 .ToListAsync();
         }
 
@@ -102,7 +118,7 @@ namespace waPlanner.TelegramBot.Utils
         public static async Task<int> GetUserId(long chat_id, MyDbContext db)
         {
             var user_id = await db.tbUsers.AsNoTracking().FirstOrDefaultAsync(x => x.TelegramId == chat_id);
-            if(user_id is not null)
+            if (user_id is not null)
                 return user_id.Id;
             return 0;
         }
@@ -118,7 +134,7 @@ namespace waPlanner.TelegramBot.Utils
                 PhoneNum = value.Phone,
                 CreateDate = DateTime.Now,
                 Status = 1
-            };  
+            };
             await db.tbUsers.AddAsync(telegramUser);
             await db.SaveChangesAsync();
         }
@@ -134,7 +150,7 @@ namespace waPlanner.TelegramBot.Utils
         }
 
         public static async Task<viStaffInfo> GetStaffInfoByName(MyDbContext db, string name)
-        {            
+        {
             var snp = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             var stuff = await db.tbStaffs
                 .AsNoTracking()
@@ -188,7 +204,7 @@ namespace waPlanner.TelegramBot.Utils
                 .Where(x => x.StaffId == staff.StaffId && x.AppointmentDateTime.Date == value.Calendar.Date)
                 .Select(x => x.AppointmentDateTime)
                 .ToListAsync();
-            
+
         }
 
         public static async Task<int> CheckFreeDay(MyDbContext db, string staff_name, DateTime date)
@@ -224,7 +240,7 @@ namespace waPlanner.TelegramBot.Utils
 
             await db.tbFavorites.AddAsync(addFavorite);
             await db.SaveChangesAsync();
-            
+
         }
 
         public static async Task<bool> CheckFavorites(MyDbContext db, string value, long chat_id)
@@ -263,6 +279,15 @@ namespace waPlanner.TelegramBot.Utils
                 .AsNoTracking()
                 .FirstAsync(x => x.Name == org_name);
             return chat.ChatId;
+        }
+
+        public void Dispose()
+        {
+            if (db != null)
+            {
+                db.Database.CloseConnection();
+                db.Dispose();
+            }
         }
     }
 }

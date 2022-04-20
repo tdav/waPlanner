@@ -8,7 +8,7 @@ namespace waPlanner.Extensions
 {
     public static class MyDbContextService
     {
-        public static void AddMyService(this IServiceCollection services, IConfiguration conf)
+        public static void AddMyDatabaseService(this IServiceCollection services, IConfiguration conf)
         {
             var connStr = conf.GetConnectionString("ConnectionString");
             services.AddDbContext<MyDbContext>(o => { o.UseNpgsql(connStr); });

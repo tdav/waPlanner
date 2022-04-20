@@ -17,6 +17,7 @@ using waPlanner.Extensions;
 using waPlanner.ModelViews;
 using waPlanner.Services;
 using waPlanner.TelegramBot.Services;
+using waPlanner.TelegramBot.Utils;
 using ZNetCS.AspNetCore.Compression;
 using ZNetCS.AspNetCore.Compression.Compressors;
 
@@ -54,7 +55,8 @@ namespace waPlanner
                         });
             });
 
-            services.AddMyService(conf);
+            services.AddMyDatabaseService(conf);
+            services.AddMyService();
 
             services.AddControllers()
                     .AddNewtonsoftJson(opt => opt.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
@@ -63,16 +65,7 @@ namespace waPlanner
             services.AddMyAuthentication(conf);
             services.AddMySwagger();
             services.ApiMyVersion();
-            services.AddHttpContextAccessor();
-
-
-            services.AddScoped<ICategoryService, CategoryService>();
-            services.AddScoped<IUserService, UserService>();
-            services.AddScoped<ISchedulerService, SchedulerService>();
-            services.AddScoped<IOrganizationService, OrganizationService>();
-            services.AddScoped<IStaffService, StaffService>();
-            services.AddScoped<IInfoService, InfoService>();
-            services.AddScoped<ISpecializationService, SpecializationService>();
+            services.AddHttpContextAccessor();          
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
