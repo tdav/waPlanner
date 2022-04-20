@@ -36,12 +36,6 @@ namespace waPlanner
 
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
-
-//#if DEBUG
-//          StartBot.BotStart();
-//#endif
-
-
             return Host.CreateDefaultBuilder(args)
                       .ConfigureWebHostDefaults(webBuilder =>
                       {

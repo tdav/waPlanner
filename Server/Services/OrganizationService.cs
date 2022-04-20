@@ -39,6 +39,12 @@ namespace waPlanner.Services
             if(organization.SpecializationId.HasValue)
                 addOrganization.SpecializationId = organization.SpecializationId.Value;
 
+            if (organization.DinnerTimeStart.HasValue)
+                addOrganization.DinnerTimeStart = organization.DinnerTimeStart.Value;
+
+            if (organization.DinnerTimeEnd.HasValue)
+                addOrganization.DinnerTimeEnd = organization.DinnerTimeEnd.Value;
+
             addOrganization.Name = organization.Name;
             addOrganization.CreateDate = DateTime.Now;
             addOrganization.CreateUser = 1;
@@ -51,7 +57,7 @@ namespace waPlanner.Services
         }
         public async Task UpdateOrganizationAsync(viOrganization organization)
         {
-            var updatedOrganization = await db.spOrganizations.FindAsync(organization.SpecializationId);
+            var updatedOrganization = await db.spOrganizations.FindAsync(organization.Id);
 
             if (organization.ChatId.HasValue)
                 updatedOrganization.ChatId = organization.ChatId.Value;
@@ -68,7 +74,15 @@ namespace waPlanner.Services
             if(organization.Status.HasValue)
                 updatedOrganization.Status = organization.Status.Value;
 
-            updatedOrganization.Name = organization.Name;
+            if (organization.DinnerTimeStart.HasValue)
+                updatedOrganization.DinnerTimeStart = organization.DinnerTimeStart.Value;
+
+            if (organization.DinnerTimeEnd.HasValue)
+                updatedOrganization.DinnerTimeEnd = organization.DinnerTimeEnd.Value;
+
+            if (organization is not null)
+                updatedOrganization.Name = organization.Name;
+
             updatedOrganization.UpdateDate = DateTime.Now;
             updatedOrganization.UpdateUser = 1;
             await db.SaveChangesAsync();

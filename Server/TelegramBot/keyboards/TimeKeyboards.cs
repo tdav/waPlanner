@@ -18,7 +18,7 @@ namespace waPlanner.TelegramBot.keyboards
             var doctorsDate = await db.GetStaffBusyTime(value);
             int[] staff_avail = await db.CheckStaffAvailability(value.Staff);
             int dayOfWeek = (int)value.Calendar.DayOfWeek;
-
+            viDinnerTime dinner = await db.GetOrganizationDinner(value.Organization);
             List<string> appointmentTime = new();
             List<DateTime> appointmentDate = new();
             foreach (var times in doctorsDate)
@@ -30,7 +30,7 @@ namespace waPlanner.TelegramBot.keyboards
             TimeSpan time = new(10, 0, 0);
             TimeSpan offset = new(0, 30, 0);
             int row_limit = 4;
-
+            
             if(staff_avail[dayOfWeek] == 2)
             {
                 time = new(14, 0, 0);
@@ -44,6 +44,13 @@ namespace waPlanner.TelegramBot.keyboards
                 var times_row = new List<InlineKeyboardButton>();
                 for (int col = 0; col < 4; col++)
                 {
+                    if ((dinner.DinnerStart.Value.TimeOfDay <= time) && (time < dinner.DinnerEnd.Value.TimeOfDay))
+                    {
+                        times_row.Add(InlineKeyboardButton.WithCallbackData(" ", $"i"));
+                        time = time.Add(offset);
+                        continue;
+                    }
+
                     if (appointmentTime.Contains(time.ToString(@"hh\:mm")) && appointmentDate.Contains(value.Calendar.Date))
                     {
                         times_row.Add(InlineKeyboardButton.WithCallbackData(" ", $"i"));

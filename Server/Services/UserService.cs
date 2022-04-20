@@ -90,7 +90,7 @@ namespace waPlanner.Services
 
             return new viPatient
             {
-                Id = patient.Id,
+                Id = newPatient.Id,
                 Name = patient.Name,
                 Patronymic = patient.Patronymic,
                 Surname = patient.Surname,

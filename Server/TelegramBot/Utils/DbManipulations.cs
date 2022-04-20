@@ -33,19 +33,22 @@ namespace waPlanner.TelegramBot.Utils
         Task<bool> CheckFavorites(string value, long chat_id);
         Task UpdateUserName(long chat_id, string name);
         Task UpdateUserPhone(long chat_id, string phone);
-        Task<long> GetGroupId(string org_name);
+        Task<long> GetOrganizationGroupId(string org_name);
         Task<viTelegramUser> GetUserInfo(long chat_id);
+        Task<viDinnerTime> GetOrganizationDinner(string org_name);
     }
 
-    public class DbManipulations : IDbManipulations, IDisposable
+    public class DbManipulations : IDbManipulations
     {
         private readonly MyDbContext db;
 
-        public DbManipulations(IServiceProvider provider)
+        public DbManipulations(MyDbContext db)
         {
-            var scope = provider.CreateScope();
-            db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
-            scope.Dispose();
+            //var scope = provider.CreateScope();
+            //db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            //scope.Dispose();
+
+            this.db = db;
         }
 
         public async Task<List<IdValue>> SendFavorites(long chat_id)
@@ -309,7 +312,7 @@ namespace waPlanner.TelegramBot.Utils
                 .FirstAsync();
         }
 
-        public async Task<long> GetGroupId(string org_name)
+        public async Task<long> GetOrganizationGroupId(string org_name)
         {
             var chat = await db.spOrganizations
                 .AsNoTracking()
@@ -317,13 +320,26 @@ namespace waPlanner.TelegramBot.Utils
             return chat.ChatId;
         }
 
-        public void Dispose()
+        public async Task<viDinnerTime> GetOrganizationDinner(string org_name)
         {
-            if (db != null)
-            {
-                db.Database.CloseConnection();
-                db.Dispose();
-            }
+            return await db.spOrganizations
+                .AsNoTracking()
+                .Where(x => x.Name == org_name)
+                .Select(x => new viDinnerTime
+                {
+                    DinnerStart = x.DinnerTimeStart,
+                    DinnerEnd = x.DinnerTimeEnd
+                })
+                .FirstOrDefaultAsync();
         }
+
+        //public void Dispose()
+        //{
+        //    if (db != null)
+        //    {
+        //        db.Database.CloseConnection();
+        //        db.Dispose();
+        //    }
+        //}
     }
 }

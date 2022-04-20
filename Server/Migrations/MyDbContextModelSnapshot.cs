@@ -118,6 +118,14 @@ namespace waPlanner.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("create_user");
 
+                    b.Property<DateTime?>("DinnerTimeEnd")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("dinner_time_end");
+
+                    b.Property<DateTime?>("DinnerTimeStart")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("dinner_time_start");
+
                     b.Property<float>("Latitude")
                         .HasColumnType("real")
                         .HasColumnName("latitude");

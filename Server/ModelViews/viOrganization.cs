@@ -1,4 +1,6 @@
-﻿namespace waPlanner.ModelViews
+﻿using System;
+
+namespace waPlanner.ModelViews
 {
     public class viOrganization
     {
@@ -6,6 +8,8 @@
         public long? ChatId { get; set; }
         public string Name { get; set; }
         public string address { get; set; }
+        public DateTime? DinnerTimeStart { get; set; }
+        public DateTime? DinnerTimeEnd { get; set; }
 
         public int? SpecializationId { get; set; }
         public string Specialization { get; set; }

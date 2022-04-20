@@ -23,18 +23,19 @@ namespace waPlanner.TelegramBot.Utils
 
         public static async Task SendOrder(TelegramBotValuesModel cache, ITelegramBotClient bot, IDbManipulations db, long chat_id)
         {
-            long group_id = await db.GetGroupId(cache.Organization);
+            long group_id = await db.GetOrganizationGroupId(cache.Organization);
             var userInfo = await db.GetUserInfo(chat_id);
-            var registerDate = DateTime.Now.Date == userInfo.CreateDate ? "Новый Пользовтель" : userInfo.CreateDate.ToString();
-            string order = $"Новое поступление\n\n" +
-                           $"Имя пользователя: </b>{userInfo.Name}</b>\n" +
-                           $"Платформа: <b>{userInfo.Surname}</b>" +
-                           $"Номер пользователя: <b>{userInfo.Phone}</b>\n" +
-                           $"Язык пользователя: <b>{cache.Lang}</b>\n" +
-                           $"Дата планирования: <b>{cache.Calendar.Date.ToShortDateString()} {cache.Time}</b>\n" +
-                           $"Забронированный субъект: <b>{cache.Staff}</b>\n" +
+            string registerDate = DateTime.Now.Date == userInfo.CreateDate ? "Новый Пользовтель" : userInfo.CreateDate.ToString();
+            string lang = cache.Lang == "🇷🇺" ? cache.Lang : "🇺🇿";
+            string order = $"<b>Новое поступление</b>🧾\n\n" +
+                           $"Имя пользователя: <b>{userInfo.Name}</b>\n" +
+                           $"Платформа: <b>{userInfo.Surname}</b>\n" +
+                           $"Номер пользователя📞: <b>{userInfo.Phone}</b>\n" +
+                           $"Язык пользователя: <b>{lang}</b>\n" +
+                           $"Дата планирования🗓: <b>{cache.Calendar.Date.ToShortDateString()} {cache.Time}</b>\n" +
+                           $"Забронированный субъект📙: <b>{cache.Staff}</b>\n" +
                            $"Категория субьекта : <b>{cache.Category}</b>\n" +
-                           $"Выбранная организация: <b>{cache.Organization}</b>\n" +
+                           $"Выбранная организация🏬: <b>{cache.Organization}</b>\n" +
                            $"Дата регистрации: <b>{registerDate}</b>";
             await bot.SendTextMessageAsync(group_id, order, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
 

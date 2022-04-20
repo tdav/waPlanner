@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using waPlanner.ModelViews;
@@ -25,6 +26,9 @@ namespace waPlanner.Database.Models
 
         [StringLength(150)]
         public string Name { get; set; }
+
+        public DateTime? DinnerTimeStart { get; set; } = DateTime.Now;
+        public DateTime? DinnerTimeEnd { get; set; } = DateTime.Now;
 
         public int? SpecializationId { get; set; }
         public virtual spSpecialization Specialization { get; set; }

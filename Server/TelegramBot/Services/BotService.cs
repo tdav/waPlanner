@@ -9,7 +9,6 @@ using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
-using waPlanner.Database;
 using waPlanner.ModelViews;
 using waPlanner.TelegramBot.handlers;
 using waPlanner.TelegramBot.keyboards;
@@ -52,24 +51,33 @@ namespace waPlanner.TelegramBot.Services
 
 
             try
-            {                
-                foreach (var mu in updates)
+            {
+                foreach (var update in updates)
                 {
-                    if (mu != null)
+                    if (update != null)
                     {
                         using (var scope = provider.CreateScope())
                         {
-                           var db = scope.ServiceProvider.GetRequiredService<IDbManipulations>();
+                            var db = scope.ServiceProvider.GetRequiredService<IDbManipulations>();
 
-                            switch (mu.Type)
+                            switch (update.Type)
                             {
                                 case UpdateType.Message:
-                                    await BotOnMessageReceivedAsync(mu.Message, db);
-                                    break;
-
+                                    {
+                                        if (!Program.Cache.TryGetValue(update.Message.Chat.Id, out var obj))
+                                        {
+                                            Program.Cache[update.Message.Chat.Id] = new TelegramBotValuesModel() { State = PlannerStates.NONE };
+                                        }
+                                        var cache = Program.Cache[update.Message.Chat.Id] as TelegramBotValuesModel;
+                                        await BotOnMessageReceivedAsync(update.Message, db, cache);
+                                        break;
+                                    }
                                 case UpdateType.CallbackQuery:
-                                    await BotOnCallbackQueryReceivedAsync(mu.CallbackQuery, db);
-                                    break;
+                                    {
+                                        await BotOnCallbackQueryReceivedAsync(update.CallbackQuery, db);
+                                        break;
+                                    }
+                                    
                             }
                         }
                     }
@@ -87,30 +95,20 @@ namespace waPlanner.TelegramBot.Services
             var cache = Program.Cache[call.Message.Chat.Id] as TelegramBotValuesModel;
             ReplyKeyboardMarkup back = new(new[] { new KeyboardButton(lang[cache.Lang]["back"]) }) { ResizeKeyboard = true };
             if (cache.State == PlannerStates.CHOOSE_TIME)
-                await TimeKeyboards.OnTimeProcess(call, bot, DbManipulations, lang);
+                await TimeKeyboards.OnTimeProcess(call, bot, db, lang);
             else
-                await CalendarKeyboards.OnCalendarProcess(call, back, DbManipulations, bot, lang);
+                await CalendarKeyboards.OnCalendarProcess(call, back, db, bot, lang);
         }
 
-        private async Task BotOnMessageReceivedAsync(Message message, IDbManipulations db)
+        private async Task BotOnMessageReceivedAsync(Message message, IDbManipulations db, TelegramBotValuesModel cache)
         {
             long chat_id = message.Chat.Id;
-
-            using var scope = provider.CreateScope();
-            {
-                //var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
-
-                if (!Program.Cache.TryGetValue(chat_id, out var obj))
-                {
-                    Program.Cache[chat_id] = new TelegramBotValuesModel { State = PlannerStates.NONE };
-                }
-                var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
-                await OnCommands(cache, message.Text, chat_id, DbManipulations);
-                await OnStateChanged(chat_id, message, cache);
-            }
+            if (cache.Lang is not null)
+                await OnCommands(cache, message.Text, chat_id, db);
+            await OnStateChanged(chat_id, message, cache, db);
         }
 
-        private async Task OnStateChanged(long chat_id, Message message, TelegramBotValuesModel cache)
+        private async Task OnStateChanged(long chat_id, Message message, TelegramBotValuesModel cache, IDbManipulations DbManipulations)
         {
             List<IdValue> menu = null;
             string message_for_user = "";

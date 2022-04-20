@@ -54,7 +54,7 @@ namespace waPlanner.Services
                 .AsNoTracking()
                 .Include(s => s.Organization)
                 .Include(s => s.Category)
-                .Where(s => s.OrganizationId == org_id && s.RoleId == (int)UserRoles.STAFF)
+                .Where(s => s.OrganizationId == org_id && s.RoleId == (int)UserRoles.STAFF && s.Status == 1)
                 .Select(x=> new viStaff
                 {
                     Id = x.Id,
@@ -342,6 +342,7 @@ namespace waPlanner.Services
 
         public async ValueTask<AnswerBasic> ChangePaswwordAsync(ChangePasswordModel value)
         {
+            //TODO
             return new AnswerBasic(true, "");
         }
     }
