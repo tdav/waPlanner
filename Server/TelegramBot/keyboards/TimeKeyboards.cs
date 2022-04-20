@@ -6,7 +6,6 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using waPlanner.ModelViews;
 using Telegram.Bot.Types.Enums;
-using waPlanner.Database;
 using waPlanner.TelegramBot.Utils;
 
 namespace waPlanner.TelegramBot.keyboards

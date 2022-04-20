@@ -2,7 +2,6 @@
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Telegram.Bot;
-using waPlanner.Database;
 using waPlanner.ModelViews;
 
 namespace waPlanner.TelegramBot.Utils
