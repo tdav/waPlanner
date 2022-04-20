@@ -77,15 +77,13 @@ namespace waPlanner.TelegramBot.keyboards
             return data.Split(";");
         }
 
-        public static async Task OnCalendarProcess(CallbackQuery call, ReplyKeyboardMarkup back, MyDbContext db)
+        public static async Task OnCalendarProcess(CallbackQuery call, ReplyKeyboardMarkup back, IDbManipulations db, ITelegramBotClient bot, LangsModel lang)
         {
             long chat_id = call.Message.Chat.Id;
             int messageId = call.Message.MessageId;
 
             string[] data = SeparateCallbackData(call.Data);
             string action = data[0];
-            
-            var bot = handlers.Handlers.bot;
             var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
             
             DateTime.TryParse(data[1], out var date);
@@ -110,13 +108,13 @@ namespace waPlanner.TelegramBot.keyboards
                     {
                         if (date >= DateTime.Today)
                         {
-                            int[] staff_avail = await DbManipulations.CheckStaffAvailability(db, cache.Staff);
+                            int[] staff_avail = await db.CheckStaffAvailability(cache.Staff);
                             if (staff_avail[(int)date.DayOfWeek] == 0)
                             {
-                                await bot.AnswerCallbackQueryAsync(call.Id, Program.langs[cache.Lang]["BUSY_DATE"], true);
+                                await bot.AnswerCallbackQueryAsync(call.Id, lang[cache.Lang]["BUSY_DATE"], true);
                                 return;
                             }
-                            var freeDay = await DbManipulations.CheckFreeDay(db, cache.Staff, date);
+                            var freeDay = await db.CheckFreeDay(cache.Staff, date);
                             if (freeDay < 16)
                             {
                                 cache.State = PlannerStates.CHOOSE_TIME;
@@ -129,18 +127,18 @@ namespace waPlanner.TelegramBot.keyboards
                                 {
 
                                 }
-                                await bot.SendTextMessageAsync(chat_id, $"{Program.langs[cache.Lang]["CHOOSEN_DATE"]} <b>{date.ToShortDateString()}</b>", replyMarkup: back, parseMode: ParseMode.Html);
-                                await bot.SendTextMessageAsync(chat_id, Program.langs[cache.Lang]["CUZY_TIME"], replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
+                                await bot.SendTextMessageAsync(chat_id, $"{lang[cache.Lang]["CHOOSEN_DATE"]} <b>{date.ToShortDateString()}</b>", replyMarkup: back, parseMode: ParseMode.Html);
+                                await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["CUZY_TIME"], replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
                                 return;
                             }
                             else
                             {
-                                await bot.AnswerCallbackQueryAsync(call.Id, Program.langs[cache.Lang]["BOOKED_ALL_DAY"], true);
+                                await bot.AnswerCallbackQueryAsync(call.Id, lang[cache.Lang]["BOOKED_ALL_DAY"], true);
                                 return;
                             }
                         
                         }
-                        await bot.AnswerCallbackQueryAsync(call.Id, Program.langs[cache.Lang]["OLD_DATE"], true);
+                        await bot.AnswerCallbackQueryAsync(call.Id, lang[cache.Lang]["OLD_DATE"], true);
                         break;
                     }
                 case "i":
@@ -153,11 +151,11 @@ namespace waPlanner.TelegramBot.keyboards
             }
         }
 
-        public static async Task SendCalendar(ITelegramBotClient bot, long chat_id, ReplyKeyboardMarkup back, string lg)
+        public static async Task SendCalendar(ITelegramBotClient bot, long chat_id, ReplyKeyboardMarkup back, string lg, LangsModel lang)
         {
             var date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            await bot.SendTextMessageAsync(chat_id, Program.langs[lg]["CUZY_DATE"], replyMarkup: back);
-            await bot.SendTextMessageAsync(chat_id, Program.langs[lg]["CALENDAR"], replyMarkup: Calendar(ref date));
+            await bot.SendTextMessageAsync(chat_id, lang[lg]["CUZY_DATE"], replyMarkup: back);
+            await bot.SendTextMessageAsync(chat_id, lang[lg]["CALENDAR"], replyMarkup: Calendar(ref date));
         }
     }
 }

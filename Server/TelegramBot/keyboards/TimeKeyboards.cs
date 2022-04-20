@@ -13,10 +13,10 @@ namespace waPlanner.TelegramBot.keyboards
 {
     public class TimeKeyboards
     {
-        public static async Task<InlineKeyboardMarkup> SendTimeKeyboards(MyDbContext db, TelegramBotValuesModel value)
+        public static async Task<InlineKeyboardMarkup> SendTimeKeyboards(IDbManipulations db, TelegramBotValuesModel value)
         {
-            var doctorsDate = await DbManipulations.GetStaffBusyTime(db, value);
-            int[] staff_avail = await DbManipulations.CheckStaffAvailability(db, value.Staff);
+            var doctorsDate = await db.GetStaffBusyTime(value);
+            int[] staff_avail = await db.CheckStaffAvailability(value.Staff);
             int dayOfWeek = (int)value.Calendar.DayOfWeek;
 
             List<string> appointmentTime = new();
@@ -58,7 +58,7 @@ namespace waPlanner.TelegramBot.keyboards
             InlineKeyboardMarkup markup = new (keyboards);
             return markup;
         }
-        public static async Task OnTimeProcess(CallbackQuery call, ITelegramBotClient bot, MyDbContext db)
+        public static async Task OnTimeProcess(CallbackQuery call, ITelegramBotClient bot, IDbManipulations db, LangsModel lang)
         {
             long chat_id = call.Message.Chat.Id;
             string[] data = CalendarKeyboards.SeparateCallbackData(call.Data);
@@ -70,32 +70,32 @@ namespace waPlanner.TelegramBot.keyboards
                 case "TIME":
                     {
                         cache.Time = data[1];
-                        await bot.EditMessageTextAsync(chat_id, call.Message.MessageId, $"{Program.langs[cache.Lang]["CHOOSEN_TIME"]} <b>{data[1]}</b>", parseMode: ParseMode.Html);
-                        if (await DbManipulations.CheckUser(chat_id, db))
+                        await bot.EditMessageTextAsync(chat_id, call.Message.MessageId, $"{lang[cache.Lang]["CHOOSEN_TIME"]} <b>{data[1]}</b>", parseMode: ParseMode.Html);
+                        if (await db.CheckUser(chat_id))
                         {
-                            await bot.SendTextMessageAsync(chat_id, Program.langs[cache.Lang]["BID"]);
-                            await DbManipulations.RegistrateUserPlanner(chat_id, cache, db);
-                            await Utils.Utils.SendOrder(cache, bot, db);
-                            if (!await DbManipulations.CheckFavorites(db, cache.Staff, chat_id))
+                            await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["BID"]);
+                            await db.RegistrateUserPlanner(chat_id, cache);
+                            await Utils.Utils.SendOrder(cache, bot, db, chat_id);
+                            if (!await db.CheckFavorites(cache.Staff, chat_id))
                             {
-                                await bot.SendTextMessageAsync(chat_id, Program.langs[cache.Lang]["ADD_FAVORITES"], replyMarkup: ReplyKeyboards.SendConfirmKeyboards(cache.Lang));
+                                await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["ADD_FAVORITES"], replyMarkup: ReplyKeyboards.SendConfirmKeyboards(cache.Lang, lang));
                                 cache.State = PlannerStates.ADD_FAVORITES;
                                 break;
                             }
                             cache.State = PlannerStates.NONE;
-                            await bot.SendTextMessageAsync(chat_id, Program.langs[cache.Lang]["NONE"], replyMarkup: ReplyKeyboards.MainMenu(cache.Lang));
+                            await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["NONE"], replyMarkup: ReplyKeyboards.MainMenu(cache.Lang, lang));
                             break;
                         }
                         else
                         {
                             cache.State = PlannerStates.PHONE;
-                            await ReplyKeyboards.RequestContactAsync(bot, chat_id, cache.Lang);
+                            await ReplyKeyboards.RequestContactAsync(bot, chat_id, cache.Lang, lang);
                             break;
                         }
                     }
                 default:
                     {
-                        await bot.AnswerCallbackQueryAsync(call.Id, Program.langs[cache.Lang]["EMPTY_ICON"], true);
+                        await bot.AnswerCallbackQueryAsync(call.Id, lang[cache.Lang]["EMPTY_ICON"], true);
                         break;
                     }
             }

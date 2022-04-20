@@ -13,7 +13,7 @@ namespace waPlanner
 {
     public class Program
     {
-        public static LangsModel langs;
+        //public static LangsModel langs;
         public static Dictionary<long, object> Cache = new Dictionary<long, object>();
         public static void Main(string[] args)
         {
@@ -37,9 +37,9 @@ namespace waPlanner
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
 
-#if DEBUG
-          StartBot.BotStart();
-#endif
+//#if DEBUG
+//          StartBot.BotStart();
+//#endif
 
 
             return Host.CreateDefaultBuilder(args)

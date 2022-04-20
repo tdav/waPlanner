@@ -161,7 +161,7 @@ namespace waPlanner.Services
             int role_id = accessor.GetRoleId();
             int staff_role = (int)UserRoles.STAFF;
 
-            //if (staff.BirthDay.HasValue)
+            if (staff.BirthDay.HasValue)
                 updateStaff.BirthDay = staff.BirthDay.Value;
 
             //if (staff.CategoryId.HasValue)

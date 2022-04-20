@@ -12,7 +12,6 @@ namespace waPlanner.ModelViews
         public string AdInfo { get; set; }
         public string Phone { get; set; }
         public DateTime? BirthDay { get; set; }
-        public string Password { get; set; }
         public int? Status { get; set; }
     }
 }

@@ -47,15 +47,15 @@ namespace waPlanner.TelegramBot.keyboards
             return keyboards;
         }
 
-        public static ReplyKeyboardMarkup MainMenu(string lg)
+        public static ReplyKeyboardMarkup MainMenu(string lg, LangsModel lang)
         {
             ReplyKeyboardMarkup markup = new(
                 new[]
                 {
-                        new KeyboardButton[] { Program.langs[lg]["book"] },
-                        new KeyboardButton[] { Program.langs[lg]["favorites"], Program.langs[lg]["settings"] },
-                        new KeyboardButton[] { Program.langs[lg]["feedback"], Program.langs[lg]["about_us"] },
-                        new KeyboardButton[] { Program.langs[lg]["contacts"] },
+                        new KeyboardButton[] { lang[lg]["book"] },
+                        new KeyboardButton[] { lang[lg]["favorites"], lang[lg]["settings"] },
+                        new KeyboardButton[] { lang[lg]["feedback"], lang[lg]["about_us"] },
+                        new KeyboardButton[] { lang[lg]["contacts"] },
                 })
             {
                 ResizeKeyboard = true
@@ -64,13 +64,13 @@ namespace waPlanner.TelegramBot.keyboards
             return markup;
         }
 
-        public static ReplyKeyboardMarkup Settings(string lg)
+        public static ReplyKeyboardMarkup Settings(string lg, LangsModel lang)
         {
             ReplyKeyboardMarkup markup = new(
                 new[]
                 {
-                        new KeyboardButton[] { Program.langs[lg]["change_name"], Program.langs[lg]["change_lang"] },
-                        new KeyboardButton[] { Program.langs[lg]["change_phone"], Program.langs[lg]["back"] }
+                        new KeyboardButton[] { lang[lg]["change_name"], lang[lg]["change_lang"] },
+                        new KeyboardButton[] { lang[lg]["change_phone"], lang[lg]["back"] }
                 })
             {
                 ResizeKeyboard = true
@@ -78,31 +78,31 @@ namespace waPlanner.TelegramBot.keyboards
             return markup;
         }
 
-        public static async Task<Message> RequestContactAsync(ITelegramBotClient bot, long chat_id, string lg)
+        public static async Task<Message> RequestContactAsync(ITelegramBotClient bot, long chat_id, string lg, LangsModel lang)
         {
             ReplyKeyboardMarkup markup = new(
                 new[]
                 {
                     new[]
                     {
-                        KeyboardButton.WithRequestContact(Program.langs[lg]["SEND_CONTACT"])
+                        KeyboardButton.WithRequestContact(lang[lg]["SEND_CONTACT"])
                     },
                     new[]
                     {
-                        new KeyboardButton(Program.langs[lg]["back"])
+                        new KeyboardButton(lang[lg]["back"])
                     }
                 })
             { ResizeKeyboard = true};
-            return await bot.SendTextMessageAsync(chat_id, Program.langs[lg]["CONTACT_MESSAGE"],
+            return await bot.SendTextMessageAsync(chat_id, lang[lg]["CONTACT_MESSAGE"],
                         replyMarkup: markup, parseMode: ParseMode.Html); ;
         }
 
-        public static ReplyKeyboardMarkup SendConfirmKeyboards(string lg)
+        public static ReplyKeyboardMarkup SendConfirmKeyboards(string lg, LangsModel lang)
         {
             ReplyKeyboardMarkup markup = new(
                 new[]
                 {
-                    new KeyboardButton[]{ Program.langs[lg]["YES"], Program.langs[lg]["NO"] }
+                    new KeyboardButton[]{ lang[lg]["YES"], lang[lg]["NO"] }
                 })
             { ResizeKeyboard = true };
             return markup;
