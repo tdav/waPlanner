@@ -26,7 +26,7 @@ namespace waPlanner.TelegramBot.keyboards
             return markup;
         }
 
-        public static List<List<KeyboardButton>> SendKeyboards(List<IdValue> items, int columns = 2)
+        public static List<List<KeyboardButton>> SendMenuKeyboards(List<IdValue> items, int columns = 2)
         {
             var keyboards = new List<List<KeyboardButton>>();
             var buttons = new List<KeyboardButton>();
@@ -55,7 +55,7 @@ namespace waPlanner.TelegramBot.keyboards
                         new KeyboardButton[] { lang[lg]["book"] },
                         new KeyboardButton[] { lang[lg]["favorites"], lang[lg]["settings"] },
                         new KeyboardButton[] { lang[lg]["feedback"], lang[lg]["about_us"] },
-                        new KeyboardButton[] { lang[lg]["contacts"] },
+                        new KeyboardButton[] { lang[lg]["contacts"], lang[lg]["statistic"] },
                 })
             {
                 ResizeKeyboard = true
@@ -107,5 +107,16 @@ namespace waPlanner.TelegramBot.keyboards
             { ResizeKeyboard = true };
             return markup;
         }
+
+        public static ReplyKeyboardMarkup BackButton(string lg, LangsModel lang)
+        {
+            ReplyKeyboardMarkup markup = new(
+                new[]
+                {
+                    new KeyboardButton[]{ lang[lg]["back"] }
+                })
+            { ResizeKeyboard = true };
+            return markup;
+        } 
     }
 }

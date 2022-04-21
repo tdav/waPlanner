@@ -23,7 +23,7 @@ namespace waPlanner.Database.Models
         [StringLength(100)]
         public string Patronymic { get; set; }
 
-        [IndexColumn(IsUnique =true)]
+        [IndexColumn]
         [StringLength(20)]
         public string PhoneNum { get; set; }
 
@@ -56,6 +56,7 @@ namespace waPlanner.Database.Models
         public DateTime? Experience { get; set; }
 
         public int[] Availability { get; set; }
+
 
         [StringLength(256)]
         public string PhotoUrl { get; set; }

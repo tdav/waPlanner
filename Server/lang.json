@@ -28,6 +28,8 @@
       "SHOULD_REGISTR": "Сначала пройдите регистрацию",
       "CONFIRMED": "Принято ",
       "ON_CHANGE_PHONE": "Введите в следующем типе: <b>+998 xx xxx xxx xxx</b>",
+      "ON_FEEDBACK": "Здесь вы можете оставить пожелания разработчикам платформы.",
+      "SUCCESS_FEEDBACK": "Отзыв успешно доставлен администрации.",
 
       "back": "⬅️Назад",
       "book": "Сделать бронь📄",
@@ -36,6 +38,7 @@
       "feedback": "Оcтавить отзыв💌",
       "about_us": "О нас💬",
       "contacts": "Контакты📱",
+      "statistic": "Статистика📊",
       "change_name": "Изменить имя",
       "change_phone": "Изменить номер☎️",
       "change_lang": "Изменить язык🇷🇺"
@@ -69,6 +72,8 @@
       "SHOULD_REGISTR": "Avval ro'xatdan o'ting",
       "CONFIRMED": "Qabul qilindi ",
       "ON_CHANGE_PHONE": "Quydagi turda kiriting: <b>+998 xx xxx xxx xxx</b>",
+      "ON_FEEDBACK": "Bu yerda siz platforma ishlab chiquvchilariga tilaklaringizni qoldirishingiz mumkin.",
+      "SUCCESS_FEEDBACK": "Fikr-mulohazangiz ma'muriyatga muvaffaqiyatli yetkazildi.",
 
       "back": "⬅️Ortga",
       "book": "Band qilish📄",
@@ -77,6 +82,7 @@
       "feedback": "Izoh qoldirish💌",
       "about_us": "Biz haqimizda💬",
       "contacts": "Kontaktlar📱",
+      "statistic": "Statistika📊",
       "change_name": "Ismni o'zgartirish",
       "change_phone": "Nomerni o'zgartirish☎️",
       "change_lang": "Tilni o'zgartirish🇺🇿"

@@ -333,6 +333,17 @@ namespace waPlanner.TelegramBot.Utils
                 .FirstOrDefaultAsync();
         }
 
+        //public async Task<viTelegramStatistic> GetStatistic()
+        //{
+        //    var telegramStat = new viTelegramStatistic();
+            
+        //    int totalUsersCount = await db.tbUsers.AsNoTracking().CountAsync();
+        //    int totalBooks = await db.tbSchedulers.AsNoTracking().CountAsync();
+        //    int totalOrgUsers = await db.tbSchedulers
+        //                        .AsNoTracking()
+        //                        .Where()
+        //}
+
         //public void Dispose()
         //{
         //    if (db != null)

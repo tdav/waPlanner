@@ -12,9 +12,12 @@ namespace waPlanner.TelegramBot.keyboards
 {
     public class CalendarKeyboards
     {
-        public static InlineKeyboardMarkup Calendar(ref DateTime date)
+        public static InlineKeyboardMarkup Calendar(ref DateTime date, string lg)
         {
             string[] daysWeek = { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" };
+            if (lg == "uz" || lg == "lt")
+                daysWeek = new string[]{ "Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"};
+
             string IGNORE = $"i;i";
 
             var keyboards = new List<List<InlineKeyboardButton>>();
@@ -76,7 +79,7 @@ namespace waPlanner.TelegramBot.keyboards
             return data.Split(";");
         }
 
-        public static async Task OnCalendarProcess(CallbackQuery call, ReplyKeyboardMarkup back, IDbManipulations db, ITelegramBotClient bot, LangsModel lang)
+        public static async Task OnCalendarProcess(CallbackQuery call, IDbManipulations db, ITelegramBotClient bot, LangsModel lang)
         {
             long chat_id = call.Message.Chat.Id;
             int messageId = call.Message.MessageId;
@@ -90,14 +93,14 @@ namespace waPlanner.TelegramBot.keyboards
             {
                 case "NEXT-MONTH":
                     {
-                        await bot.EditMessageReplyMarkupAsync(chat_id, messageId, Calendar(ref date));
+                        await bot.EditMessageReplyMarkupAsync(chat_id, messageId, Calendar(ref date, cache.Lang));
                         break;
                     }
                 case "PREV-MONTH":
                     {
                         if(date.Month >= DateTime.Now.Month)
                         {
-                            await bot.EditMessageReplyMarkupAsync(chat_id, messageId, Calendar(ref date));
+                            await bot.EditMessageReplyMarkupAsync(chat_id, messageId, Calendar(ref date, cache.Lang));
                             break;
                         }
                         break;
@@ -126,7 +129,8 @@ namespace waPlanner.TelegramBot.keyboards
                                 {
 
                                 }
-                                await bot.SendTextMessageAsync(chat_id, $"{lang[cache.Lang]["CHOOSEN_DATE"]} <b>{date.ToShortDateString()}</b>", replyMarkup: back, parseMode: ParseMode.Html);
+                                await bot.SendTextMessageAsync(chat_id, $"{lang[cache.Lang]["CHOOSEN_DATE"]} <b>{date.ToShortDateString()}</b>", 
+                                    replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang), parseMode: ParseMode.Html);
                                 await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["CUZY_TIME"], replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
                                 return;
                             }
@@ -150,11 +154,11 @@ namespace waPlanner.TelegramBot.keyboards
             }
         }
 
-        public static async Task SendCalendar(ITelegramBotClient bot, long chat_id, ReplyKeyboardMarkup back, string lg, LangsModel lang)
+        public static async Task SendCalendar(ITelegramBotClient bot, long chat_id, string lg, LangsModel lang)
         {
             var date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            await bot.SendTextMessageAsync(chat_id, lang[lg]["CUZY_DATE"], replyMarkup: back);
-            await bot.SendTextMessageAsync(chat_id, lang[lg]["CALENDAR"], replyMarkup: Calendar(ref date));
+            await bot.SendTextMessageAsync(chat_id, lang[lg]["CUZY_DATE"], replyMarkup: ReplyKeyboards.BackButton(lg, lang));
+            await bot.SendTextMessageAsync(chat_id, lang[lg]["CALENDAR"], replyMarkup: Calendar(ref date, lg));
         }
     }
 }

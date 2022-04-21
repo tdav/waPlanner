@@ -204,6 +204,53 @@ namespace waPlanner.Migrations
                     b.ToTable("sp_roles", (string)null);
                 });
 
+            modelBuilder.Entity("waPlanner.Database.Models.spSetup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("create_date");
+
+                    b.Property<int>("CreateUser")
+                        .HasColumnType("integer")
+                        .HasColumnName("create_user");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("text");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("update_date");
+
+                    b.Property<int?>("UpdateUser")
+                        .HasColumnType("integer")
+                        .HasColumnName("update_user");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_sp_setups");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_sp_setups_user_id");
+
+                    b.ToTable("sp_setups", (string)null);
+                });
+
             modelBuilder.Entity("waPlanner.Database.Models.spSpecialization", b =>
                 {
                     b.Property<int>("Id")
@@ -515,7 +562,6 @@ namespace waPlanner.Migrations
                         .HasDatabaseName("ix_tb_staffs_password");
 
                     b.HasIndex("PhoneNum")
-                        .IsUnique()
                         .HasDatabaseName("ix_tb_staffs_phone_num");
 
                     b.HasIndex("RoleId")
@@ -622,6 +668,18 @@ namespace waPlanner.Migrations
                         .HasConstraintName("fk_sp_organizations_sp_specializations_specialization_id");
 
                     b.Navigation("Specialization");
+                });
+
+            modelBuilder.Entity("waPlanner.Database.Models.spSetup", b =>
+                {
+                    b.HasOne("waPlanner.Database.Models.tbUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_sp_setups_tb_users_user_id");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("waPlanner.Database.Models.tbFavorites", b =>

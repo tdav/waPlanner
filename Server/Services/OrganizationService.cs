@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
+using waPlanner.Extensions;
 using waPlanner.ModelViews;
 
 namespace waPlanner.Services
@@ -19,12 +20,15 @@ namespace waPlanner.Services
     public class OrganizationService: IOrganizationService
     {
         private readonly MyDbContext db;
+        private readonly IHttpContextAccessorExtensions accessor;
         public OrganizationService(MyDbContext db)
         {
+            this.accessor = accessor;
             this.db = db;
         }
         public async Task<int> InsertOrganizationAsync(viOrganization organization)
         {
+            int user_id = accessor.GetId();
             var addOrganization = new spOrganization();
 
             if (organization.ChatId.HasValue)
@@ -47,7 +51,7 @@ namespace waPlanner.Services
 
             addOrganization.Name = organization.Name;
             addOrganization.CreateDate = DateTime.Now;
-            addOrganization.CreateUser = 1;
+            addOrganization.CreateUser = user_id;
             addOrganization.Status = 1;
             addOrganization.Address = organization.address;
             await db.spOrganizations.AddAsync(addOrganization);
@@ -57,6 +61,7 @@ namespace waPlanner.Services
         }
         public async Task UpdateOrganizationAsync(viOrganization organization)
         {
+            int user_id = accessor.GetId();
             var updatedOrganization = await db.spOrganizations.FindAsync(organization.Id);
 
             if (organization.ChatId.HasValue)
@@ -84,16 +89,17 @@ namespace waPlanner.Services
                 updatedOrganization.Name = organization.Name;
 
             updatedOrganization.UpdateDate = DateTime.Now;
-            updatedOrganization.UpdateUser = 1;
+            updatedOrganization.UpdateUser = user_id;
             await db.SaveChangesAsync();
         }
 
         public async Task UpdateOrganizationStatus(int org_id, int status)
         {
+            int user_id = accessor.GetId();
             var organiztion = await db.spOrganizations.FindAsync(org_id);
             organiztion.Status = status;
             organiztion.UpdateDate = DateTime.Now;
-            organiztion.UpdateUser = 1;
+            organiztion.UpdateUser = user_id;
             await db.SaveChangesAsync();
         }
 

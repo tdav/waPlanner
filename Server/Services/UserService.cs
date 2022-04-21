@@ -55,6 +55,7 @@ namespace waPlanner.Services
 
             if(vipatient.Status.HasValue)
                 patient.Status = vipatient.Status.Value;
+
             patient.UpdateDate = DateTime.Now;
             patient.UpdateUser = user_id;
             await db.SaveChangesAsync();    
@@ -80,6 +81,7 @@ namespace waPlanner.Services
                 Patronymic = patient.Patronymic,
                 Gender = patient.Gender,
                 BirthDay = patient.BirthDay,
+                PhoneNum = patient.Phone,
                 TelegramId = 0,
                 CreateDate = DateTime.Now,
                 CreateUser = user_id,
@@ -106,11 +108,13 @@ namespace waPlanner.Services
             return await db.tbSchedulers
                 .Include(x => x.User)
                 .AsNoTracking()
-                .Where(x => x.OrganizationId == org_id)
+                .Where(x => x.OrganizationId == org_id && x.Status == 1)
                 .Select(x => new viPatient
                 {
                     Id = x.User.Id,
                     Name = x.User.Name,
+                    Surname = x.User.Surname,
+                    Patronymic = x.User.Patronymic,
                     AdInfo = x.AdInfo,
                     Phone = x.User.PhoneNum,
                     BirthDay = x.User.BirthDay,
@@ -124,7 +128,7 @@ namespace waPlanner.Services
         {
             return await db.tbUsers
                 .AsNoTracking()
-                .Where(x => x.Id == user_id)
+                .Where(x => x.Id == user_id && x.Status == 1)
                 .Select(x => new viPatient
                 {
                     Id = x.Id,

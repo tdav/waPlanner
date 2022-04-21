@@ -9,24 +9,27 @@
     public enum PlannerStates
     {
         NONE = 0,
-        MAIN_MENU = 1,
-        SPECIALIZATION = 2,
-        ORGANIZATION = 3,
-        CATEGORY = 4,
-        STUFF = 5,
-        CHOOSE_DATE = 6,
-        CHOOSE_TIME = 7,
-        PHONE = 8,
-        USERNAME = 9,
-        ADD_FAVORITES = 10,
+        FAVORITES = 1,
+        SELECT_FAVORITES = 2,
 
-        FAVORITES = 21,
-        SELECT_FAVORITES = 22,
+        SETTINGS = 3,
+        PREPARE_CHANGE_NAME = 4,
+        CHANGE_NAME = 5,
+        CHANGE_PHONE = 6,
+        CHANGE_LANG = 7,
 
-        SETTINGS = 31,
-        PREPARE_CHANGE_NAME = 32,
-        CHANGE_NAME = 33,
-        CHANGE_PHONE = 34,
-        CHANGE_LANG = 35
+        ON_PREPARE_FEEDBACK = 8,
+        FEEDBACK = 9,
+
+        MAIN_MENU = 11,
+        SPECIALIZATION = 12,
+        ORGANIZATION = 13,
+        CATEGORY = 14,
+        STUFF = 15,
+        CHOOSE_DATE = 16,
+        CHOOSE_TIME = 17,
+        PHONE = 18,
+        USERNAME = 19,
+        ADD_FAVORITES = 20,
     }
 }

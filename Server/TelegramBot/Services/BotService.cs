@@ -77,7 +77,7 @@ namespace waPlanner.TelegramBot.Services
                                         await BotOnCallbackQueryReceivedAsync(update.CallbackQuery, db);
                                         break;
                                     }
-                                    
+
                             }
                         }
                     }
@@ -97,7 +97,7 @@ namespace waPlanner.TelegramBot.Services
             if (cache.State == PlannerStates.CHOOSE_TIME)
                 await TimeKeyboards.OnTimeProcess(call, bot, db, lang);
             else
-                await CalendarKeyboards.OnCalendarProcess(call, back, db, bot, lang);
+                await CalendarKeyboards.OnCalendarProcess(call, db, bot, lang);
         }
 
         private async Task BotOnMessageReceivedAsync(Message message, IDbManipulations db, TelegramBotValuesModel cache)
@@ -161,7 +161,7 @@ namespace waPlanner.TelegramBot.Services
                             cache.Staff = staffInfo.Staff;
                             cache.State = PlannerStates.CHOOSE_DATE;
                             ReplyKeyboardMarkup back = new(new[] { new KeyboardButton(lang[cache.Lang]["back"]) }) { ResizeKeyboard = true };
-                            await CalendarKeyboards.SendCalendar(bot, chat_id, back, cache.Lang, lang);
+                            await CalendarKeyboards.SendCalendar(bot, chat_id, cache.Lang, lang);
                         }
                         break;
                     }
@@ -207,9 +207,29 @@ namespace waPlanner.TelegramBot.Services
                         }
                         else
                         {
-                            ReplyKeyboardMarkup back = new(new[] { new KeyboardButton(lang.Get(cache.Lang, "back")) }) { ResizeKeyboard = true };
-                            await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["ON_CHANGE_PHONE"], parseMode: ParseMode.Html, replyMarkup: back);
+                            await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["ON_CHANGE_PHONE"], parseMode: ParseMode.Html, 
+                                replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang));
                             return;
+                        }
+                        break;
+                    }
+
+                case PlannerStates.ON_PREPARE_FEEDBACK:
+                    {
+                        await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["ON_FEEDBACK"], replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang));
+                        cache.State = PlannerStates.FEEDBACK;
+                        break;
+                    }
+                case PlannerStates.FEEDBACK:
+                    {
+                        if (msg != lang[cache.Lang]["back"])
+                        {
+                            string link = $"tg://user?id={chat_id}";
+                            string value = $"{message.From.FirstName} {message.From.LastName}";
+                            var feedback = $"Отзыв от <a href='{link}'>{value}</a> ID:<b>{chat_id}</b>";
+                            await bot.SendTextMessageAsync(Config.DEV_GROUP_ID, $"{feedback}: {msg}", parseMode: ParseMode.Html, disableWebPagePreview: true);
+                            await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["SUCCESS_FEEDBACK"], replyMarkup: ReplyKeyboards.MainMenu(cache.Lang, lang));
+                            cache.State = PlannerStates.MAIN_MENU;
                         }
                         break;
                     }
@@ -253,9 +273,8 @@ namespace waPlanner.TelegramBot.Services
                     {
                         if (!await DbManipulations.CheckStaffByCategory(cache.Category, msg) && !Commands.back.Contains(msg)) return;
 
-                        ReplyKeyboardMarkup back = new(new[] { new KeyboardButton(lang[cache.Lang]["back"]) }) { ResizeKeyboard = true };
                         cache.Staff = msg != lang[cache.Lang]["back"] ? msg : cache.Staff;
-                        await CalendarKeyboards.SendCalendar(bot, chat_id, back, cache.Lang, lang);
+                        await CalendarKeyboards.SendCalendar(bot, chat_id, cache.Lang, lang);
                         return;
                     }
                 case PlannerStates.PHONE:
@@ -266,7 +285,7 @@ namespace waPlanner.TelegramBot.Services
                             phoneNumber = message.Contact.PhoneNumber;
                         }
 
-                        if (Utils.Utils.CheckPhone(msg))
+                        else if (Utils.Utils.CheckPhone(msg))
                             phoneNumber = msg;
                         else
                         {
@@ -275,8 +294,7 @@ namespace waPlanner.TelegramBot.Services
                         }
                         cache.Phone = phoneNumber;
                         cache.State = PlannerStates.USERNAME;
-                        ReplyKeyboardMarkup back = new(new[] { new KeyboardButton(lang[cache.Lang]["back"]) }) { ResizeKeyboard = true };
-                        await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["SEND_FULL_NAME"], replyMarkup: back);
+                        await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["SEND_FULL_NAME"], replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang));
                         return;
                     }
                 case PlannerStates.USERNAME:
@@ -286,6 +304,7 @@ namespace waPlanner.TelegramBot.Services
                         await DbManipulations.FinishProcessAsync(chat_id, cache);
                         await DbManipulations.RegistrateUserPlanner(chat_id, cache);
                         await Utils.Utils.SendOrder(cache, bot, DbManipulations, chat_id);
+
                         if (!await DbManipulations.CheckFavorites(cache.Staff, chat_id))
                         {
                             cache.State = PlannerStates.ADD_FAVORITES;
@@ -304,13 +323,14 @@ namespace waPlanner.TelegramBot.Services
 
                         }
 
-                        if (msg == lang[cache.Lang]["YES"])
+                        else if (msg == lang[cache.Lang]["YES"])
                         {
                             await DbManipulations.AddToFavorites(cache, chat_id);
                             await bot.SendTextMessageAsync(chat_id,
                                 $"{lang[cache.Lang]["SPECIALIST"]} <b>{cache.Staff}</b> {lang[cache.Lang]["INTO_FAVORITES"]}",
                                 parseMode: ParseMode.Html);
                         }
+                        else return;
                         cache.State = PlannerStates.NONE;
                         await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["NONE"], replyMarkup: ReplyKeyboards.MainMenu(cache.Lang, lang));
                         break;
@@ -321,7 +341,7 @@ namespace waPlanner.TelegramBot.Services
 
             if (menu is not null)
             {
-                var buttons = ReplyKeyboards.SendKeyboards(menu);
+                var buttons = ReplyKeyboards.SendMenuKeyboards(menu);
                 if (cache.State > 0) buttons.Add(new List<KeyboardButton> { new KeyboardButton(lang[cache.Lang]["back"]) });
                 ReplyKeyboardMarkup markup = new(buttons) { ResizeKeyboard = true };
                 await bot.SendTextMessageAsync(chat_id, message_for_user, replyMarkup: markup);
@@ -330,121 +350,150 @@ namespace waPlanner.TelegramBot.Services
         }
         private async Task OnCommands(TelegramBotValuesModel cache, string msg, long chat_id, IDbManipulations db)
         {
-            if (Commands.back.Contains(msg))
+            if ((int)cache.State <= (int)PlannerStates.MAIN_MENU || Commands.back.Contains(msg))
             {
-                switch (cache.State)
+                if (Commands.back.Contains(msg))
                 {
-                    case PlannerStates.SETTINGS:
-                        {
-                            cache.State = PlannerStates.MAIN_MENU;
-                            break;
-                        }
-                    case PlannerStates.CHANGE_LANG:
-                        {
-                            cache.State = PlannerStates.SETTINGS;
-                            break;
-                        }
-                    case PlannerStates.CHANGE_NAME:
-                        {
-                            cache.State = PlannerStates.SETTINGS;
-                            break;
-                        }
-                    case PlannerStates.CHANGE_PHONE:
-                        {
-                            cache.State = PlannerStates.SETTINGS;
-                            break;
-                        }
+                    switch (cache.State)
+                    {
+                        case PlannerStates.SETTINGS:
+                            {
+                                cache.State = PlannerStates.MAIN_MENU;
+                                break;
+                            }
+                        case PlannerStates.CHANGE_LANG:
+                            {
+                                cache.State = PlannerStates.SETTINGS;
+                                break;
+                            }
+                        case PlannerStates.CHANGE_NAME:
+                            {
+                                cache.State = PlannerStates.SETTINGS;
+                                break;
+                            }
+                        case PlannerStates.CHANGE_PHONE:
+                            {
+                                cache.State = PlannerStates.SETTINGS;
+                                break;
+                            }
 
-                    case PlannerStates.SELECT_FAVORITES:
-                        {
-                            cache.State = PlannerStates.MAIN_MENU;
-                            break;
-                        }
-                    case PlannerStates.ORGANIZATION:
-                        {
-                            cache.State = PlannerStates.MAIN_MENU;
-                            break;
-                        }
-                    case PlannerStates.CATEGORY:
-                        {
-                            cache.State = PlannerStates.SPECIALIZATION;
-                            break;
-                        }
-                    case PlannerStates.STUFF:
-                        {
-                            cache.State = PlannerStates.ORGANIZATION;
-                            break;
-                        }
-                    case PlannerStates.CHOOSE_DATE:
-                        {
-                            cache.State = PlannerStates.CATEGORY;
-                            break;
-                        }
-                    case PlannerStates.CHOOSE_TIME:
-                        {
-                            cache.State = PlannerStates.CHOOSE_DATE;
-                            break;
-                        }
-                    case PlannerStates.PHONE:
-                        {
-                            ReplyKeyboardMarkup back = new(new[] { new KeyboardButton(lang.Get(cache.Lang, "back")) }) { ResizeKeyboard = true };
-                            cache.State = PlannerStates.CHOOSE_TIME;
-                            await bot.SendTextMessageAsync(chat_id, msg, replyMarkup: back);
-                            await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["CUZY_TIME"], replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
-                            return;
-                        }
-                    case PlannerStates.USERNAME:
-                        {
-                            cache.State = PlannerStates.PHONE;
-                            break;
-                        }
-                    default:
-                        {
-                            break;
-                        }
+                        case PlannerStates.FEEDBACK:
+                            {
+                                cache.State = PlannerStates.MAIN_MENU;
+                                break;
+                            }
+
+                        case PlannerStates.SELECT_FAVORITES:
+                            {
+                                cache.State = PlannerStates.MAIN_MENU;
+                                break;
+                            }
+                        case PlannerStates.ORGANIZATION:
+                            {
+                                cache.State = PlannerStates.MAIN_MENU;
+                                break;
+                            }
+                        case PlannerStates.CATEGORY:
+                            {
+                                cache.State = PlannerStates.SPECIALIZATION;
+                                break;
+                            }
+                        case PlannerStates.STUFF:
+                            {
+                                cache.State = PlannerStates.ORGANIZATION;
+                                break;
+                            }
+                        case PlannerStates.CHOOSE_DATE:
+                            {
+                                cache.State = PlannerStates.CATEGORY;
+                                break;
+                            }
+                        case PlannerStates.CHOOSE_TIME:
+                            {
+                                cache.State = PlannerStates.CHOOSE_DATE;
+                                break;
+                            }
+                        case PlannerStates.PHONE:
+                            {
+                                cache.State = PlannerStates.CHOOSE_TIME;
+                                await bot.SendTextMessageAsync(chat_id, msg, replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang));
+                                await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["CUZY_TIME"], replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
+                                return;
+                            }
+                        case PlannerStates.USERNAME:
+                            {
+                                cache.State = PlannerStates.PHONE;
+                                break;
+                            }
+                        default:
+                            {
+                                break;
+                            }
+                    }
                 }
-            }
 
-            if (Commands.favorites.Contains(msg))
-                cache.State = PlannerStates.FAVORITES;
+                else if (Commands.favorites.Contains(msg))
+                    cache.State = PlannerStates.FAVORITES;
 
-            if (Commands.book.Contains(msg))
-                cache.State = PlannerStates.SPECIALIZATION;
+                else if (Commands.book.Contains(msg))
+                    cache.State = PlannerStates.SPECIALIZATION;
 
-            if (Commands.settings.Contains(msg))
-                cache.State = PlannerStates.SETTINGS;
+                else if (Commands.settings.Contains(msg))
+                    cache.State = PlannerStates.SETTINGS;
 
-            if (Commands.change_lang.Contains(msg))
-            {
-                cache.State = PlannerStates.CHANGE_LANG;
-                await bot.SendTextMessageAsync(chat_id, choose_lang, replyMarkup: ReplyKeyboards.SendLanguages());
-            }
-
-            if (Commands.change_name.Contains(msg))
-            {
-                if (await db.GetUserId(chat_id) == 0)
+                else if (Commands.change_lang.Contains(msg))
                 {
-                    await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["SHOULD_REGISTR"]);
-                    cache.State = PlannerStates.MAIN_MENU;
+                    cache.State = PlannerStates.CHANGE_LANG;
+                    await bot.SendTextMessageAsync(chat_id, choose_lang, replyMarkup: ReplyKeyboards.SendLanguages());
+                }
+
+                else if (Commands.change_name.Contains(msg))
+                {
+                    if (await db.GetUserId(chat_id) == 0)
+                    {
+                        await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["SHOULD_REGISTR"]);
+                        cache.State = PlannerStates.MAIN_MENU;
+                        return;
+                    }
+                    await bot.SendTextMessageAsync(chat_id, msg, replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang));
+                    cache.State = PlannerStates.PREPARE_CHANGE_NAME;
                     return;
                 }
-                ReplyKeyboardMarkup back = new(new[] { new KeyboardButton(lang.Get(cache.Lang, "back")) }) { ResizeKeyboard = true };
-                await bot.SendTextMessageAsync(chat_id, msg, replyMarkup: back);
-                cache.State = PlannerStates.PREPARE_CHANGE_NAME;
-                return;
-            }
 
-            if (Commands.change_phone.Contains(msg))
-            {
-                if (await db.GetUserId(chat_id) == 0)
+                else if (Commands.change_phone.Contains(msg))
                 {
-                    await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["SHOULD_REGISTR"]);
-                    cache.State = PlannerStates.MAIN_MENU;
+                    if (await db.GetUserId(chat_id) == 0)
+                    {
+                        await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["SHOULD_REGISTR"]);
+                        cache.State = PlannerStates.MAIN_MENU;
+                        return;
+                    }
+                    cache.State = PlannerStates.CHANGE_PHONE;
                     return;
                 }
-                cache.State = PlannerStates.CHANGE_PHONE;
-                return;
+                
+                else if (Commands.feedback.Contains(msg))
+                {
+                    cache.State = PlannerStates.ON_PREPARE_FEEDBACK;
+                    return;
+                }
+
+                else if (Commands.about_us.Contains(msg))
+                {
+                    await bot.SendTextMessageAsync(chat_id, "MALUMOT");
+                }
+
+                else if (Commands.contacts.Contains(msg))
+                {
+                    await bot.SendTextMessageAsync(chat_id, "MALUMOT");
+                }
+
+                else if (Commands.statistic.Contains(msg))
+                {
+                    await bot.SendTextMessageAsync(chat_id, "statistika");
+                }
             }
+           
         }
 
     }

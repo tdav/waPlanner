@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
+using waPlanner.Extensions;
 using waPlanner.ModelViews;
 
 namespace waPlanner.Services
@@ -19,13 +20,16 @@ namespace waPlanner.Services
     public class SpecializationService: ISpecializationService
     {
         private readonly MyDbContext db;
+        private readonly IHttpContextAccessorExtensions accessor;
         public SpecializationService(MyDbContext db)
         {
             this.db = db;
+            this.accessor = accessor;
         }
 
         public async Task AddSpecializationAsync(viSpecialization spec)
         {
+            int user_id = accessor.GetId();
             var specialization = new spSpecialization
             {
                 NameLt = spec.NameLt,
@@ -33,7 +37,7 @@ namespace waPlanner.Services
                 NameUz = spec.NameUz,
                 Status = 1,
                 CreateDate = DateTime.Now,
-                CreateUser = 1
+                CreateUser = user_id
             };
 
             await db.spSpecializations.AddAsync(specialization);
@@ -42,6 +46,7 @@ namespace waPlanner.Services
 
         public async Task UpdateSpecializationAsync(viSpecialization spec)
         {
+            int user_id = accessor.GetId();
             var specialization = await db.spSpecializations.FindAsync(spec.Id);
 
             specialization.NameLt = spec.NameLt;
@@ -49,7 +54,7 @@ namespace waPlanner.Services
             specialization.NameUz = spec.NameUz;
             specialization.Status = spec.Status;
             specialization.UpdateDate = DateTime.Now;
-            specialization.UpdateUser = 1;
+            specialization.UpdateUser = user_id;
 
             await db.SaveChangesAsync();
         }
@@ -70,9 +75,10 @@ namespace waPlanner.Services
 
         public async Task ChangeSpecializationStatus(int spec_id, int status)
         {
+            int user_id = accessor.GetId();
             var specialization = await db.spSpecializations.FindAsync(spec_id);
             specialization.UpdateDate = DateTime.Now;
-            specialization.UpdateUser = 1;
+            specialization.UpdateUser = user_id;
             specialization.Status = status;
             await db.SaveChangesAsync();
         }
