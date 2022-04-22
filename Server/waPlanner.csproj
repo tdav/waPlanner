@@ -58,6 +58,7 @@
 
 	<ItemGroup>
 		<Folder Include="Migrations\" />
+		<Folder Include="TelegramBot\handlers\" />
 	</ItemGroup>
 
 </Project>

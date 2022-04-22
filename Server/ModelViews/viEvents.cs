@@ -11,6 +11,7 @@ namespace waPlanner.ModelViews
 
         public int UserId { get; set; }
         public string User { get; set; }
+        public string UserPhoneNum { get; set; }
         public string AdInfo { get; set; }
         public DateTime Start { get ; set; }
         public DateTime End { get; set; }

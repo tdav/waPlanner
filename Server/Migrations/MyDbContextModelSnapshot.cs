@@ -221,6 +221,10 @@ namespace waPlanner.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("create_user");
 
+                    b.Property<int?>("StaffId")
+                        .HasColumnType("integer")
+                        .HasColumnName("staff_id");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer")
                         .HasColumnName("status");
@@ -238,12 +242,15 @@ namespace waPlanner.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("update_user");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer")
                         .HasColumnName("user_id");
 
                     b.HasKey("Id")
                         .HasName("pk_sp_setups");
+
+                    b.HasIndex("StaffId")
+                        .HasDatabaseName("ix_sp_setups_staff_id");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_sp_setups_user_id");
@@ -672,12 +679,19 @@ namespace waPlanner.Migrations
 
             modelBuilder.Entity("waPlanner.Database.Models.spSetup", b =>
                 {
+                    b.HasOne("waPlanner.Database.Models.tbStaff", "Staff")
+                        .WithMany()
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_sp_setups_tb_staffs_staff_id");
+
                     b.HasOne("waPlanner.Database.Models.tbUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
                         .HasConstraintName("fk_sp_setups_tb_users_user_id");
+
+                    b.Navigation("Staff");
 
                     b.Navigation("User");
                 });

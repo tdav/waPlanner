@@ -129,6 +129,7 @@ namespace waPlanner.Services
                     Staff = $"{x.Staff.Surname} {x.Staff.Name} {x.Staff.Patronymic}",
                     UserId = x.UserId,
                     User = $"{x.User.Name} {x.User.Surname} {x.User.Patronymic}",
+                    UserPhoneNum = x.User.PhoneNum,
                     Start = x.AppointmentDateTime,
                     End = x.AppointmentDateTime.AddMinutes(30),
                     AdInfo = x.AdInfo

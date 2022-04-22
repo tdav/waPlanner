@@ -6,14 +6,11 @@ using Serilog.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using waPlanner.ModelViews;
-using waPlanner.TelegramBot;
 
 namespace waPlanner
 {
     public class Program
     {
-        //public static LangsModel langs;
         public static Dictionary<long, object> Cache = new Dictionary<long, object>();
         public static void Main(string[] args)
         {

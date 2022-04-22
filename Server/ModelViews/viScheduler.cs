@@ -14,7 +14,7 @@ namespace waPlanner.ModelViews
         public int? CategoryId { get; set; }
         public string Category { get; set; }
 
-        public int? OrganizationId { get; set; }
+        public int OrganizationId { get; set; }
         public string Organization { get; set; }
         public DateTime? AppointmentDateTime { get; set; }
         public string AdInfo { get; set; }

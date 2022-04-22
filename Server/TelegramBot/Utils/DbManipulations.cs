@@ -1,12 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
 using waPlanner.ModelViews;
-using System;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace waPlanner.TelegramBot.Utils
 {
@@ -19,6 +20,7 @@ namespace waPlanner.TelegramBot.Utils
         Task<int> GetOrganizationId(string organization_name);
         Task<List<IdValue>> SendCategoriesByOrgName(string organization_name);
         Task RegistrateUserPlanner(long chat_id, TelegramBotValuesModel value);
+        Task<viSetup> GetUserLang(long chat_id);
         Task<int> GetUserId(long chat_id);
         Task FinishProcessAsync(long chat_id, TelegramBotValuesModel value);
         Task<bool> CheckUser(long chat_id);
@@ -41,14 +43,16 @@ namespace waPlanner.TelegramBot.Utils
     public class DbManipulations : IDbManipulations
     {
         private readonly MyDbContext db;
+        private readonly IMemoryCache cache;
 
-        public DbManipulations(MyDbContext db)
+        public DbManipulations(MyDbContext db, IMemoryCache cache)
         {
             //var scope = provider.CreateScope();
             //db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
             //scope.Dispose();
 
             this.db = db;
+            this.cache = cache;
         }
 
         public async Task<List<IdValue>> SendFavorites(long chat_id)
@@ -57,12 +61,13 @@ namespace waPlanner.TelegramBot.Utils
             if (user_id != 0)
             {
                 return await db.tbFavorites
+                .Include(x => x.Organization)
                 .AsNoTracking()
                 .Where(f => f.UserId == user_id)
                 .Select(f => new IdValue
                 {
                     Id = f.StaffId,
-                    Name = $"{f.Staff.Surname} {f.Staff.Name} {f.Staff.Patronymic}"
+                    Name = $"({f.Organization.Name}) {f.Staff.Surname} {f.Staff.Name} {f.Staff.Patronymic}"
                 })
                 .ToListAsync();
             }
@@ -139,12 +144,57 @@ namespace waPlanner.TelegramBot.Utils
             await db.SaveChangesAsync();
         }
 
+        public async Task RegisterUserSettings(long chat_id, string lg)
+        {
+            int user_id = await GetUserId(chat_id);
+            var setting = new viSetup { Lang = lg, Theme = "white" };
+
+            var setup = new spSetup
+            {
+                UserId = user_id,
+                Text = Newtonsoft.Json.JsonConvert.SerializeObject(setting),
+                CreateDate = DateTime.Now,
+                CreateUser = user_id,
+                Status = 1
+            };
+            await db.spSetups.AddAsync(setup);
+            await db.SaveChangesAsync();
+        }
+
+        public async Task<viSetup> GetUserLang(long chat_id)
+        {
+            int user_id = await GetUserId(chat_id);
+            if (user_id != 0)
+            {
+                var setup = await db.spSetups
+                   .AsNoTracking()
+                   .FirstOrDefaultAsync(x => x.UserId == user_id);
+                viSetup a = JsonSerializer.Deserialize<viSetup>(setup.Text);
+                return a;
+            }
+            return null;
+        }
+
         public async Task<int> GetUserId(long chat_id)
         {
-            var user_id = await db.tbUsers.AsNoTracking().FirstOrDefaultAsync(x => x.TelegramId == chat_id);
-            if (user_id is not null)
-                return user_id.Id;
-            return 0;
+            if (cache.TryGetValue($"GETUSERID-{chat_id}", out int value))
+            {
+                return value;
+            }
+            else
+            {
+                var user = await db.tbUsers.AsNoTracking().FirstOrDefaultAsync(x => x.TelegramId == chat_id);
+                if (user is not null)
+                {
+                    var cacheEntryOptions = new MemoryCacheEntryOptions();
+                    cacheEntryOptions.SetSlidingExpiration(TimeSpan.FromMinutes(5));
+
+                    cache.Set($"GETUSERID-{chat_id}", user.Id, cacheEntryOptions);
+                    return user.Id;
+                }
+                else
+                    return 0;
+            }            
         }
 
         public async Task FinishProcessAsync(long chat_id, TelegramBotValuesModel value)
@@ -161,6 +211,7 @@ namespace waPlanner.TelegramBot.Utils
             };
             await db.tbUsers.AddAsync(telegramUser);
             await db.SaveChangesAsync();
+            await RegisterUserSettings(chat_id, value.Lang);
         }
 
         public async Task<bool> CheckUser(long chat_id)
@@ -336,7 +387,7 @@ namespace waPlanner.TelegramBot.Utils
         //public async Task<viTelegramStatistic> GetStatistic()
         //{
         //    var telegramStat = new viTelegramStatistic();
-            
+
         //    int totalUsersCount = await db.tbUsers.AsNoTracking().CountAsync();
         //    int totalBooks = await db.tbSchedulers.AsNoTracking().CountAsync();
         //    int totalOrgUsers = await db.tbSchedulers

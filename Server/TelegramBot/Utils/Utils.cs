@@ -25,7 +25,7 @@ namespace waPlanner.TelegramBot.Utils
             long group_id = await db.GetOrganizationGroupId(cache.Organization);
             var userInfo = await db.GetUserInfo(chat_id);
             string registerDate = DateTime.Now.Date == userInfo.CreateDate.Date ? "Новый Пользовтель" : userInfo.CreateDate.ToString();
-            string lang = cache.Lang == "🇷🇺" ? cache.Lang : "🇺🇿";
+            string lang = cache.Lang == "ru" ? "🇷🇺" : "🇺🇿";
             string order = $"🧾<b>Новое поступление</b>\n\n" +
                            $"Имя пользователя: <b>{userInfo.Name}</b>\n" +
                            $"Платформа: <b>{userInfo.Surname}</b>\n" +
