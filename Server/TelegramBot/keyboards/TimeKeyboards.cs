@@ -16,8 +16,10 @@ namespace waPlanner.TelegramBot.keyboards
         {
             var doctorsDate = await db.GetStaffBusyTime(value);
             int[] staff_avail = await db.CheckStaffAvailability(value.Staff);
+            viOrgTimes breakTime = await db.GetOrganizationBreak(value.Organization);
+            viOrgTimes workTime = await db.GetOrgWorkTime(value.Organization);
+
             int dayOfWeek = (int)value.Calendar.DayOfWeek;
-            viDinnerTime dinner = await db.GetOrganizationDinner(value.Organization);
             List<string> appointmentTime = new();
             List<DateTime> appointmentDate = new();
             foreach (var times in doctorsDate)
@@ -26,15 +28,12 @@ namespace waPlanner.TelegramBot.keyboards
                 appointmentDate.Add(times.Date);
             }
 
-            TimeSpan time = new(10, 0, 0);
-            TimeSpan offset = new(0, 30, 0);
-            int row_limit = 4;
+            TimeSpan time = new(workTime.Start.Value.Hour, workTime.Start.Value.Minute, 0);
+            TimeSpan offset = new (0, 30, 0);
+            int row_limit = (workTime.End.Value.Hour - workTime.Start.Value.Hour) / 2;
             
-            if(staff_avail[dayOfWeek] == 2)
-            {
-                time = new(14, 0, 0);
-                row_limit = 2;
-            }
+            if (staff_avail[dayOfWeek] == 2)
+                time = new (breakTime.End.Value.Hour, 0, 0);
 
             var keyboards = new List<List<InlineKeyboardButton>>();
 
@@ -43,16 +42,11 @@ namespace waPlanner.TelegramBot.keyboards
                 var times_row = new List<InlineKeyboardButton>();
                 for (int col = 0; col < 4; col++)
                 {
-                    if ((dinner.DinnerStart.Value.TimeOfDay <= time) && (time < dinner.DinnerEnd.Value.TimeOfDay))
+                    var checkBreakTime = breakTime.Start.HasValue && (breakTime.Start.Value.TimeOfDay <= time) && (time < breakTime.End.Value.TimeOfDay);
+                    
+                    if (checkBreakTime || appointmentTime.Contains(time.ToString(@"hh\:mm")) && appointmentDate.Contains(value.Calendar.Date))
                     {
-                        times_row.Add(InlineKeyboardButton.WithCallbackData(" ", $"i"));
-                        time = time.Add(offset);
-                        continue;
-                    }
-
-                    if (appointmentTime.Contains(time.ToString(@"hh\:mm")) && appointmentDate.Contains(value.Calendar.Date))
-                    {
-                        times_row.Add(InlineKeyboardButton.WithCallbackData(" ", $"i"));
+                        times_row.Add(InlineKeyboardButton.WithCallbackData(" ", "i"));
                         time = time.Add(offset);
                         continue;
                     }

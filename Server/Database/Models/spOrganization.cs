@@ -24,11 +24,13 @@ namespace waPlanner.Database.Models
         [Required]
         public float Longitude { get; set; }       
 
-        [StringLength(150)]
+        [StringLength(100)]
         public string Name { get; set; }
 
-        public DateTime? DinnerTimeStart { get; set; } = DateTime.Now;
-        public DateTime? DinnerTimeEnd { get; set; } = DateTime.Now;
+        public DateTime? BreakTimeStart { get; set; }
+        public DateTime? BreakTimeEnd { get; set; }
+        public DateTime? WorkStart { get; set; }
+        public DateTime? WorkEnd { get; set; }
 
         public int? SpecializationId { get; set; }
         public virtual spSpecialization Specialization { get; set; }

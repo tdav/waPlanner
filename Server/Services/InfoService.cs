@@ -30,7 +30,7 @@ namespace waPlanner.Services
         public async Task<int> GetTotalTodayAppointments()
         {
             int org_id = accessor.GetOrgId();
-            return await db.tbSchedulers.CountAsync(x => x.AppointmentDateTime.Date == DateTime.Now.Date && x.OrganizationId == org_id);
+            return await db.tbSchedulers.CountAsync(x => x.CreateDate.Date == DateTime.Now.Date && x.OrganizationId == org_id);
         }
 
         public async Task<int> GetTotalWeekAppointments()

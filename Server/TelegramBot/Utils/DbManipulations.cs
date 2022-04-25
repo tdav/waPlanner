@@ -35,9 +35,13 @@ namespace waPlanner.TelegramBot.Utils
         Task<bool> CheckFavorites(string value, long chat_id);
         Task UpdateUserName(long chat_id, string name);
         Task UpdateUserPhone(long chat_id, string phone);
+        Task UpdateUserLang(long chat_id, string lg, TelegramBotValuesModel cache);
         Task<long> GetOrganizationGroupId(string org_name);
         Task<viTelegramUser> GetUserInfo(long chat_id);
-        Task<viDinnerTime> GetOrganizationDinner(string org_name);
+        Task<viOrgTimes> GetOrganizationBreak(string org_name);
+        Task<viOrgTimes> GetOrgWorkTime(string org_name);
+        Task<viTelegramCommonStatistic> GetCommonStatistic();
+        Task<List<viTelegramOrgsStatistic>> GetOrgsStatistics();
     }
 
     public class DbManipulations : IDbManipulations
@@ -194,7 +198,7 @@ namespace waPlanner.TelegramBot.Utils
                 }
                 else
                     return 0;
-            }            
+            }
         }
 
         public async Task FinishProcessAsync(long chat_id, TelegramBotValuesModel value)
@@ -348,6 +352,10 @@ namespace waPlanner.TelegramBot.Utils
             await db.SaveChangesAsync();
         }
 
+        public async Task UpdateUserLang(long chat_id, string lg, TelegramBotValuesModel cache)
+        {
+            // TODO updateUserLang
+        }
         public async Task<viTelegramUser> GetUserInfo(long chat_id)
         {
             return await db.tbUsers
@@ -371,30 +379,61 @@ namespace waPlanner.TelegramBot.Utils
             return chat.ChatId;
         }
 
-        public async Task<viDinnerTime> GetOrganizationDinner(string org_name)
+        public async Task<viOrgTimes> GetOrganizationBreak(string org_name)
         {
             return await db.spOrganizations
                 .AsNoTracking()
                 .Where(x => x.Name == org_name)
-                .Select(x => new viDinnerTime
+                .Select(x => new viOrgTimes
                 {
-                    DinnerStart = x.DinnerTimeStart,
-                    DinnerEnd = x.DinnerTimeEnd
+                    Start = x.BreakTimeStart,
+                    End = x.BreakTimeEnd
                 })
                 .FirstOrDefaultAsync();
         }
 
-        //public async Task<viTelegramStatistic> GetStatistic()
-        //{
-        //    var telegramStat = new viTelegramStatistic();
+        public async Task<viOrgTimes> GetOrgWorkTime(string org_name)
+        {
+            return await db.spOrganizations
+                .AsNoTracking()
+                .Where(x => x.Name == org_name)
+                .Select(x => new viOrgTimes
+                {
+                    Start = x.WorkStart,
+                    End = x.WorkEnd
+                })
+                .FirstOrDefaultAsync();
+        }
 
-        //    int totalUsersCount = await db.tbUsers.AsNoTracking().CountAsync();
-        //    int totalBooks = await db.tbSchedulers.AsNoTracking().CountAsync();
-        //    int totalOrgUsers = await db.tbSchedulers
-        //                        .AsNoTracking()
-        //                        .Where()
-        //}
+        public async Task<viTelegramCommonStatistic> GetCommonStatistic()
+        {
+            int totalUsersCount = await db.tbUsers.AsNoTracking().CountAsync();
+            int totalBooks = await db.tbSchedulers.AsNoTracking().CountAsync();
+            return await db.tbSchedulers
+                .AsNoTracking()
+                .Include(x => x.Organization)
+                .GroupBy(x => new { x.Organization.Name })
+                .Select(x => new viTelegramCommonStatistic
+                {
+                    TotalUsersCount = totalUsersCount,
+                    TotalBooks = totalBooks,
+                })
+                .FirstAsync();
+        }
 
+        public async Task<List<viTelegramOrgsStatistic>> GetOrgsStatistics()
+        {
+            return await db.tbSchedulers
+                .AsNoTracking()
+                .Include(x => x.Organization)
+                .GroupBy(x => new { x.Organization.Name })
+                .Select(x => new viTelegramOrgsStatistic
+                {
+                    Name = x.Key.Name,
+                    Count = x.Count()
+                })
+                .ToListAsync();
+        }
         //public void Dispose()
         //{
         //    if (db != null)

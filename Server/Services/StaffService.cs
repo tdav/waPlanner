@@ -107,7 +107,7 @@ namespace waPlanner.Services
             newStaff.RoleId = staff_role;
             newStaff.TelegramId = staff.TelegramId;
             newStaff.Experience = staff.Experience;
-            newStaff.Availability = staff.Availability;
+            newStaff.Availability = new int[] { 1,1,1,1,1,1,1};
             newStaff.CreateDate = DateTime.Now;
             newStaff.Gender = staff.Gender;
             newStaff.CreateUser = user_id;

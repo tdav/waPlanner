@@ -168,7 +168,8 @@ namespace waPlanner.TelegramBot.Services
                     }
                 case PlannerStates.SELECT_FAVORITES:
                     {
-                        cache.Staff = msg != lang[cache.Lang]["back"] ? msg : cache.Staff;
+                        string staff_name = msg.Substring(msg.LastIndexOf(')') + 2);
+                        cache.Staff = msg != lang[cache.Lang]["back"] ? staff_name : cache.Staff;
                         viStaffInfo staffInfo = await DbManipulations.GetStaffInfoByName(cache.Staff);
                         if (staffInfo is not null)
                         {
@@ -504,7 +505,8 @@ namespace waPlanner.TelegramBot.Services
 
             else if (msg == lang[cache.Lang]["statistic"])
             {
-                await bot.SendTextMessageAsync(chat_id, "statistika");
+                await bot.SendTextMessageAsync(chat_id, await Utils.Utils.SendStatistic(db, cache, lang), parseMode: ParseMode.Html);
+                return;
             }
         }
 

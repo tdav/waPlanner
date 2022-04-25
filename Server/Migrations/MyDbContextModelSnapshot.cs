@@ -106,6 +106,14 @@ namespace waPlanner.Migrations
                         .HasColumnType("character varying(150)")
                         .HasColumnName("address");
 
+                    b.Property<DateTime?>("BreakTimeEnd")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("break_time_end");
+
+                    b.Property<DateTime?>("BreakTimeStart")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("break_time_start");
+
                     b.Property<long>("ChatId")
                         .HasColumnType("bigint")
                         .HasColumnName("chat_id");
@@ -118,14 +126,6 @@ namespace waPlanner.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("create_user");
 
-                    b.Property<DateTime?>("DinnerTimeEnd")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("dinner_time_end");
-
-                    b.Property<DateTime?>("DinnerTimeStart")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("dinner_time_start");
-
                     b.Property<float>("Latitude")
                         .HasColumnType("real")
                         .HasColumnName("latitude");
@@ -135,8 +135,8 @@ namespace waPlanner.Migrations
                         .HasColumnName("longitude");
 
                     b.Property<string>("Name")
-                        .HasMaxLength(150)
-                        .HasColumnType("character varying(150)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("name");
 
                     b.Property<int?>("SpecializationId")
@@ -154,6 +154,14 @@ namespace waPlanner.Migrations
                     b.Property<int?>("UpdateUser")
                         .HasColumnType("integer")
                         .HasColumnName("update_user");
+
+                    b.Property<DateTime?>("WorkEnd")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("work_end");
+
+                    b.Property<DateTime?>("WorkStart")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("work_start");
 
                     b.HasKey("Id")
                         .HasName("pk_sp_organizations");

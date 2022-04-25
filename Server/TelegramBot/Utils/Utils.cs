@@ -39,5 +39,21 @@ namespace waPlanner.TelegramBot.Utils
             await bot.SendTextMessageAsync(group_id, order, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
 
         }
+
+        public static async Task<string> SendStatistic(IDbManipulations db, TelegramBotValuesModel cache, LangsModel lang)
+        {
+            var commonStats = await db.GetCommonStatistic();
+            var orgsStats = await db.GetOrgsStatistics();
+
+            string totalStats = $"<b>{lang[cache.Lang]["statistic"]}</b>\n\n" +
+                                $"👨‍👩‍👧‍👦{lang[cache.Lang]["PLATFORM_USERS"]} <b>{commonStats.TotalUsersCount}</b>\n" +
+                                $"📄{lang[cache.Lang]["TOTAL_BOOKS"]} <b>{commonStats.TotalBooks}</b>\n";
+
+            foreach(var stat in orgsStats)
+            {
+                totalStats += $"{lang[cache.Lang]["BOOKS_COUNT"]} 🏬<b>{stat.Name}: {stat.Count}</b>\n";
+            }
+            return totalStats;
+        }
     }
 }

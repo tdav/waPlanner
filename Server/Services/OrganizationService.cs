@@ -44,10 +44,10 @@ namespace waPlanner.Services
                 addOrganization.SpecializationId = organization.SpecializationId.Value;
 
             if (organization.DinnerTimeStart.HasValue)
-                addOrganization.DinnerTimeStart = organization.DinnerTimeStart.Value;
+                addOrganization.BreakTimeStart = organization.DinnerTimeStart.Value;
 
             if (organization.DinnerTimeEnd.HasValue)
-                addOrganization.DinnerTimeEnd = organization.DinnerTimeEnd.Value;
+                addOrganization.BreakTimeEnd = organization.DinnerTimeEnd.Value;
 
             addOrganization.Name = organization.Name;
             addOrganization.CreateDate = DateTime.Now;
@@ -80,10 +80,10 @@ namespace waPlanner.Services
                 updatedOrganization.Status = organization.Status.Value;
 
             if (organization.DinnerTimeStart.HasValue)
-                updatedOrganization.DinnerTimeStart = organization.DinnerTimeStart.Value;
+                updatedOrganization.BreakTimeStart = organization.DinnerTimeStart.Value;
 
             if (organization.DinnerTimeEnd.HasValue)
-                updatedOrganization.DinnerTimeEnd = organization.DinnerTimeEnd.Value;
+                updatedOrganization.BreakTimeEnd = organization.DinnerTimeEnd.Value;
 
             if (organization is not null)
                 updatedOrganization.Name = organization.Name;
