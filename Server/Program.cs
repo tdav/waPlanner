@@ -11,7 +11,7 @@ namespace waPlanner
 {
     public class Program
     {
-        public static Dictionary<long, object> Cache = new Dictionary<long, object>();
+       // public static Dictionary<long, object> Cache = new Dictionary<long, object>();
         public static void Main(string[] args)
         {
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);

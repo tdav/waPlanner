@@ -18,21 +18,23 @@ namespace waPlanner.TelegramBot.Services
 {
     public interface IBotService
     {
-        Task HandleAsync(ITelegramBotClient bot, Update[] updates, CancellationToken token, IMemoryCache _cache);
+        Task HandleAsync(ITelegramBotClient bot, Update[] updates, CancellationToken token);
     }
 
     public class BotService : IBotService
     {
         private readonly IServiceProvider provider;
         private readonly LangsModel lang;
+        private readonly Vars vars;
+        private readonly IMemoryCache cache;
         private ITelegramBotClient bot;
-        private IMemoryCache _caches;
 
-        public BotService(IServiceProvider provider, IOptions<LangsModel> options)
+        public BotService(IServiceProvider provider, IOptions<LangsModel> options, IOptions<Vars> voptions, IMemoryCache caches)
         {
             this.provider = provider;
+            this.cache = caches;
             this.lang = options.Value;
-            
+            this.vars = voptions.Value;
         }
 
         public static string choose_lang = "Выберите язык\nTilni tanlang";
@@ -47,10 +49,10 @@ namespace waPlanner.TelegramBot.Services
             Console.WriteLine(ErrorMessage);
             return Task.CompletedTask;
         }
-        public async Task HandleAsync(ITelegramBotClient bot, Update[] updates, CancellationToken token, IMemoryCache _cache)
+
+        public async Task HandleAsync(ITelegramBotClient bot, Update[] updates, CancellationToken token)
         {
             this.bot = bot;
-            this._caches = _cache;
 
             try
             {
@@ -61,40 +63,34 @@ namespace waPlanner.TelegramBot.Services
                         long chat_id = update.Message is not null ? update.Message.Chat.Id : update.CallbackQuery.Message.Chat.Id;
                         using (var scope = provider.CreateScope())
                         {
-                            var db = scope.ServiceProvider.GetRequiredService<IDbManipulations>();
-                            var settings = await db.GetUserLang(chat_id);
-                            if (_cache.TryGetValue(chat_id, out var obj))
+
+                            if (!cache.TryGetValue(chat_id, out TelegramBotValuesModel telg_obj))
                             {
-                               _cache.Set(chat_id, 
-                                    new TelegramBotValuesModel () { State = PlannerStates.NONE}, 
-                                    new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromHours(1)));
-                                //Program.Cache[chat_id] = new TelegramBotValuesModel() { State = PlannerStates.NONE };
+                                telg_obj = new TelegramBotValuesModel() { State = PlannerStates.NONE };
+                                cache.Set(chat_id, telg_obj, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(vars.CacheTimeOut)));
                             }
-                            var cache = _caches as TelegramBotValuesModel;
-                            
-                            if (settings is not null )
+
+                            var db = scope.ServiceProvider.GetRequiredService<IDbManipulations>();
+
+                            if (string.IsNullOrEmpty(telg_obj.Lang))
                             {
-                                if (cache.Lang is null)
-                                {
-                                    cache.Lang = settings.Lang;
-                                    cache.State = PlannerStates.MAIN_MENU;
-                                }
-                               
+                                var st = await db.GetUserLang(chat_id);
+                                telg_obj.Lang = st.Lang;
+                                telg_obj.State = PlannerStates.MAIN_MENU;
                             }
 
                             switch (update.Type)
                             {
                                 case UpdateType.Message:
                                     {
-                                        await BotOnMessageReceivedAsync(update.Message, db, cache);
+                                        await BotOnMessageReceivedAsync(update.Message, db, telg_obj);
                                         break;
                                     }
                                 case UpdateType.CallbackQuery:
                                     {
-                                        await BotOnCallbackQueryReceivedAsync(update.CallbackQuery, db, cache);
+                                        await BotOnCallbackQueryReceivedAsync(update.CallbackQuery, db, telg_obj);
                                         break;
                                     }
-
                             }
                         }
                     }
