@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace waPlanner.TelegramBot.Services
 {
     public interface IBotService
     {
-        Task HandleAsync(ITelegramBotClient bot, Update[] updates, CancellationToken token);
+        Task HandleAsync(ITelegramBotClient bot, Update[] updates, CancellationToken token, IMemoryCache _cache);
     }
 
     public class BotService : IBotService
@@ -25,11 +26,13 @@ namespace waPlanner.TelegramBot.Services
         private readonly IServiceProvider provider;
         private readonly LangsModel lang;
         private ITelegramBotClient bot;
+        private IMemoryCache _caches;
 
         public BotService(IServiceProvider provider, IOptions<LangsModel> options)
         {
             this.provider = provider;
             this.lang = options.Value;
+            
         }
 
         public static string choose_lang = "Выберите язык\nTilni tanlang";
@@ -44,10 +47,10 @@ namespace waPlanner.TelegramBot.Services
             Console.WriteLine(ErrorMessage);
             return Task.CompletedTask;
         }
-        public async Task HandleAsync(ITelegramBotClient bot, Update[] updates, CancellationToken token)
+        public async Task HandleAsync(ITelegramBotClient bot, Update[] updates, CancellationToken token, IMemoryCache _cache)
         {
             this.bot = bot;
-
+            this._caches = _cache;
 
             try
             {
@@ -60,11 +63,14 @@ namespace waPlanner.TelegramBot.Services
                         {
                             var db = scope.ServiceProvider.GetRequiredService<IDbManipulations>();
                             var settings = await db.GetUserLang(chat_id);
-                            if (!Program.Cache.TryGetValue(chat_id, out var obj))
+                            if (_cache.TryGetValue(chat_id, out var obj))
                             {
-                                Program.Cache[chat_id] = new TelegramBotValuesModel() { State = PlannerStates.NONE };
+                               _cache.Set(chat_id, 
+                                    new TelegramBotValuesModel () { State = PlannerStates.NONE}, 
+                                    new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromHours(1)));
+                                //Program.Cache[chat_id] = new TelegramBotValuesModel() { State = PlannerStates.NONE };
                             }
-                            var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
+                            var cache = _caches as TelegramBotValuesModel;
                             
                             if (settings is not null )
                             {
@@ -196,6 +202,7 @@ namespace waPlanner.TelegramBot.Services
                             cache.Lang = "uz";
                         else return;
 
+                        await DbManipulations.UpdateUserLang(chat_id, cache.Lang);
                         cache.State = PlannerStates.SETTINGS;
                         await bot.SendTextMessageAsync(chat_id, msg, replyMarkup: ReplyKeyboards.Settings(cache.Lang, lang));
                         break;

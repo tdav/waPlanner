@@ -35,7 +35,7 @@ namespace waPlanner.TelegramBot.Utils
         Task<bool> CheckFavorites(string value, long chat_id);
         Task UpdateUserName(long chat_id, string name);
         Task UpdateUserPhone(long chat_id, string phone);
-        Task UpdateUserLang(long chat_id, string lg, TelegramBotValuesModel cache);
+        Task UpdateUserLang(long chat_id, string lg);
         Task<long> GetOrganizationGroupId(string org_name);
         Task<viTelegramUser> GetUserInfo(long chat_id);
         Task<viOrgTimes> GetOrganizationBreak(string org_name);
@@ -51,10 +51,6 @@ namespace waPlanner.TelegramBot.Utils
 
         public DbManipulations(MyDbContext db, IMemoryCache cache)
         {
-            //var scope = provider.CreateScope();
-            //db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
-            //scope.Dispose();
-
             this.db = db;
             this.cache = cache;
         }
@@ -352,10 +348,21 @@ namespace waPlanner.TelegramBot.Utils
             await db.SaveChangesAsync();
         }
 
-        public async Task UpdateUserLang(long chat_id, string lg, TelegramBotValuesModel cache)
+        public async Task UpdateUserLang(long chat_id, string lg)
         {
-            // TODO updateUserLang
+            var user_id = await GetUserId(chat_id);
+            var setup = await db.spSetups
+                .AsNoTracking()
+                .Where(x => x.UserId == user_id)
+                .FirstAsync();
+            var sets = Newtonsoft.Json.JsonConvert.DeserializeObject<viSetup>(setup.Text);
+            
+            var setting = new viSetup { Lang = lg, Theme = sets.Theme};
+            setup.Text = Newtonsoft.Json.JsonConvert.SerializeObject(setting);
+            db.spSetups.Update(setup);
+            await db.SaveChangesAsync();
         }
+
         public async Task<viTelegramUser> GetUserInfo(long chat_id)
         {
             return await db.tbUsers
@@ -434,13 +441,5 @@ namespace waPlanner.TelegramBot.Utils
                 })
                 .ToListAsync();
         }
-        //public void Dispose()
-        //{
-        //    if (db != null)
-        //    {
-        //        db.Database.CloseConnection();
-        //        db.Dispose();
-        //    }
-        //}
     }
 }
