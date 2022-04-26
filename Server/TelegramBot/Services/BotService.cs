@@ -106,9 +106,9 @@ namespace waPlanner.TelegramBot.Services
         private async Task BotOnCallbackQueryReceivedAsync(CallbackQuery call, IDbManipulations db, TelegramBotValuesModel cache)
         {
             if (cache.State == PlannerStates.CHOOSE_TIME)
-                await TimeKeyboards.OnTimeProcess(call, bot, db, lang);
+                await TimeKeyboards.OnTimeProcess(call, bot, db, lang, cache);
             else
-                await CalendarKeyboards.OnCalendarProcess(call, db, bot, lang);
+                await CalendarKeyboards.OnCalendarProcess(call, db, bot, lang, cache);
         }
 
         private async Task BotOnMessageReceivedAsync(Message message, IDbManipulations db, TelegramBotValuesModel cache)

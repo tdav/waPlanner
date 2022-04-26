@@ -33,6 +33,7 @@
       "PLATFORM_USERS": "Общее количество пользователей платформы:",
       "TOTAL_BOOKS": "Общее количество броней",
       "BOOKS_COUNT": "Количество броней",
+      "END_WORK_TIME": "В это время эта организация не работает.",
 
       "back": "⬅️Назад",
       "book": "📄Сделать бронь",
@@ -80,6 +81,7 @@
       "PLATFORM_USERS": "Platforma foydalanuvchilarining umumiy soni:",
       "TOTAL_BOOKS": "Bandliklarni umumiy soni",
       "BOOKS_COUNT": "Bandliklar soni",
+      "END_WORK_TIME": "Bu tashkilot aynan vaqtda faol qilmaydi.",
 
       "back": "⬅️Ortga",
       "book": "📄Band qilish",

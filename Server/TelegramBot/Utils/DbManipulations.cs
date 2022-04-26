@@ -249,7 +249,7 @@ namespace waPlanner.TelegramBot.Utils
             return await db.tbStaffs
                          .AsNoTracking()
                          .Include(i => i.Category)
-                         .Where(x => x.RoleId == (int)UserRoles.STAFF && x.Category.NameUz == category && x.Status == 1)
+                         .Where(x => x.RoleId == (int)UserRoles.STAFF && x.Category.NameUz == category && x.Status == 1 && x.Online == true)
                          .Select(x => new IdValue { Id = x.Id, Name = $"{x.Surname} {x.Name} {x.Patronymic}" })
                          .ToListAsync();
         }
@@ -401,7 +401,7 @@ namespace waPlanner.TelegramBot.Utils
 
         public async Task<viOrgTimes> GetOrgWorkTime(string org_name)
         {
-            return await db.spOrganizations
+            var time = await db.spOrganizations
                 .AsNoTracking()
                 .Where(x => x.Name == org_name)
                 .Select(x => new viOrgTimes
@@ -410,6 +410,11 @@ namespace waPlanner.TelegramBot.Utils
                     End = x.WorkEnd
                 })
                 .FirstOrDefaultAsync();
+
+            if (time.End.HasValue)
+                return time;
+            time.End = new DateTime(1970, 1, 1, 0, 0, 0);
+            return time;
         }
 
         public async Task<viTelegramCommonStatistic> GetCommonStatistic()

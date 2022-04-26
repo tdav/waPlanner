@@ -79,14 +79,13 @@ namespace waPlanner.TelegramBot.keyboards
             return data.Split(";");
         }
 
-        public static async Task OnCalendarProcess(CallbackQuery call, IDbManipulations db, ITelegramBotClient bot, LangsModel lang)
+        public static async Task OnCalendarProcess(CallbackQuery call, IDbManipulations db, ITelegramBotClient bot, LangsModel lang, TelegramBotValuesModel cache)
         {
             long chat_id = call.Message.Chat.Id;
             int messageId = call.Message.MessageId;
 
             string[] data = SeparateCallbackData(call.Data);
             string action = data[0];
-            var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
             
             DateTime.TryParse(data[1], out var date);
             switch (action)

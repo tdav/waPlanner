@@ -19,6 +19,8 @@ namespace waPlanner.TelegramBot.keyboards
             viOrgTimes breakTime = await db.GetOrganizationBreak(value.Organization);
             viOrgTimes workTime = await db.GetOrgWorkTime(value.Organization);
 
+            double workTime_start = workTime.Start.Value.Hour;
+            double workTime_end = workTime.End.Value.Hour;
             int dayOfWeek = (int)value.Calendar.DayOfWeek;
             List<string> appointmentTime = new();
             List<DateTime> appointmentDate = new();
@@ -29,11 +31,15 @@ namespace waPlanner.TelegramBot.keyboards
             }
 
             TimeSpan time = new(workTime.Start.Value.Hour, workTime.Start.Value.Minute, 0);
-            TimeSpan offset = new (0, 30, 0);
-            int row_limit = (workTime.End.Value.Hour - workTime.Start.Value.Hour) / 2;
-            
+            TimeSpan offset = new(0, 30, 0);
+            double row_limit = (workTime_end - workTime_start) / 2;
+            if (workTime_end < workTime_start)
+                row_limit = (workTime_start + workTime_end);
+
+            row_limit = Math.Ceiling(row_limit);
+
             if (staff_avail[dayOfWeek] == 2)
-                time = new (breakTime.End.Value.Hour, 0, 0);
+                time = new(breakTime.End.Value.Hour, 0, 0);
 
             var keyboards = new List<List<InlineKeyboardButton>>();
 
@@ -42,8 +48,11 @@ namespace waPlanner.TelegramBot.keyboards
                 var times_row = new List<InlineKeyboardButton>();
                 for (int col = 0; col < 4; col++)
                 {
-                    var checkBreakTime = breakTime.Start.HasValue && (breakTime.Start.Value.TimeOfDay <= time) && (time < breakTime.End.Value.TimeOfDay);
-                    
+                    if (time.Hours >= workTime_end && time.Days != 0) continue;
+
+                    var checkBreakTime = breakTime.Start.HasValue && (breakTime.Start.Value.TimeOfDay <= time) && (time < breakTime.End.Value.TimeOfDay)
+                        || (time >= workTime.End.Value.TimeOfDay && time < workTime.Start.Value.TimeOfDay);
+
                     if (checkBreakTime || appointmentTime.Contains(time.ToString(@"hh\:mm")) && appointmentDate.Contains(value.Calendar.Date))
                     {
                         times_row.Add(InlineKeyboardButton.WithCallbackData(" ", "i"));
@@ -55,21 +64,27 @@ namespace waPlanner.TelegramBot.keyboards
                 }
                 keyboards.Add(times_row);
             }
-            InlineKeyboardMarkup markup = new (keyboards);
+            InlineKeyboardMarkup markup = new(keyboards);
             return markup;
         }
-        public static async Task OnTimeProcess(CallbackQuery call, ITelegramBotClient bot, IDbManipulations db, LangsModel lang)
+
+        public static async Task OnTimeProcess(CallbackQuery call, ITelegramBotClient bot, IDbManipulations db, LangsModel lang, TelegramBotValuesModel cache)
         {
             long chat_id = call.Message.Chat.Id;
             string[] data = CalendarKeyboards.SeparateCallbackData(call.Data);
             string action = data[0];
-            var cache = Program.Cache[chat_id] as TelegramBotValuesModel;
-            
+            viOrgTimes workTime = await db.GetOrgWorkTime(cache.Organization);
+
             switch (action)
             {
                 case "TIME":
                     {
                         cache.Time = data[1];
+                        if (TimeSpan.Parse(cache.Time) >= workTime.End.Value.TimeOfDay)
+                        {
+                            await bot.AnswerCallbackQueryAsync(call.Id, lang[cache.Lang]["END_WORK_TIME"], true);
+                            break;
+                        }
                         await bot.EditMessageTextAsync(chat_id, call.Message.MessageId, $"{lang[cache.Lang]["CHOOSEN_TIME"]} <b>{data[1]}</b>", parseMode: ParseMode.Html);
                         if (await db.CheckUser(chat_id))
                         {
@@ -100,5 +115,5 @@ namespace waPlanner.TelegramBot.keyboards
                     }
             }
         }
-    }            
+    }
 }
