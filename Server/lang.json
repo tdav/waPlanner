@@ -34,6 +34,7 @@
       "TOTAL_BOOKS": "Общее количество броней",
       "BOOKS_COUNT": "Количество броней",
       "END_WORK_TIME": "В это время эта организация не работает.",
+      "OLD_TIME": "Нельзя выбирать прошедшее время.",
 
       "back": "⬅️Назад",
       "book": "📄Сделать бронь",
@@ -82,6 +83,7 @@
       "TOTAL_BOOKS": "Bandliklarni umumiy soni",
       "BOOKS_COUNT": "Bandliklar soni",
       "END_WORK_TIME": "Bu tashkilot aynan vaqtda faol qilmaydi.",
+      "OLD_TIME": "O‘tgan vaqtni tanlay olmaysiz.",
 
       "back": "⬅️Ortga",
       "book": "📄Band qilish",

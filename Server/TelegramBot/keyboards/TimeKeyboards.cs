@@ -34,7 +34,7 @@ namespace waPlanner.TelegramBot.keyboards
             TimeSpan offset = new(0, 30, 0);
             double row_limit = (workTime_end - workTime_start) / 2;
             if (workTime_end < workTime_start)
-                row_limit = (workTime_start + workTime_end);
+                row_limit = workTime_start + workTime_end;
 
             row_limit = Math.Ceiling(row_limit);
 
@@ -50,10 +50,17 @@ namespace waPlanner.TelegramBot.keyboards
                 {
                     if (time.Hours >= workTime_end && time.Days != 0) continue;
 
+                    if (appointmentTime.Contains(time.ToString(@"h\:mm")) && appointmentDate.Contains(value.Calendar.Date))
+                    {
+                        times_row.Add(InlineKeyboardButton.WithCallbackData(" ", "i"));
+                        time = time.Add(offset);
+                        continue;
+                    }
+
                     var checkBreakTime = breakTime.Start.HasValue && (breakTime.Start.Value.TimeOfDay <= time) && (time < breakTime.End.Value.TimeOfDay)
                         || (time >= workTime.End.Value.TimeOfDay && time < workTime.Start.Value.TimeOfDay);
 
-                    if (checkBreakTime || appointmentTime.Contains(time.ToString(@"hh\:mm")) && appointmentDate.Contains(value.Calendar.Date))
+                    if (checkBreakTime)
                     {
                         times_row.Add(InlineKeyboardButton.WithCallbackData(" ", "i"));
                         time = time.Add(offset);
@@ -79,12 +86,17 @@ namespace waPlanner.TelegramBot.keyboards
             {
                 case "TIME":
                     {
-                        cache.Time = data[1];
-                        if (TimeSpan.Parse(cache.Time) >= workTime.End.Value.TimeOfDay)
+                        if (TimeSpan.Parse(data[1]) <= DateTime.Now.TimeOfDay && DateTime.Now.Date == cache.Calendar.Date)
+                        {
+                            await bot.AnswerCallbackQueryAsync(call.Id, lang[cache.Lang]["OLD_TIME"], true);
+                            break;
+                        }
+                        if (TimeSpan.Parse(data[1]) >= workTime.End.Value.TimeOfDay && TimeSpan.Parse(data[1]) < workTime.Start.Value.TimeOfDay)
                         {
                             await bot.AnswerCallbackQueryAsync(call.Id, lang[cache.Lang]["END_WORK_TIME"], true);
                             break;
                         }
+                        cache.Time = data[1];
                         await bot.EditMessageTextAsync(chat_id, call.Message.MessageId, $"{lang[cache.Lang]["CHOOSEN_TIME"]} <b>{data[1]}</b>", parseMode: ParseMode.Html);
                         if (await db.CheckUser(chat_id))
                         {

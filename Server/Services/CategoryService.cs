@@ -18,6 +18,7 @@ namespace waPlanner.Services
         Task<viCategory[]> GetAllCategoriesAsync();
         Task ChangeCategoryStatus(int category_id, int status);
         Task<viCategory> GetCategoryByIdAsync(int category_id);
+        Task<viCategory[]> SearchCategory(string name);
     }
 
     public class CategoryService : ICategoryService
@@ -125,6 +126,29 @@ namespace waPlanner.Services
             category.UpdateDate = DateTime.Now;
             category.UpdateUser = user_id;
             await db.SaveChangesAsync();
+        }
+
+        public async Task<viCategory[]> SearchCategory(string name)
+        {
+            int org_id = accessor.GetOrgId();
+            return await (from s in db.spCategories
+                          where EF.Functions.ILike(s.NameUz, $"%{name}%")
+                          || EF.Functions.ILike(s.NameRu, $"%{name}%")
+                          || EF.Functions.ILike(s.NameLt, $"%{name}%")
+                          select s)
+                        .AsNoTracking()
+                        .Where(x => x.Status == 1 && x.OrganizationId == org_id)
+                        .Select(x => new viCategory
+                        {
+                            Id = x.Id,
+                            NameUz = x.NameUz,
+                            NameLt = x.NameLt,
+                            NameRu = x.NameRu,
+                            OrganizationId = x.OrganizationId,
+                            Organization = x.Organization.Name,
+                            Status = x.Status
+                        })
+                        .ToArrayAsync();
         }
     }
 }

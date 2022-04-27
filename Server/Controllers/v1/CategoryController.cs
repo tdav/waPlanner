@@ -53,5 +53,11 @@ namespace waPlanner.Controllers.v1
         {
             await service.ChangeCategoryStatus(category_id, status);
         }
+
+        [HttpGet("{name}/search")]
+        public async Task<viCategory[]> SearchCategory(string name)
+        {
+            return await service.SearchCategory(name);
+        }
     }
 }

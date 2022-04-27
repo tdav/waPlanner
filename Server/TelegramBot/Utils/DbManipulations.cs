@@ -29,7 +29,6 @@ namespace waPlanner.TelegramBot.Utils
         Task<bool> CheckStaffByCategory(string category, string value);
         Task<List<string>> CheckCategory();
         Task<List<DateTime>> GetStaffBusyTime(TelegramBotValuesModel value);
-        Task<int> CheckFreeDay(string staff_name, DateTime date);
         Task<int[]> CheckStaffAvailability(string staff_name);
         Task AddToFavorites(TelegramBotValuesModel value, long chat_id);
         Task<bool> CheckFavorites(string value, long chat_id);
@@ -280,15 +279,6 @@ namespace waPlanner.TelegramBot.Utils
                 .Select(x => x.AppointmentDateTime)
                 .ToListAsync();
 
-        }
-
-        public async Task<int> CheckFreeDay(string staff_name, DateTime date)
-        {
-            var staff = await GetStaffInfoByName(staff_name);
-            return await db.tbSchedulers
-                .AsNoTracking()
-                .Where(x => x.StaffId == staff.StaffId && x.AppointmentDateTime.Date == date.Date)
-                .CountAsync();
         }
 
         public async Task<int[]> CheckStaffAvailability(string staff_name)
