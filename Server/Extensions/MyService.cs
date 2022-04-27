@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using waPlanner.Controllers.v1;
 using waPlanner.Services;
 using waPlanner.TelegramBot.Utils;
 
@@ -17,6 +18,7 @@ namespace waPlanner.Extensions
             services.AddScoped<IStaffService, StaffService>();
             services.AddScoped<IInfoService, InfoService>();
             services.AddScoped<ISpecializationService, SpecializationService>();
+            services.AddScoped<IFileService, FileService>();
         }
     }
 }

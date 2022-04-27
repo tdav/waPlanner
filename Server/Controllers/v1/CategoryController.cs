@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using waPlanner.Database.Models;
 using waPlanner.ModelViews;
 using waPlanner.Services;
 
