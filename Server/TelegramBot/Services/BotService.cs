@@ -107,6 +107,7 @@ namespace waPlanner.TelegramBot.Services
             }
         }
 
+
         private async Task BotOnCallbackQueryReceivedAsync(CallbackQuery call, IDbManipulations db, TelegramBotValuesModel cache)
         {
             if (cache.State == PlannerStates.CHOOSE_TIME)
