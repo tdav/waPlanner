@@ -81,6 +81,11 @@ namespace waPlanner.TelegramBot.Services
 
                             switch (update.Type)
                             {
+                                case UpdateType.InlineQuery:
+                                    {
+
+                                        break;
+                                    }
                                 case UpdateType.Message:
                                     {
                                         await BotOnMessageReceivedAsync(update.Message, db, telg_obj);
@@ -101,7 +106,6 @@ namespace waPlanner.TelegramBot.Services
                 await HandleErrorAsync(bot, ex, token);
             }
         }
-
 
         private async Task BotOnCallbackQueryReceivedAsync(CallbackQuery call, IDbManipulations db, TelegramBotValuesModel cache)
         {
