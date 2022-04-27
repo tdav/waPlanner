@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using System;
 using System.Threading.Tasks;
 using waPlanner.ModelViews;
 using waPlanner.Services;
@@ -48,6 +49,12 @@ namespace waPlanner.Controllers.v1
         public async Task<viEvents[]> GetSchedulers()
         {
             return await service.GetAllSchedulersByOrgAsync();
+        }
+
+        [HttpGet("{staff_id}/{date}/busy_times")]
+        public async Task<TimeSpan[]> GetBusyTime(int staff_id, DateTime date)
+        {
+            return await service.GetStaffBusyTime(staff_id, date);
         }
     }
 }

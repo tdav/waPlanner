@@ -91,7 +91,7 @@ namespace waPlanner.TelegramBot.keyboards
                             await bot.AnswerCallbackQueryAsync(call.Id, lang[cache.Lang]["OLD_TIME"], true);
                             break;
                         }
-                        if (TimeSpan.Parse(data[1]) >= workTime.End.Value.TimeOfDay && TimeSpan.Parse(data[1]) < workTime.Start.Value.TimeOfDay)
+                        if (TimeSpan.Parse(data[1]) >= workTime.End.Value.TimeOfDay && TimeSpan.Parse(data[1]) > workTime.Start.Value.TimeOfDay)
                         {
                             await bot.AnswerCallbackQueryAsync(call.Id, lang[cache.Lang]["END_WORK_TIME"], true);
                             break;

@@ -16,6 +16,9 @@ namespace waPlanner.Services
         Task UpdateSchedulerStatus(int scheduler_id, int status);        
         Task<viScheduler> GetSchedulerByIdAsync(int id);
         Task<viEvents[]> GetAllSchedulersByOrgAsync();
+        Task<TimeSpan[]> GetStaffBusyTime(int staff_id, DateTime date);
+
+
     }
     public class SchedulerService: ISchedulerService
     {
@@ -60,6 +63,7 @@ namespace waPlanner.Services
         {
             var updateScheduler = await db.tbSchedulers.FindAsync(scheduler.SchedulerId);
             int org_id = accessor.GetOrgId();
+            int user_id = accessor.GetId();
 
             if (scheduler.UserId.HasValue)
                 updateScheduler.UserId = scheduler.UserId.Value;
@@ -80,14 +84,15 @@ namespace waPlanner.Services
 
             updateScheduler.AdInfo = scheduler.AdInfo;
             updateScheduler.UpdateDate = DateTime.Now;
-            updateScheduler.UpdateUser = 1;
+            updateScheduler.UpdateUser = user_id;
             await db.SaveChangesAsync();
         }
         public async Task UpdateSchedulerStatus(int scheduler_id, int status)
         {
+            int user_id = accessor.GetId();
             var sh = await db.tbSchedulers.FindAsync(scheduler_id);
             sh.Status = status;
-            sh.UpdateUser = 1;
+            sh.UpdateUser = user_id;
             sh.UpdateDate = DateTime.Now;
             await db.SaveChangesAsync();
         }
@@ -134,6 +139,16 @@ namespace waPlanner.Services
                     End = x.AppointmentDateTime.AddMinutes(30),
                     AdInfo = x.AdInfo
                 })
+                .ToArrayAsync();
+        }
+
+        public async Task<TimeSpan[]> GetStaffBusyTime(int staff_id, DateTime date)
+        {
+            int org_id = accessor.GetOrgId();
+            return await db.tbSchedulers
+                .AsNoTracking()
+                .Where(x => x.OrganizationId == org_id && x.StaffId == staff_id && x.AppointmentDateTime.Date == date.Date)
+                .Select(x => x.AppointmentDateTime.TimeOfDay)
                 .ToArrayAsync();
         }
     }

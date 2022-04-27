@@ -25,7 +25,7 @@ namespace waPlanner.Controllers.v1
         [HttpPost("new")]
         public async Task<viPatient> AddNewPatient(viPatient patient)
         {
-           return await service.AddAsync(patient);
+            return await service.AddAsync(patient);
         }
 
         [HttpPost("change")]
@@ -50,6 +50,12 @@ namespace waPlanner.Controllers.v1
         public async Task<viPatient> GetAll(int user_id)
         {
             return await service.GetAsync(user_id);
+        }
+
+        [HttpGet("{name}/search")]
+        public async Task<viPatient[]> SearchAsync(string name)
+        {
+            return await service.SearchUserAsync(name);
         }
     }
 }

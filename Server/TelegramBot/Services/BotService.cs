@@ -39,7 +39,7 @@ namespace waPlanner.TelegramBot.Services
 
         public static string choose_lang = "Выберите язык\nTilni tanlang";
 
-        public static Task HandleErrorAsync(ITelegramBotClient bot, Exception exception, CancellationToken cancellationToken)
+        public static Task HandleErrorAsync(Exception exception)
         {
             var ErrorMessage = exception switch
             {
@@ -75,17 +75,15 @@ namespace waPlanner.TelegramBot.Services
                             if (string.IsNullOrEmpty(telg_obj.Lang))
                             {
                                 var st = await db.GetUserLang(chat_id);
-                                telg_obj.Lang = st.Lang;
-                                telg_obj.State = PlannerStates.MAIN_MENU;
+                                if (st is not null)
+                                {
+                                    telg_obj.Lang = st.Lang;
+                                    telg_obj.State = PlannerStates.MAIN_MENU;
+                                }
                             }
 
                             switch (update.Type)
                             {
-                                case UpdateType.InlineQuery:
-                                    {
-
-                                        break;
-                                    }
                                 case UpdateType.Message:
                                     {
                                         await BotOnMessageReceivedAsync(update.Message, db, telg_obj);
@@ -103,7 +101,7 @@ namespace waPlanner.TelegramBot.Services
             }
             catch (Exception ex)
             {
-                await HandleErrorAsync(bot, ex, token);
+                await HandleErrorAsync(ex);
             }
         }
 
@@ -169,7 +167,8 @@ namespace waPlanner.TelegramBot.Services
                         else
                         {
                             await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["EMPTY_LIST"]);
-                            break;
+                            cache.State = PlannerStates.MAIN_MENU;
+                            return;
                         }
 
                     }
@@ -304,7 +303,7 @@ namespace waPlanner.TelegramBot.Services
                     }
                 case PlannerStates.PHONE:
                     {
-                        string phoneNumber = "";
+                        string phoneNumber;
                         if (message.Contact is not null)
                         {
                             phoneNumber = message.Contact.PhoneNumber;
@@ -501,7 +500,7 @@ namespace waPlanner.TelegramBot.Services
                 return;
             }
 
-            else if (msg == lang[cache.Lang]["feedback"])
+            else if (msg == lang[cache.Lang]["about_us"])
             {
                 await bot.SendTextMessageAsync(chat_id, "MALUMOT");
             }
@@ -514,7 +513,6 @@ namespace waPlanner.TelegramBot.Services
             else if (msg == lang[cache.Lang]["statistic"])
             {
                 await bot.SendTextMessageAsync(chat_id, await Utils.Utils.SendStatistic(db, cache, lang), parseMode: ParseMode.Html);
-                return;
             }
         }
 

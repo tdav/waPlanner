@@ -17,7 +17,8 @@ namespace waPlanner.Services
         Task<viPatient> AddAsync(viPatient patient);
 
         Task<viPatient[]> GetAllAsync();
-        Task<viPatient> GetAsync(int user_id);        
+        Task<viPatient> GetAsync(int user_id);
+        Task<viPatient[]> SearchUserAsync(string name);
     }
 
     public class UserService : IUserService
@@ -140,6 +141,30 @@ namespace waPlanner.Services
                     BirthDay = x.BirthDay,
                 })
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<viPatient[]> SearchUserAsync(string name)
+        {
+            int org_id = accessor.GetOrgId();
+            return await (from s in db.tbSchedulers
+                          where EF.Functions.ILike(s.User.Surname, $"%{name}%")
+                          || EF.Functions.ILike(s.User.Name, $"%{name}%")
+                          || EF.Functions.ILike(s.User.Patronymic, $"%{name}%")
+                          select s)
+                        .AsNoTracking()
+                        .Where(x => x.Status == 1 && x.OrganizationId == org_id)
+                        .Select(x => new viPatient
+                        {
+                            Id = x.User.Id,
+                            Name = x.User.Name,
+                            Surname = x.User.Surname,
+                            BirthDay = x.User.BirthDay,
+                            Phone = x.User.PhoneNum,
+                            Patronymic = x.User.Patronymic,
+                            Gender = x.User.Gender
+                        })
+                        .Distinct()
+                        .ToArrayAsync();
         }
     }
 }
