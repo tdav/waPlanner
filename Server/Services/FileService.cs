@@ -3,15 +3,16 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using waPlanner.ModelViews;
+using waPlanner.Utils;
 
 namespace waPlanner.Controllers.v1
 {
+    [DInjectionAttribute]
     public interface IFileService
     {
         ValueTask<Answer<string>> SaveFile(IFormFile fileForm, int seller);
     }
-
-
+        
     public class FileService : IFileService
     {
         public async ValueTask<Answer<string>> SaveFile(IFormFile fileForm, int seller)
