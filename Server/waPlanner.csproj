@@ -10,9 +10,13 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<Compile Remove="logs\**" />
+		<Compile Remove="TelegramBot\handlers\**" />
 		<Content Remove="logs\**" />
+		<Content Remove="TelegramBot\handlers\**" />
 		<EmbeddedResource Remove="logs\**" />
+		<EmbeddedResource Remove="TelegramBot\handlers\**" />
 		<None Remove="logs\**" />
+		<None Remove="TelegramBot\handlers\**" />
 	</ItemGroup>
 
 
@@ -58,7 +62,6 @@
 
 	<ItemGroup>
 		<Folder Include="Migrations\" />
-		<Folder Include="TelegramBot\handlers\" />
 	</ItemGroup>
 
 </Project>
