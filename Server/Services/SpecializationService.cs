@@ -21,7 +21,7 @@ namespace waPlanner.Services
     {
         private readonly MyDbContext db;
         private readonly IHttpContextAccessorExtensions accessor;
-        public SpecializationService(MyDbContext db)
+        public SpecializationService(MyDbContext db, IHttpContextAccessorExtensions accessor)
         {
             this.db = db;
             this.accessor = accessor;

@@ -31,7 +31,7 @@ namespace waPlanner.TelegramBot.keyboards
             }
             keyboards.Add(buttons);
 
-            //second row day of the months
+            //second row days of the months
             buttons = new List<InlineKeyboardButton>();
             int padLeftDays = (int)date.DayOfWeek != 0 ? (int)date.DayOfWeek : 7;
             var currentDate = date;
@@ -46,6 +46,7 @@ namespace waPlanner.TelegramBot.keyboards
                     buttons.Add(InlineKeyboardButton.WithCallbackData(" ", IGNORE));
                     continue;
                 }
+
                 if (currentDate.Month == date.Month)
                     buttons.Add(InlineKeyboardButton.WithCallbackData(currentDate.Day.ToString(), $"DAY; {currentDate}"));
 

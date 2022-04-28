@@ -19,58 +19,50 @@ namespace waPlanner.TelegramBot.keyboards
             viOrgTimes breakTime = await db.GetOrganizationBreak(value.Organization);
             viOrgTimes workTime = await db.GetOrgWorkTime(value.Organization);
 
-            double workTime_start = workTime.Start.Value.Hour;
-            double workTime_end = workTime.End.Value.Hour;
+            var workTime_start = workTime.Start.Value;
+            var workTime_end = workTime.End.Value;
             int dayOfWeek = (int)value.Calendar.DayOfWeek;
-            List<string> appointmentTime = new();
-            List<DateTime> appointmentDate = new();
-            foreach (var times in doctorsDate)
-            {
-                appointmentTime.Add(times.ToShortTimeString());
-                appointmentDate.Add(times.Date);
-            }
+
+            var res = workTime_start - workTime_end;
+            decimal to_decimal = Math.Abs(res.Hours) + 1;
 
             TimeSpan time = new(workTime.Start.Value.Hour, workTime.Start.Value.Minute, 0);
             TimeSpan offset = new(0, 30, 0);
-            double row_limit = (workTime_end - workTime_start) / 2;
-            if (workTime_end < workTime_start)
-                row_limit = workTime_start + workTime_end;
+            TimeSpan endWorkTime = new(1, workTime_end.Hour, workTime_end.Minute, 0);
 
-            row_limit = Math.Ceiling(row_limit);
+            if (workTime.Start.Value.Hour  < workTime.End.Value.Hour)
+                endWorkTime = new(workTime_end.Hour, workTime_end.Minute, 0);
+
+            decimal row_limit = Math.Ceiling(to_decimal / 2);
 
             if (staff_avail[dayOfWeek] == 2)
-                time = new(breakTime.End.Value.Hour, 0, 0);
+                time = new(breakTime.End.Value.Hour, breakTime.End.Value.Minute, 0);
 
             var keyboards = new List<List<InlineKeyboardButton>>();
 
-            for (int row = 0; row < row_limit; row++)
+
+            for (decimal row = 0; row < row_limit; row++)
             {
                 var times_row = new List<InlineKeyboardButton>();
+
                 for (int col = 0; col < 4; col++)
                 {
-                    if (time.Hours >= workTime_end && time.Days != 0) continue;
+                    if (time >= endWorkTime) break;
 
-                    if (appointmentTime.Contains(time.ToString(@"h\:mm")) && appointmentDate.Contains(value.Calendar.Date))
+                    if (doctorsDate.Contains(value.Calendar.Add(time)) || breakTime.Start.HasValue && (breakTime.Start.Value.TimeOfDay <= time) && 
+                        (time < breakTime.End.Value.TimeOfDay))
                     {
                         times_row.Add(InlineKeyboardButton.WithCallbackData(" ", "i"));
                         time = time.Add(offset);
                         continue;
                     }
 
-                    var checkBreakTime = breakTime.Start.HasValue && (breakTime.Start.Value.TimeOfDay <= time) && (time < breakTime.End.Value.TimeOfDay)
-                        || (time >= workTime.End.Value.TimeOfDay && time < workTime.Start.Value.TimeOfDay);
-
-                    if (checkBreakTime)
-                    {
-                        times_row.Add(InlineKeyboardButton.WithCallbackData(" ", "i"));
-                        time = time.Add(offset);
-                        continue;
-                    }
                     times_row.Add(InlineKeyboardButton.WithCallbackData(time.ToString(@"hh\:mm"), $"TIME; {time:hh\\:mm}"));
                     time = time.Add(offset);
                 }
                 keyboards.Add(times_row);
             }
+
             InlineKeyboardMarkup markup = new(keyboards);
             return markup;
         }
@@ -80,7 +72,6 @@ namespace waPlanner.TelegramBot.keyboards
             long chat_id = call.Message.Chat.Id;
             string[] data = CalendarKeyboards.SeparateCallbackData(call.Data);
             string action = data[0];
-            viOrgTimes workTime = await db.GetOrgWorkTime(cache.Organization);
 
             switch (action)
             {
@@ -91,11 +82,7 @@ namespace waPlanner.TelegramBot.keyboards
                             await bot.AnswerCallbackQueryAsync(call.Id, lang[cache.Lang]["OLD_TIME"], true);
                             break;
                         }
-                        if (TimeSpan.Parse(data[1]) >= workTime.End.Value.TimeOfDay && TimeSpan.Parse(data[1]) > workTime.Start.Value.TimeOfDay)
-                        {
-                            await bot.AnswerCallbackQueryAsync(call.Id, lang[cache.Lang]["END_WORK_TIME"], true);
-                            break;
-                        }
+
                         cache.Time = data[1];
                         await bot.EditMessageTextAsync(chat_id, call.Message.MessageId, $"{lang[cache.Lang]["CHOOSEN_TIME"]} <b>{data[1]}</b>", parseMode: ParseMode.Html);
                         if (await db.CheckUser(chat_id))

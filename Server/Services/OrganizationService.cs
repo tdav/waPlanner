@@ -21,7 +21,7 @@ namespace waPlanner.Services
     {
         private readonly MyDbContext db;
         private readonly IHttpContextAccessorExtensions accessor;
-        public OrganizationService(MyDbContext db)
+        public OrganizationService(MyDbContext db, IHttpContextAccessorExtensions accessor)
         {
             this.accessor = accessor;
             this.db = db;
@@ -85,7 +85,7 @@ namespace waPlanner.Services
             if (organization.DinnerTimeEnd.HasValue)
                 updatedOrganization.BreakTimeEnd = organization.DinnerTimeEnd.Value;
 
-            if (organization is not null)
+            if (organization.Name is not null)
                 updatedOrganization.Name = organization.Name;
 
             updatedOrganization.UpdateDate = DateTime.Now;
