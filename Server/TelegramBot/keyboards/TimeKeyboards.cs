@@ -49,7 +49,7 @@ namespace waPlanner.TelegramBot.keyboards
                 {
                     if (time >= endWorkTime) break;
 
-                    if (doctorsDate.Contains(value.Calendar.Add(time)) || breakTime.Start.HasValue && (breakTime.Start.Value.TimeOfDay <= time) && 
+                    if (doctorsDate.Contains(value.Calendar.Add(time.Add(new TimeSpan(time.Days == 1 ? -1 : 0,0,0,0)))) || breakTime.Start.HasValue && (breakTime.Start.Value.TimeOfDay <= time) && 
                         (time < breakTime.End.Value.TimeOfDay))
                     {
                         times_row.Add(InlineKeyboardButton.WithCallbackData(" ", "i"));
