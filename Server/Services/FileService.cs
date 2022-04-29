@@ -33,7 +33,7 @@ namespace waPlanner.Controllers.v1
                 await File.WriteAllBytesAsync(path+fileName, ms.ToArray());    
                 
                 var fileUrl = $"/store/{fileName}";
-                return new Answer<string>(true, "", fileUrl);
+                return new Answer<string>(true, "Downloaded", fileUrl);
             }
         }
     }

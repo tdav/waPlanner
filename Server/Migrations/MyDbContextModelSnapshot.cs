@@ -126,6 +126,10 @@ namespace waPlanner.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("create_user");
 
+                    b.Property<string>("Info")
+                        .HasColumnType("text")
+                        .HasColumnName("info");
+
                     b.Property<float>("Latitude")
                         .HasColumnType("real")
                         .HasColumnName("latitude");

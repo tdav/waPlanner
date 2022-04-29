@@ -18,6 +18,8 @@ namespace waPlanner.Database.Models
         [StringLength(150)]
         public string Address { get; set; }
 
+        public string Info { get; set; }
+
         [Required]
         public float  Latitude { get; set; }
 
