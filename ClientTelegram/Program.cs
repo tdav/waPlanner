@@ -39,15 +39,10 @@ namespace ClientTelegram
 
         public async static Task<TLUpdates> Client()
         {
-            int apiId = 12546946;
-            string apiHash = "47bd4f1d270a84059e0c0a75cc648ba1";
 
             var client = new TelegramClient(apiId, apiHash);
             await client.ConnectAsync();
 
-            //var passwordSettings = await client.GetPasswordSetting();
-
-            //var user = await client.MakeAuthWithPasswordAsync(passwordSettings, "s8064025");
 
             var req = new TLRequestCreateChannel();
             req.Megagroup = true;
