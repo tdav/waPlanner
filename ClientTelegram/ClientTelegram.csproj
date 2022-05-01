@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="TLSharp" Version="0.1.0.574" />
+    <PackageReference Include="WTelegramClient" Version="2.3.1" />
   </ItemGroup>
 
   <ItemGroup>

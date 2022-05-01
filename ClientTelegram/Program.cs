@@ -1,9 +1,7 @@
 using System;
-using TeleSharp.TL.Messages;
-using TeleSharp.TL.Channels;
-using TeleSharp.TL;
-using TLSharp.Core;
-using TLSharp.Core.Utils;
+using WTelegram;
+using TL;
+
 
 namespace ClientTelegram
 {
@@ -11,56 +9,28 @@ namespace ClientTelegram
     {
         async static Task Main(string[] args)
         {
-            //var builder = WebApplication.CreateBuilder(args);
-
-            //// Add services to the container.
-            //builder.Services.AddRazorPages();
-
-            //var app = builder.Build();
-
-            //// Configure the HTTP request pipeline.
-            //if (!app.Environment.IsDevelopment())
-            //{
-            //    app.UseExceptionHandler("/Error");
-            //}
-            //app.UseStaticFiles();
-
-            //app.UseRouting();
-
-            //app.UseAuthorization();
-
-            //app.MapRazorPages();
-
-            //app.Run();
-
-           await Client();
-
+            await TClient();
         }
 
-        public async static Task<TLUpdates> Client()
+        public async static Task TClient()
         {
+            int apiId = 0;
+            string apiHash = "hash";
 
-            var client = new TelegramClient(apiId, apiHash);
-            await client.ConnectAsync();
+            using var client = new Client();
+            var me = await client.LoginUserIfNeeded();
+            Contacts_ResolvedPeer my_bot = await client.Contacts_ResolveUsername("clinic_test_uzbot");
+            var new_user = await client.Contacts_ImportContacts(new[] { new InputPhoneContact { phone = "+998900090250" } });
 
+            var create_group = await client.Channels_CreateChannel("TEST", "TEST", megagroup: true);
+            var group = create_group.Chats.GetEnumerator();
+            group.MoveNext();
+            long group_id = group.Current.Key;
 
-            var req = new TLRequestCreateChannel();
-            req.Megagroup = true;
-            req.Title = "AAA11";
-            req.About = "AAAd11";
-
-            var dialogs = (TLDialogsSlice)await client.GetUserDialogsAsync();
-            //var chats = dialogs.Chats
-            //    .Where(x => x.GetType() == typeof(TLBotInfo))
-
-            var res = await client.SendRequestAsync<TLUpdates>(req);
-            var group = res.Chats[0] as TLChannel;
-            await client.SendMessageAsync(new TLInputPeerChannel() { ChannelId = group.Id, AccessHash = group.AccessHash.Value }, "MESSAGE");
-            //var add_bot = new TLRequestInviteToChannel();
-            //add_bot.Users = 
-
-            return res;
-
+            await client.AddChatUser(create_group.Chats[group_id], my_bot.User);
+            var mcf = await client.GetFullChat(create_group.Chats[group_id]);
+            var invite = (ChatInviteExported)mcf.full_chat.ExportedInvite;
+            await client.SendMessageAsync(new_user.users[new_user.imported[0].user_id], "Join to this group " + invite.link);
         }
     }
 }
