@@ -7,15 +7,18 @@ namespace waPlanner.ModelViews
         public int Id { get; set; }
         public long? ChatId { get; set; }
         public string Name { get; set; }
-        public string address { get; set; }
+        public string Address { get; set; }
         public DateTime? DinnerTimeStart { get; set; }
         public DateTime? DinnerTimeEnd { get; set; }
+
+        public DateTime WorkTimeStart { get; set; }
+        public DateTime WorkTimeEnd { get; set; }
 
         public int? SpecializationId { get; set; }
         public string Specialization { get; set; }
 
-        public float? latitude { get; set; }
-        public float? longitude { get; set; }
+        public float? Latitude { get; set; }
+        public float? Longitude { get; set; }
         public int? Status { get; set; }
     }
 }

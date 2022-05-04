@@ -11,7 +11,7 @@ namespace waPlanner.Services
 {
     public interface IOrganizationService
     {
-        Task<int> InsertOrganizationAsync(viOrganization organization);
+        Task<int> InsertOrganizationAsync(viOrganization organization, string phoneNum);
         Task UpdateOrganizationAsync(viOrganization organziation);
         Task UpdateOrganizationStatus(int org_id, int status);
         Task<spOrganization> GetOrgByIdAsync(int id);
@@ -26,7 +26,7 @@ namespace waPlanner.Services
             this.accessor = accessor;
             this.db = db;
         }
-        public async Task<int> InsertOrganizationAsync(viOrganization organization)
+        public async Task<int> InsertOrganizationAsync(viOrganization organization, string phoneNum)
         {
             int user_id = accessor.GetId();
             var addOrganization = new spOrganization();
@@ -34,11 +34,11 @@ namespace waPlanner.Services
             if (organization.ChatId.HasValue)
                 addOrganization.ChatId = organization.ChatId.Value;
 
-            if (organization.latitude.HasValue)
-                addOrganization.Latitude = organization.latitude.Value;
+            if (organization.Latitude.HasValue)
+                addOrganization.Latitude = organization.Latitude.Value;
 
-            if (organization.longitude.HasValue)
-                addOrganization.Longitude = organization.longitude.Value;
+            if (organization.Longitude.HasValue)
+                addOrganization.Longitude = organization.Longitude.Value;
 
             if(organization.SpecializationId.HasValue)
                 addOrganization.SpecializationId = organization.SpecializationId.Value;
@@ -49,11 +49,14 @@ namespace waPlanner.Services
             if (organization.DinnerTimeEnd.HasValue)
                 addOrganization.BreakTimeEnd = organization.DinnerTimeEnd.Value;
 
+            addOrganization.WorkStart = organization.WorkTimeStart;
+            addOrganization.WorkEnd = organization.WorkTimeEnd;
             addOrganization.Name = organization.Name;
+            addOrganization.ChatId = await ClientTelegram.ClientTelegram.HandleUpdatesAsync(addOrganization.Name, phoneNum);
             addOrganization.CreateDate = DateTime.Now;
             addOrganization.CreateUser = user_id;
             addOrganization.Status = 1;
-            addOrganization.Address = organization.address;
+            addOrganization.Address = organization.Address;
             await db.spOrganizations.AddAsync(addOrganization);
             await db.SaveChangesAsync();
 
@@ -67,11 +70,11 @@ namespace waPlanner.Services
             if (organization.ChatId.HasValue)
                 updatedOrganization.ChatId = organization.ChatId.Value;
 
-            if (organization.latitude.HasValue)
-                updatedOrganization.Latitude = organization.latitude.Value;
+            if (organization.Latitude.HasValue)
+                updatedOrganization.Latitude = organization.Latitude.Value;
 
-            if (organization.longitude.HasValue)
-                updatedOrganization.Longitude = organization.longitude.Value;
+            if (organization.Longitude.HasValue)
+                updatedOrganization.Longitude = organization.Longitude.Value;
 
             if(organization.SpecializationId.HasValue)
                 updatedOrganization.SpecializationId = organization.SpecializationId.Value;

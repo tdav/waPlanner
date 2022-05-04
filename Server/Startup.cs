@@ -15,9 +15,7 @@ using System.IO.Compression;
 using System.Linq;
 using waPlanner.Extensions;
 using waPlanner.ModelViews;
-using waPlanner.Services;
 using waPlanner.TelegramBot.Services;
-using waPlanner.TelegramBot.Utils;
 using ZNetCS.AspNetCore.Compression;
 using ZNetCS.AspNetCore.Compression.Compressors;
 
