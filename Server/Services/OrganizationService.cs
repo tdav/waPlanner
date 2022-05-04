@@ -7,6 +7,7 @@ using waPlanner.Database.Models;
 using waPlanner.Extensions;
 using waPlanner.ModelViews;
 
+
 namespace waPlanner.Services
 {
     public interface IOrganizationService
@@ -52,7 +53,7 @@ namespace waPlanner.Services
             addOrganization.WorkStart = organization.WorkTimeStart;
             addOrganization.WorkEnd = organization.WorkTimeEnd;
             addOrganization.Name = organization.Name;
-            addOrganization.ChatId = await ClientTelegram.ClientTelegram.HandleUpdatesAsync(addOrganization.Name, phoneNum);
+            addOrganization.ChatId = await ClientTelegram.ClientTelegram.CreateClientGroup(addOrganization.Name, phoneNum);
             addOrganization.CreateDate = DateTime.Now;
             addOrganization.CreateUser = user_id;
             addOrganization.Status = 1;

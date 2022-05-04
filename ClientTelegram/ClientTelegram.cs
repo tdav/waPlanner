@@ -10,7 +10,7 @@ namespace ClientTelegram
         {
 
         }
-        public static async Task<long> HandleUpdatesAsync(string orgName, string phoneNum)
+        public static async Task<long> CreateClientGroup(string orgName, string phoneNum)
         {
             using var client = new Client(Config);
             await client.LoginUserIfNeeded();
