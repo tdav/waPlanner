@@ -28,6 +28,7 @@ namespace waPlanner.TelegramBot.Services
         private readonly Vars vars;
         private readonly IMemoryCache cache;
         private ITelegramBotClient bot;
+        private readonly string choose_lang = "Выберите язык\nTilni tanlang";
 
         public BotService(IServiceProvider provider, IOptions<LangsModel> options, IOptions<Vars> voptions, IMemoryCache caches)
         {
@@ -36,8 +37,6 @@ namespace waPlanner.TelegramBot.Services
             this.lang = options.Value;
             this.vars = voptions.Value;
         }
-
-        public static string choose_lang = "Выберите язык\nTilni tanlang";
 
         public static Task HandleErrorAsync(Exception exception)
         {
