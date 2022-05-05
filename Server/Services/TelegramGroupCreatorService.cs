@@ -75,17 +75,26 @@ namespace waPlanner.Services
             ReadyToAuthenticate.Wait();
 
             var new_group = await client.ExecuteAsync(new TdApi.CreateNewSupergroupChat { Title = OrgName, Description = "Planner", });
+            var group = new_group.Type as TdApi.ChatType.ChatTypeSupergroup;
             var group_id = new_group.Id;
+            var get_chat = await client.GetSupergroupFullInfoAsync(group.SupergroupId);
+            var bot = await TdApi.SearchPublicChatAsync(client, "clinic_test_uzbot");
 
-            var users = await client.GetChatsAsync(limit: 341);
-            var bot = await client.GetUserAsync(users.ChatIds[2]);
-
-            TdApi.Contact new_contact = new TdApi.Contact { FirstName = OrgName, LastName = "Planner", PhoneNumber = PhoneNumber};
+            await client.AddChatMemberAsync(group_id, bot.Id);
             
-            //await client.AddContactAsync(new_contact);
-
-            //await client.AddChatMembersAsync(group_id, new long[] {bot.Id, new_contact.UserId});
+            var contact = await client.ImportContactsAsync(new TdApi.Contact[] { new TdApi.Contact { FirstName = OrgName, LastName = "Planner", PhoneNumber = PhoneNumber } });
             
+            TdApi.InputMessageContent content = new TdApi.InputMessageContent.InputMessageText
+            {
+                Text = new TdApi.FormattedText
+                {
+                    Text = $"Ссылка для вашей группы организации {get_chat.InviteLink.InviteLink}"
+                }
+            };
+            long user_id = contact.UserIds[0];
+            Console.WriteLine(contact.UserIds[0]);
+            await client.SendMessageAsync(user_id, inputMessageContent: content);
+
             return group_id;
         }
 
