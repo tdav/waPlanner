@@ -20,8 +20,7 @@ namespace waPlanner.Extensions
             services.AddScoped<ISpecializationService, SpecializationService>();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<IGenerateQrCode, GenerateQrCode>();
-
-
+            services.AddSingleton<ITelegramGroupCreatorService, TelegramGroupCreatorService>();
         }
     }
 }

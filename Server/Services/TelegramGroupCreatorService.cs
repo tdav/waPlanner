@@ -1,95 +1,153 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
-using System.Linq;
-using System.Threading.Tasks;
-using WTelegram;
-using TL;
-using waPlanner.ModelViews.TelegramViews;
-using Microsoft.Extensions.Configuration;
+using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
+using TdLib;
+using TDLib.Bindings;
+
 
 namespace waPlanner.Services
 {
     public interface ITelegramGroupCreatorService
     {
-        Task ActivateClient();
-        Task SetSMSCode(string code);
-        Task<long> CreateGroup(string orgName, string phoneNum);
+        Task GetAuthenticationCode();
+        Task SetAuthenticationCode(string code, string password);
+        Task<long> CreateGroup(string PhoneNumber, string OrgName);
     }
 
-
-    public class TelegramGroupCreatorService : ITelegramGroupCreatorService, IDisposable
+    public class TelegramGroupCreatorService : ITelegramGroupCreatorService
     {
-        private readonly IConfiguration config;
-        private readonly Client client;
+        private readonly IConfiguration conf;
+        private readonly ILogger<TelegramGroupCreatorService> logger;
 
-        public TelegramGroupCreatorService(IConfiguration config)
+        private readonly int ApiId;
+        private readonly string ApiHash;
+        private readonly string PhoneNumber;
+
+        private readonly TdClient client;
+        private static readonly ManualResetEventSlim ReadyToAuthenticate = new();
+
+        private bool _authNeeded;
+        private bool _passwordNeeded;
+
+        public Guid Id = Guid.NewGuid();
+
+
+        public TelegramGroupCreatorService(IConfiguration conf, ILogger<TelegramGroupCreatorService> logger)
         {
-            this.config = config;
-            this.client = new Client(Config);
+            this.conf = conf;
+            this.logger = logger;
+
+            ApiId = Convert.ToInt32(conf["api_id"]);
+            ApiHash = conf["api_hash"];
+            PhoneNumber = conf["phone_number"];
+
+            client = new TdClient();
+            client.Bindings.SetLogVerbosityLevel(TdLogLevel.Fatal);
+
+            client.UpdateReceived += async (_, update) => { await ProcessUpdates(update); };
         }
 
-        public void Dispose()
+
+        public async Task GetAuthenticationCode()
         {
-            if (client != null)
+            ReadyToAuthenticate.Wait();
+
+            await client.ExecuteAsync(new TdApi.SetAuthenticationPhoneNumber { PhoneNumber = PhoneNumber, });
+        }
+
+        public async Task SetAuthenticationCode(string code, string password)
+        {
+            ReadyToAuthenticate.Wait();
+
+            await client.ExecuteAsync(new TdApi.CheckAuthenticationCode { Code = code });
+
+            if (!_passwordNeeded) { return; }
+
+            await client.ExecuteAsync(new TdApi.CheckAuthenticationPassword { Password = password });
+        }
+
+
+        public async Task<long> CreateGroup(string PhoneNumber, string OrgName)
+        {
+            ReadyToAuthenticate.Wait();
+
+            var new_group = await client.ExecuteAsync(new TdApi.CreateNewSupergroupChat { Title = OrgName, Description = "Planner", });
+            var group_id = new_group.Id;
+
+            var users = await client.GetChatsAsync(limit: 341);
+            var bot = await client.GetUserAsync(users.ChatIds[2]);
+
+            TdApi.Contact new_contact = new TdApi.Contact { FirstName = OrgName, LastName = "Planner", PhoneNumber = PhoneNumber};
+            
+            //await client.AddContactAsync(new_contact);
+
+            //await client.AddChatMembersAsync(group_id, new long[] {bot.Id, new_contact.UserId});
+            
+            return group_id;
+        }
+
+        private async Task ProcessUpdates(TdApi.Update update)
+        {
+            // Since Tdlib was made to be used in GUI application we need to struggle a bit and catch required events to determine our state.
+            // Below you can find example of simple authentication handling.
+            // Please note that AuthorizationStateWaitOtherDeviceConfirmation is not implemented.
+
+            switch (update)
             {
-                client.Dispose();
+                case TdApi.Update.UpdateAuthorizationState { AuthorizationState: TdApi.AuthorizationState.AuthorizationStateWaitTdlibParameters }:
+                    // TdLib creates database in the current directory.
+                    // so create separate directory and switch to that dir.
+                    var filesLocation = Path.Combine(AppContext.BaseDirectory, "db");
+                    await client.ExecuteAsync(new TdApi.SetTdlibParameters
+                    {
+                        Parameters = new TdApi.TdlibParameters
+                        {
+                            ApiId = ApiId,
+                            ApiHash = ApiHash,
+                            DeviceModel = "PC",
+                            SystemLanguageCode = "ru",
+                            ApplicationVersion = "1.0.1",
+                            DatabaseDirectory = filesLocation,
+                            FilesDirectory = filesLocation,
+                            // More parameters available!
+                        }
+                    });
+                    break;
+
+                case TdApi.Update.UpdateAuthorizationState { AuthorizationState: TdApi.AuthorizationState.AuthorizationStateWaitEncryptionKey }:
+                    await client.ExecuteAsync(new TdApi.CheckDatabaseEncryptionKey());
+                    break;
+
+                case TdApi.Update.UpdateAuthorizationState { AuthorizationState: TdApi.AuthorizationState.AuthorizationStateWaitPhoneNumber }:
+                case TdApi.Update.UpdateAuthorizationState { AuthorizationState: TdApi.AuthorizationState.AuthorizationStateWaitCode }:
+                    _authNeeded = true;
+                    ReadyToAuthenticate.Set();
+                    break;
+
+                case TdApi.Update.UpdateAuthorizationState { AuthorizationState: TdApi.AuthorizationState.AuthorizationStateWaitPassword }:
+                    _authNeeded = true;
+                    _passwordNeeded = true;
+                    ReadyToAuthenticate.Set();
+                    break;
+
+                case TdApi.Update.UpdateUser:
+                    ReadyToAuthenticate.Set();
+                    break;
+
+                case TdApi.Update.UpdateConnectionState { State: TdApi.ConnectionState.ConnectionStateReady }:
+                    // You may trigger additional event on connection state change
+                    break;
+
+                default:
+                    // ReSharper disable once EmptyStatement
+                    ;
+                    // Add a breakpoint here to see other events
+                    break;
             }
         }
-
-        private string Config(string what)
-        {
-            switch (what)
-            {
-                case "api_id": return config["api_id"];
-                case "api_hash": return config["api_hash"];
-                case "phone_number": return config["phone_number"];
-                case "verification_code":
-                case "password": return config["password"];                // if user has enabled 2FA
-                default: return config[what];                  // let WTelegramClient decide the default config
-            }
-        }
-
-        public async Task ActivateClient()
-        {            
-            await client.LoginUserIfNeeded();
-        }
-
-        public Task SetSMSCode(string code)
-        {
-            client.
-        }
-
-        public async Task<long> CreateGroup(string orgName, string phoneNum)
-        {
-            await client.LoginUserIfNeeded();
-
-            Contacts_ResolvedPeer my_bot = await client.Contacts_ResolveUsername("clinic_test_uzbot");
-            var new_user = await client.Contacts_ImportContacts(new[]
-            {
-                new InputPhoneContact
-                {
-                    phone = phoneNum,
-                    first_name = orgName,
-                    last_name = orgName
-                }
-            });
-
-            var create_group = await client.Channels_CreateChannel(orgName, orgName, megagroup: true);
-            var group = create_group.Chats.GetEnumerator();
-            group.MoveNext();
-            long group_id = group.Current.Key;
-
-            await client.AddChatUser(create_group.Chats[group_id], my_bot.User);
-            var get_chat = await client.GetFullChat(create_group.Chats[group_id]);
-            var invite = (ChatInviteExported)get_chat.full_chat.ExportedInvite;
-
-            await client.SendMessageAsync(new_user.users[new_user.imported[0].user_id],
-                "Ссылка для вашей группы организации " + invite.link);
-
-            return long.Parse($"-100{group_id}");
-        }
-
 
     }
 }

@@ -64,7 +64,7 @@ namespace waPlanner.Services
             return addOrganization.Id;
         }
         public async Task UpdateOrganizationAsync(viOrganization organization)
-        {
+        { 
             int user_id = accessor.GetId();
             var updatedOrganization = await db.spOrganizations.FindAsync(organization.Id);
 

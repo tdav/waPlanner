@@ -14,14 +14,30 @@ namespace waPlanner.Controllers.v1
     [SwaggerTag("Тг Клиент")]
     public class TelegramClientController: ControllerBase
     {
-        private readonly ITelegramClientActivate service;
+        private readonly ITelegramGroupCreatorService service;
 
-        public TelegramClientController(ITelegramClientActivate service)
+        public TelegramClientController(ITelegramGroupCreatorService service)
         {
             this.service = service;
         }
+                
 
-        [HttpPost]
-        public async Task Activate
+        [HttpPost("CreateGroup")]
+        public async Task<long> CreateGroupAsync(string phoneNum, string orgName)
+        {
+            return await service.CreateGroup(phoneNum, orgName);
+        }
+
+        [HttpPost("GetAuthenticationCode")]
+        public Task GetAuthenticationCode()
+        {
+           return service.GetAuthenticationCode();
+        }
+
+        [HttpPost("SetAuthenticationCode")]
+        public Task SetAuthenticationCode(string code, string password)
+        {
+            return service.SetAuthenticationCode(code, password);
+        }
     }
 }
