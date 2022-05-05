@@ -10,6 +10,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "waPlanner", "Server\waPlann
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientTelegram", "ClientTelegram\ClientTelegram.csproj", "{FC0EF3D0-14C0-4E02-A96F-236D88768DAD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utils", "Utils", "{58C9E4CE-77A8-4B2D-8288-6EA2570B6684}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FC0EF3D0-14C0-4E02-A96F-236D88768DAD} = {58C9E4CE-77A8-4B2D-8288-6EA2570B6684}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5B09B459-9998-4222-8EDC-F0A56FE41858}

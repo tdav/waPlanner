@@ -19,6 +19,9 @@ namespace waPlanner.Extensions
             services.AddScoped<IInfoService, InfoService>();
             services.AddScoped<ISpecializationService, SpecializationService>();
             services.AddScoped<IFileService, FileService>();
+            services.AddScoped<IGenerateQrCode, GenerateQrCode>();
+
+
         }
     }
 }

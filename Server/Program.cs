@@ -43,6 +43,7 @@ namespace waPlanner
                       {
                           configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
                           configuration.AddJsonFile("lang.json", optional: false, reloadOnChange: true);
+                          configuration.AddUserSecrets<Program>();
                       })
                       .UseSerilog();
         }

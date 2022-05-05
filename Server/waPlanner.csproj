@@ -7,7 +7,9 @@
 		<FileVersion>1.0.0.0</FileVersion>
 		<AssemblyName>planner_server</AssemblyName>
 		<ServerGarbageCollection>true</ServerGarbageCollection>
+		<UserSecretsId>f176cda6-bb56-44fd-b0de-b45900c7df4d</UserSecretsId>
 	</PropertyGroup>
+	
 	<ItemGroup>
 		<Compile Remove="logs\**" />
 		<Compile Remove="TelegramBot\handlers\**" />
@@ -52,6 +54,8 @@
 
 		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.3.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.3.0" />
+
+		<PackageReference Include="BarCode" Version="2022.3.0" />
 	</ItemGroup>
 
 	<ItemGroup>

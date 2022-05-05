@@ -62,8 +62,6 @@ namespace waPlanner.Database.Models
         public string PhotoUrl { get; set; }
 
         [StringLength(150)]
-        public string AdInfo { get; set; }
-
-
+        public string AdInfo { get; set; } 
     }
 }

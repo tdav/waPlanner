@@ -10,14 +10,22 @@ namespace ClientTelegram
         {
 
         }
+
         public static async Task<long> CreateClientGroup(string orgName, string phoneNum)
         {
             using var client = new Client(Config);
             await client.LoginUserIfNeeded();
 
             Contacts_ResolvedPeer my_bot = await client.Contacts_ResolveUsername("clinic_test_uzbot");
-            var new_user = await client.Contacts_ImportContacts(new[] { new InputPhoneContact { phone = phoneNum,
-                first_name = orgName, last_name = orgName} });
+            var new_user = await client.Contacts_ImportContacts(new[]
+            {
+                new InputPhoneContact
+                {
+                    phone = phoneNum,
+                    first_name = orgName,
+                    last_name = orgName
+                }
+            });
 
             var create_group = await client.Channels_CreateChannel(orgName, orgName, megagroup: true);
             var group = create_group.Chats.GetEnumerator();
@@ -38,11 +46,11 @@ namespace ClientTelegram
         {
             switch (what)
             {
-                case "api_id": return "1";
-                case "api_hash": return "1";
-                case "phone_number": return "+1";
+                case "api_id": return "12546946";
+                case "api_hash": return "47bd4f1d270a84059e0c0a75cc648ba1";
+                case "phone_number": return "+998977764669";
                 case "verification_code": Console.Write("Code: "); return Console.ReadLine();
-                case "password": return "1";     // if user has enabled 2FA
+                case "password": return "s8064025";     // if user has enabled 2FA
                 default: return null;                  // let WTelegramClient decide the default config
             }
         }

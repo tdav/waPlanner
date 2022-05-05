@@ -3,14 +3,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types.ReplyMarkups;
 using waPlanner.ModelViews;
+using waPlanner.Services;
 using waPlanner.TelegramBot.keyboards;
 using waPlanner.TelegramBot.Utils;
 
@@ -48,6 +51,20 @@ namespace waPlanner.TelegramBot.Services
             Console.WriteLine(ErrorMessage);
             return Task.CompletedTask;
         }
+
+        //public async Task HandleAsync1(ITelegramBotClient bot, Update[] updates, CancellationToken token)
+        //{
+        //    var qrcode = provider.GetService<IGenerateQrCode>();
+        //    var ba = qrcode.Run("url");
+
+        //    using (var ms = new MemoryStream(ba))
+        //    {
+        //        var aa = new InputOnlineFile(ms);
+        //        await bot.SendPhotoAsync()
+        //    }
+
+        //}
+
 
         public async Task HandleAsync(ITelegramBotClient bot, Update[] updates, CancellationToken token)
         {

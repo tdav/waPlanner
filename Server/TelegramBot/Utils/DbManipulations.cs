@@ -278,7 +278,6 @@ namespace waPlanner.TelegramBot.Utils
                 .Where(x => x.StaffId == staff.StaffId && x.AppointmentDateTime.Date == value.Calendar.Date)
                 .Select(x => x.AppointmentDateTime)
                 .ToListAsync();
-
         }
 
         public async Task<int[]> CheckStaffAvailability(string staff_name)
