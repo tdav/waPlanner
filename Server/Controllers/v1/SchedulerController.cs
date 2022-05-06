@@ -22,9 +22,9 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpPost]
-        public async Task Insert([FromBody] viScheduler scheduler)
+        public async Task<Answer<int>> Insert([FromBody] viScheduler scheduler)
         {
-            await service.AddSchedulerAsync(scheduler);
+            return await service.AddSchedulerAsync(scheduler);
         }
 
         [HttpPost("{scheduler_id}")]
@@ -33,26 +33,26 @@ namespace waPlanner.Controllers.v1
             await service.UpdateSchedulerAsync(scheduler);
         }
 
-        [HttpPost("{scheduler_id}/{status}/change_status")]
+        [HttpPost("change_status/{scheduler_id}/{status}")]
         public async Task UpdateSchedulerStatus(int scheduler_id, int status)
         {
             await service.UpdateSchedulerStatus(scheduler_id, status);
         }
 
         [HttpGet("{scheduler_id}")]
-        public async Task<viScheduler> GetSchedulerById(int scheduler_id)
+        public async Task<Answer<viScheduler>> GetSchedulerById(int scheduler_id)
         {
             return await service.GetSchedulerByIdAsync(scheduler_id);
         }
 
         [HttpGet("get_by_organization")]
-        public async Task<viEvents[]> GetSchedulers()
+        public async Task<Answer<viEvents[]>> GetSchedulers()
         {
             return await service.GetAllSchedulersByOrgAsync();
         }
 
-        [HttpGet("{staff_id}/{date}/busy_times")]
-        public async Task<TimeSpan[]> GetBusyTime(int staff_id, DateTime date)
+        [HttpGet("busy_times/{staff_id}/{date}")]
+        public async Task<Answer<TimeSpan[]>> GetBusyTime(int staff_id, DateTime date)
         {
             return await service.GetStaffBusyTime(staff_id, date);
         }

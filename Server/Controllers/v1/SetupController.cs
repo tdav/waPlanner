@@ -23,7 +23,7 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpGet]
-        public async Task<viSetup> GetSetup()
+        public async Task<Answer<viSetup>> GetSetup()
         {
             return await service.Get();
         }

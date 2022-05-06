@@ -22,9 +22,9 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpPost]
-        public async Task Insert([FromBody] viOrganization organization, string phoneNum)
+        public async Task<Answer<long>> Insert([FromBody] viOrganization organization, string phoneNum)
         {
-            await service.InsertOrganizationAsync(organization, phoneNum);
+            return await service.InsertOrganizationAsync(organization, phoneNum);
         }
 
         [HttpPost("change")]
@@ -40,13 +40,13 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpGet("Id")]
-        public Task<spOrganization> GetOrganizationAsync(int id)
+        public Task<Answer<spOrganization>> GetOrganizationAsync(int id)
         {
             return service.GetOrgByIdAsync(id);
         }
 
         [HttpGet]
-        public Task<spOrganization[]> GetAllAsync()
+        public Task<Answer<spOrganization[]>> GetAllAsync()
         {
             return service.GetAllOrgsAsync();
         }

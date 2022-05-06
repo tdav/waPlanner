@@ -22,31 +22,31 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpGet("total_today_appointments")]
-        public Task<int> GetTotalTodayAppointments()
+        public Task<Answer<int>> GetTotalTodayAppointments()
         {
             return service.GetTotalTodayAppointments();
         }
 
         [HttpGet("week_appointments")]
-        public Task<int> GetTotalWeekAppointments()
+        public Task<Answer<int>> GetTotalWeekAppointments()
         {
             return service.GetTotalWeekAppointments();
         }
 
         [HttpGet("today_appointments")]
-        public Task<List<viAppointmentsModel>> GetTodayAppointments()
+        public Task<Answer<List<viAppointmentsModel>>> GetTodayAppointments()
         {
             return service.GetTodayAppointments();
         }
 
         [HttpGet("recent_users")]
-        public Task<List<viRecentSchedulers>> GetRecentUsers()
+        public Task<Answer<List<viRecentSchedulers>>> GetRecentUsers()
         {
             return service.GetRecentUsers();
         }
 
         [HttpGet("scheduler_diagramma")]
-        public Task<List<viSchedulerDiagramma>> GetSchedulerDiagramma()
+        public Task<Answer<List<viSchedulerDiagramma>>> GetSchedulerDiagramma()
         {
             return service.GetSchedulerDiagramma();
         }

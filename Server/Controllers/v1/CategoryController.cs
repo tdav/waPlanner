@@ -22,22 +22,22 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpGet("{category_id}")]
-        public async Task<viCategory> Get(int category_id)
+        public async Task<Answer<viCategory>> Get(int category_id)
         {
             return await service.GetCategoryByIdAsync(category_id);
         }
 
         [HttpGet("all_categories")]
-        public async Task<viCategory[]> GetAll()
+        public async Task<Answer<viCategory[]>> GetAll()
         {
 
             return await service.GetAllCategoriesAsync();
         }
 
         [HttpPost]
-        public async Task Insert([FromBody] viCategory value)
+        public async Task<Answer<int>> Insert([FromBody] viCategory value)
         {
-            await service.AddCategoryAsync(value);
+            return await service.AddCategoryAsync(value);
         }
 
         [HttpPost("change")]
@@ -46,14 +46,14 @@ namespace waPlanner.Controllers.v1
             await service.UpdateAsync(value);
         }
 
-        [HttpPost("{category_id}/{status}/change")]
+        [HttpPost("change/{category_id}/{status}")]
         public async Task ChangeCategoryStatus(int category_id, int status)
         {
             await service.ChangeCategoryStatus(category_id, status);
         }
 
-        [HttpGet("{name}/search")]
-        public async Task<viCategory[]> SearchCategory(string name)
+        [HttpGet("search/{name}")]
+        public async Task<Answer<viCategory[]>> SearchCategory(string name)
         {
             return await service.SearchCategory(name);
         }

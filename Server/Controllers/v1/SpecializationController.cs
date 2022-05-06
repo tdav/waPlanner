@@ -41,13 +41,13 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpGet]
-        public async Task<spSpecialization[]> GetAllSpecializations()
+        public async Task<Answer<spSpecialization[]>> GetAllSpecializations()
         {
             return await service.GetSpecializationsAsync();
         }
 
         [HttpGet("{spec_id}")]
-        public async Task<spSpecialization> GetSpecialization(int spec_id)
+        public async Task<Answer<spSpecialization>> GetSpecialization(int spec_id)
         {
             return await service.GetSpecializationByIdAsync(spec_id);
         }

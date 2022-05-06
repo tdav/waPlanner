@@ -72,8 +72,4 @@
 		<Folder Include="Migrations\" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\ClientTelegram\ClientTelegram.csproj" />
-	</ItemGroup>
-
 </Project>

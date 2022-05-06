@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,27 +13,31 @@ namespace waPlanner.Services
 {
     public interface ICategoryService
     {
-        Task<int> AddCategoryAsync(viCategory value);
-        Task UpdateAsync(viCategory value);
-        Task<viCategory[]> GetAllCategoriesAsync();
-        Task ChangeCategoryStatus(int category_id, int status);
-        Task<viCategory> GetCategoryByIdAsync(int category_id);
-        Task<viCategory[]> SearchCategory(string name);
+        Task<Answer<int>> AddCategoryAsync(viCategory value);
+        Task<AnswerBasic> UpdateAsync(viCategory value);
+        Task<Answer<viCategory[]>> GetAllCategoriesAsync();
+        Task<AnswerBasic> ChangeCategoryStatus(int category_id, int status);
+        Task<Answer<viCategory>> GetCategoryByIdAsync(int category_id);
+        Task<Answer<viCategory[]>> SearchCategory(string name);
     }
 
     public class CategoryService : ICategoryService
     {
         private readonly MyDbContext db;
         private readonly IHttpContextAccessorExtensions accessor;
-        public CategoryService(MyDbContext db, IHttpContextAccessorExtensions accessor)
+        private readonly ILogger<CategoryService> logger;
+        public CategoryService(MyDbContext db, IHttpContextAccessorExtensions accessor, ILogger<CategoryService> logger)
         {
             this.db = db;
             this.accessor = accessor;
+            this.logger = logger;
         }
 
-        public async Task<viCategory> GetCategoryByIdAsync(int category_id)
+        public async Task<Answer<viCategory>> GetCategoryByIdAsync(int category_id)
         {
-            return await db.spCategories
+            try
+            {
+                var category = await db.spCategories
                 .AsNoTracking()
                 .Where(x => x.Id == category_id)
                 .Select(x => new viCategory
@@ -46,108 +51,159 @@ namespace waPlanner.Services
                     Status = x.Status,
                 })
                 .FirstOrDefaultAsync();
+                return new Answer<viCategory>(true, "", category);
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message}");
+                return new Answer<viCategory>(false, "Ошибка программы", null);
+            }
         }
 
-        public async Task<viCategory[]> GetAllCategoriesAsync()
+        public async Task<Answer<viCategory[]>> GetAllCategoriesAsync()
         {
-            int org_id = accessor.GetOrgId();
-            return await db.spCategories
-                .AsNoTracking()
-                .Where(x => x.OrganizationId == org_id)
-                .Select(x => new viCategory
-                {
-                    Id = x.Id,
-                    NameLt = x.NameLt,
-                    NameRu = x.NameRu,
-                    NameUz = x.NameUz,
-                    OrganizationId = org_id,
-                    Organization = x.Organization.Name,
-                    Status = x.Status,
-                })
-                .ToArrayAsync();
+            try
+            {
+                int org_id = accessor.GetOrgId();
+                var categories = await db.spCategories
+                    .AsNoTracking()
+                    .Where(x => x.OrganizationId == org_id)
+                    .Select(x => new viCategory
+                    {
+                        Id = x.Id,
+                        NameLt = x.NameLt,
+                        NameRu = x.NameRu,
+                        NameUz = x.NameUz,
+                        OrganizationId = org_id,
+                        Organization = x.Organization.Name,
+                        Status = x.Status,
+                    })
+                    .ToArrayAsync();
+                return new Answer<viCategory[]>(true, "", categories);
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message}");
+                return new Answer<viCategory[]>(false, "Ошибка программы", null);
+            }
         }
 
-        public async Task<int> AddCategoryAsync(viCategory value)
+        public async Task<Answer<int>> AddCategoryAsync(viCategory value)
         {
-            var category = new spCategory();
-            int user_id = accessor.GetId();
-            int org_id = accessor.GetOrgId();
-            int role_id = accessor.GetRoleId();
+            try
+            {
+                var category = new spCategory();
+                int user_id = accessor.GetId();
+                int org_id = accessor.GetOrgId();
+                int role_id = accessor.GetRoleId();
 
-            if (role_id == (int)UserRoles.SUPER_ADMIN)
-                org_id = value.OrganizationId.Value;
+                if (role_id == (int)UserRoles.SUPER_ADMIN)
+                    org_id = value.OrganizationId.Value;
 
-            category.Status = 1;
-            category.OrganizationId = org_id;
-            category.NameRu = value.NameRu;
-            category.NameUz = value.NameUz;
-            category.NameLt = value.NameLt;
-            category.CreateDate = DateTime.Now;
-            category.CreateUser = user_id;
-            db.spCategories.Add(category);
-            await db.SaveChangesAsync();
-
-            return category.Id;
-        }
-
-        public async Task UpdateAsync(viCategory value)
-        {
-            var category = await db.spCategories.FindAsync(value.Id);
-            int org_id = accessor.GetOrgId();
-            int user_id = accessor.GetId();
-
-            category.OrganizationId = org_id;
-
-            if (value.Status.HasValue)
-                category.Status = value.Status.Value;
-
-            if (value.NameRu is not null)
+                category.Status = 1;
+                category.OrganizationId = org_id;
                 category.NameRu = value.NameRu;
-
-            if (value.NameUz is not null)
                 category.NameUz = value.NameUz;
-
-            if (value.NameLt is not null)
                 category.NameLt = value.NameLt;
+                category.CreateDate = DateTime.Now;
+                category.CreateUser = user_id;
+                db.spCategories.Add(category);
+                await db.SaveChangesAsync();
 
-            category.UpdateDate = DateTime.Now;
-            category.UpdateUser = user_id;
-            await db.SaveChangesAsync();
+                return new Answer<int>(true, "", category.Id);
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message} Model: {value}");
+                return new Answer<int>(false, "Ошибка программы", 0);
+            }
         }
 
-        public async Task ChangeCategoryStatus(int category_id, int status)
+        public async Task<AnswerBasic> UpdateAsync(viCategory value)
         {
-            int user_id = accessor.GetId();
-            int org_id = accessor.GetOrgId();
-            var get_category = await db.spCategories.AsNoTracking().FirstAsync(c => c.Id == category_id && c.OrganizationId == org_id);
-            var category = await db.spCategories.FindAsync(get_category.Id);
-            category.Status = status;
-            category.UpdateDate = DateTime.Now;
-            category.UpdateUser = user_id;
-            await db.SaveChangesAsync();
+            try
+            {
+                var category = await db.spCategories.FindAsync(value.Id);
+                int org_id = accessor.GetOrgId();
+                int user_id = accessor.GetId();
+
+                category.OrganizationId = org_id;
+
+                if (value.Status.HasValue)
+                    category.Status = value.Status.Value;
+
+                if (value.NameRu is not null)
+                    category.NameRu = value.NameRu;
+
+                if (value.NameUz is not null)
+                    category.NameUz = value.NameUz;
+
+                if (value.NameLt is not null)
+                    category.NameLt = value.NameLt;
+
+                category.UpdateDate = DateTime.Now;
+                category.UpdateUser = user_id;
+                await db.SaveChangesAsync();
+                return new AnswerBasic(true, "");
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message}");
+                return new AnswerBasic(false, "Ошибка программы");
+            }
         }
 
-        public async Task<viCategory[]> SearchCategory(string name)
+        public async Task<AnswerBasic> ChangeCategoryStatus(int category_id, int status)
         {
-            int org_id = accessor.GetOrgId();
-            return await (from s in db.spCategories
-                          where EF.Functions.ILike(s.NameUz, $"%{name}%")
-                          || EF.Functions.ILike(s.NameRu, $"%{name}%")
-                          || EF.Functions.ILike(s.NameLt, $"%{name}%")
-                          select s)
-                        .AsNoTracking()
-                        .Where(x => x.Status == 1 && x.OrganizationId == org_id)
-                        .Select(x => new viCategory
-                        {
-                            Id = x.Id,
-                            NameUz = x.NameUz,
-                            NameLt = x.NameLt,
-                            NameRu = x.NameRu,
-                            OrganizationId = x.OrganizationId,
-                            Organization = x.Organization.Name,
-                            Status = x.Status
-                        })
-                        .ToArrayAsync();
+            try
+            {
+                int user_id = accessor.GetId();
+                int org_id = accessor.GetOrgId();
+                var get_category = await db.spCategories.AsNoTracking().FirstAsync(c => c.Id == category_id && c.OrganizationId == org_id);
+                var category = await db.spCategories.FindAsync(get_category.Id);
+                category.Status = status;
+                category.UpdateDate = DateTime.Now;
+                category.UpdateUser = user_id;
+                await db.SaveChangesAsync();
+                return new AnswerBasic(true, "");
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message}");
+                return new AnswerBasic(false, "Ошибка программы");
+            }
+        }
+
+        public async Task<Answer<viCategory[]>> SearchCategory(string name)
+        {
+            try
+            {
+                int org_id = accessor.GetOrgId();
+                var search = await (from s in db.spCategories
+                                    where EF.Functions.ILike(s.NameUz, $"%{name}%")
+                                    || EF.Functions.ILike(s.NameRu, $"%{name}%")
+                                    || EF.Functions.ILike(s.NameLt, $"%{name}%")
+                                    select s)
+                            .AsNoTracking()
+                            .Where(x => x.Status == 1 && x.OrganizationId == org_id)
+                            .Select(x => new viCategory
+                            {
+                                Id = x.Id,
+                                NameUz = x.NameUz,
+                                NameLt = x.NameLt,
+                                NameRu = x.NameRu,
+                                OrganizationId = x.OrganizationId,
+                                Organization = x.Organization.Name,
+                                Status = x.Status
+                            })
+                            .ToArrayAsync();
+                return new Answer<viCategory[]>(true, "", search);
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message}");
+                return new Answer<viCategory[]>(false, "Ошибка программы", null);
+            }
         }
     }
 }

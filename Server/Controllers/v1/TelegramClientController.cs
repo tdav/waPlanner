@@ -23,7 +23,7 @@ namespace waPlanner.Controllers.v1
                 
 
         [HttpPost("CreateGroup")]
-        public async Task<long> CreateGroupAsync(string phoneNum, string orgName)
+        public async Task<Answer<long>> CreateGroupAsync(string phoneNum, string orgName)
         {
             return await service.CreateGroup(phoneNum, orgName);
         }

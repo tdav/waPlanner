@@ -1,27 +1,30 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TdLib;
 using TDLib.Bindings;
-
+using waPlanner.Extensions;
+using waPlanner.ModelViews;
+using waPlanner.TelegramBot;
 
 namespace waPlanner.Services
 {
     public interface ITelegramGroupCreatorService
     {
-        Task GetAuthenticationCode();
-        Task SetAuthenticationCode(string code, string password);
-        Task<long> CreateGroup(string PhoneNumber, string OrgName);
+        Task<AnswerBasic> GetAuthenticationCode();
+        Task<AnswerBasic> SetAuthenticationCode(string code, string password);
+        Task<Answer<long>> CreateGroup(string PhoneNumber, string OrgName);
     }
 
     public class TelegramGroupCreatorService : ITelegramGroupCreatorService
     {
         private readonly IConfiguration conf;
         private readonly ILogger<TelegramGroupCreatorService> logger;
+        private readonly IServiceProvider provider;
 
         private readonly int ApiId;
         private readonly string ApiHash;
@@ -36,10 +39,11 @@ namespace waPlanner.Services
         public Guid Id = Guid.NewGuid();
 
 
-        public TelegramGroupCreatorService(IConfiguration conf, ILogger<TelegramGroupCreatorService> logger)
+        public TelegramGroupCreatorService(IConfiguration conf, ILogger<TelegramGroupCreatorService> logger, IServiceProvider provider)
         {
             this.conf = conf;
             this.logger = logger;
+            this.provider = provider;
 
             ApiId = Convert.ToInt32(conf["api_id"]);
             ApiHash = conf["api_hash"];
@@ -51,57 +55,105 @@ namespace waPlanner.Services
             client.UpdateReceived += async (_, update) => { await ProcessUpdates(update); };
         }
 
-
-        public async Task GetAuthenticationCode()
+        private IHttpContextAccessorExtensions GetAccessor()
         {
-            ReadyToAuthenticate.Wait();
-
-            await client.ExecuteAsync(new TdApi.SetAuthenticationPhoneNumber { PhoneNumber = PhoneNumber });
-        }
-
-        public async Task SetAuthenticationCode(string code, string password)
-        {
-            ReadyToAuthenticate.Wait();
-
-            await client.ExecuteAsync(new TdApi.CheckAuthenticationCode { Code = code });
-
-            if (!_passwordNeeded) { return; }
-
-            await client.ExecuteAsync(new TdApi.CheckAuthenticationPassword { Password = password });
-        }
-
-
-        public async Task<long> CreateGroup(string PhoneNumber, string OrgName)
-        {
-            ReadyToAuthenticate.Wait();
-
-            //var new_group = await client.ExecuteAsync(new TdApi.CreateNewSupergroupChat { Title = OrgName, Description = "Planner" });
-            //var group = new_group.Type as TdApi.ChatType.ChatTypeSupergroup;
-            //var group_id = new_group.Id;
-            //var getGroupInfo = await client.GetSupergroupFullInfoAsync(group.SupergroupId);
-            //var bot = await TdApi.SearchPublicChatAsync(client, "clinic_test_uzbot");
-
-            //await client.AddChatMemberAsync(group_id, bot.Id);
-
-            var contact = await client.ch .ImportContactsAsync(new TdApi.Contact[] { new TdApi.Contact { FirstName = OrgName, LastName = "Planner", PhoneNumber = PhoneNumber } });
-            var get_contacts = await client.GetContactsAsync();
-            long chat_id = get_contacts.UserIds.FirstOrDefault(x => x == contact.UserIds[0]);
-
-            var cc = await client.GetChatsAsync(limit: 1000);
-
-            TdApi.InputMessageContent content = new TdApi.InputMessageContent.InputMessageText
+            using (var scope = provider.CreateScope())
             {
-                Text = new TdApi.FormattedText
+                var accessor = scope.ServiceProvider.GetService<IHttpContextAccessorExtensions>();
+                return accessor;
+            }
+        }
+
+        public async Task<AnswerBasic> GetAuthenticationCode()
+        {
+            try
+            {
+                int role_id = GetAccessor().GetRoleId();
+                if (role_id == (int)UserRoles.SUPER_ADMIN)
                 {
-                    Text = $"Ссылка для вашей группы организации "
+                    ReadyToAuthenticate.Wait();
+                    await client.ExecuteAsync(new TdApi.SetAuthenticationPhoneNumber { PhoneNumber = PhoneNumber });
+                    return new AnswerBasic(true, "");
                 }
-            };
+                return new AnswerBasic(false, "Только супер-Админ имеет эту привелегию");
+
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"TelegramGroupCreatorService.GetAuthenticationCode Error:{e.Message}");
+                return new AnswerBasic(false, "Ошибка программы");
+            }
+
+        }
+
+        public async Task<AnswerBasic> SetAuthenticationCode(string code, string password)
+        {
+            try
+            {
+                int role_id = GetAccessor().GetRoleId();
+                if (role_id == (int)UserRoles.SUPER_ADMIN)
+                {
+                    ReadyToAuthenticate.Wait();
+
+                    await client.ExecuteAsync(new TdApi.CheckAuthenticationCode { Code = code });
+
+                    if (!_passwordNeeded) { return new AnswerBasic(false, "Нужен двухфакторный пароль"); }
+
+                    await client.ExecuteAsync(new TdApi.CheckAuthenticationPassword { Password = password });
+                    return new AnswerBasic(true, "");
+                }
+                return new AnswerBasic(false, "Только супер-Админ имеет эту привелегию");
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"TelegramGroupCreatorService.SetAuthenticationCode Error:{e.Message}");
+                return new AnswerBasic(false, "Ошибка программы");
+            }
+
+        }
 
 
-            var rr = await client.SendMessageAsync(chatId: chat_id, inputMessageContent: content);
+        public async Task<Answer<long>> CreateGroup(string PhoneNumber, string OrgName)
+        {
+            try
+            {
+                ReadyToAuthenticate.Wait();
 
+                var new_group = await client.ExecuteAsync(new TdApi.CreateNewSupergroupChat { Title = OrgName, Description = "Planner" });
+                var group_id = new_group.Id;
+                var group = new_group.Type as TdApi.ChatType.ChatTypeSupergroup;
+                var getGroupInfo = await client.GetSupergroupFullInfoAsync(group.SupergroupId);
+                var bot = await TdApi.SearchPublicChatAsync(client, "clinic_test_uzbot");
+                await client.AddChatMemberAsync(group_id, bot.Id);
 
-            return 1;
+                var contact = await client.ImportContactsAsync(new TdApi.Contact[]
+                {
+                new TdApi.Contact
+                {
+                    FirstName = OrgName,
+                    LastName = "Planner",
+                    PhoneNumber = PhoneNumber
+                }
+                });
+
+                var content = new TdApi.InputMessageContent.InputMessageText
+                {
+                    Text = new TdApi.FormattedText
+                    {
+                        Text = $"Ссылка для вашей группы организации {getGroupInfo.InviteLink.InviteLink}"
+                    }
+                };
+                var chat = await client.CreatePrivateChatAsync(contact.UserIds[0]);
+                await client.SendMessageAsync(chatId: chat.Id, inputMessageContent: content);
+
+                return new Answer<long>(true, "", group_id);
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"TelegramGroupCreatorService.CreateGroup Error:{e.Message}");
+                return new Answer<long>(false, "Ошибка программы", 0);
+            }
+
         }
 
         private async Task ProcessUpdates(TdApi.Update update)

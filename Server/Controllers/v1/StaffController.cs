@@ -32,13 +32,13 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpGet("by_organization_id")]
-        public  Task<viStaff[]> GetStuffById()
+        public Task<Answer<viStaff[]>> GetStuffById()
         {
-            return service.GetStaffByOrganizationId();
+            return service.GetStaffsByOrganizationId();
         }
 
-        [HttpGet("{category_id}/name_list")]
-        public Task<List<IdValue>> GetStuffList(int category_id)
+        [HttpGet("name_list/{category_id}")]
+        public Task<Answer<List<IdValue>>> GetStuffList(int category_id)
         {
             return service.GetStuffList(category_id);
         }
@@ -49,7 +49,7 @@ namespace waPlanner.Controllers.v1
             await service.AddStaffAsync(staff);
         }
 
-        [HttpPost("{staff_id}/{status}/change")]
+        [HttpPost("change/{staff_id}/{status}")]
         public async Task ChagneStaffStatus(int staff_id, int status)
         {
             await service.SetStatusAsync(staff_id, status);
@@ -62,18 +62,18 @@ namespace waPlanner.Controllers.v1
         }
         
         [HttpGet("{staff_id}")]
-        public Task<viStaff> GetStaffById(int staff_id)
+        public Task<Answer<viStaff>> GetStaffById(int staff_id)
         {
             return service.GetStaffById(staff_id);
         }
 
-        [HttpGet("{name}/search")]
-        public Task<viStaff[]> SearchStaff(string name)
+        [HttpGet("search/{name}")]
+        public Task<Answer<viStaff[]>> SearchStaff(string name)
         {
             return service.SearchStaffAsync(name);
         }
 
-        [HttpPost("{staff_id}/{activity}/set")]
+        [HttpPost("set/{staff_id}/{activity}")]
         public async Task SetActivity(int staff_id, bool activity)
         {
             await service.SetActivity(staff_id, activity);

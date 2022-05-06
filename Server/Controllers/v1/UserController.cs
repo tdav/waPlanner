@@ -23,7 +23,7 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpPost("new")]
-        public async Task<viPatient> AddNewPatient(viPatient patient)
+        public async Task<Answer<viPatient>> AddNewPatient(viPatient patient)
         {
             return await service.AddAsync(patient);
         }
@@ -34,26 +34,26 @@ namespace waPlanner.Controllers.v1
             await service.UpdateAsync(patient);
         }
 
-        [HttpPost("{patient_id}/{status}/change")]
+        [HttpPost("change/{patient_id}/{status}")]
         public async Task UpdatePatientStatus(int patient_id, int status)
         {
             await service.SetStatusAsync(patient_id, status);
         }
 
         [HttpGet("all")]
-        public async Task<viPatient[]> GetPateintsAsync()
+        public async Task<Answer<viPatient[]>> GetPateintsAsync()
         {
             return await service.GetAllAsync();
         }
 
         [HttpGet("{user_id}")]
-        public async Task<viPatient> GetAll(int user_id)
+        public async Task<Answer<viPatient>> GetAll(int user_id)
         {
             return await service.GetAsync(user_id);
         }
 
-        [HttpGet("{name}/search")]
-        public async Task<viPatient[]> SearchAsync(string name)
+        [HttpGet("search/{name}")]
+        public async Task<Answer<viPatient[]>> SearchAsync(string name)
         {
             return await service.SearchUserAsync(name);
         }

@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,114 +8,175 @@ using waPlanner.Database;
 using waPlanner.Database.Models;
 using waPlanner.Extensions;
 using waPlanner.ModelViews;
-
+using waPlanner.Utils;
 
 namespace waPlanner.Services
 {
     public interface IOrganizationService
     {
-        Task<int> InsertOrganizationAsync(viOrganization organization, string phoneNum);
-        Task UpdateOrganizationAsync(viOrganization organziation);
-        Task UpdateOrganizationStatus(int org_id, int status);
-        Task<spOrganization> GetOrgByIdAsync(int id);
-        Task<spOrganization[]> GetAllOrgsAsync();
+        Task<Answer<long>> InsertOrganizationAsync(viOrganization organization, string phoneNum);
+        Task<AnswerBasic> UpdateOrganizationAsync(viOrganization organziation);
+        Task<AnswerBasic> UpdateOrganizationStatus(int org_id, int status);
+        Task<Answer<spOrganization>> GetOrgByIdAsync(int id);
+        Task<Answer<spOrganization[]>> GetAllOrgsAsync();
     }
-    public class OrganizationService: IOrganizationService
+    public class OrganizationService : IOrganizationService
     {
         private readonly MyDbContext db;
+        private readonly ILogger<OrganizationService> logger;
+        private readonly IServiceProvider provider;
         private readonly IHttpContextAccessorExtensions accessor;
-        public OrganizationService(MyDbContext db, IHttpContextAccessorExtensions accessor)
+        public OrganizationService(MyDbContext db, IHttpContextAccessorExtensions accessor, IServiceProvider provider, ILogger<OrganizationService> logger)
         {
             this.accessor = accessor;
             this.db = db;
+            this.provider = provider;
+            this.logger = logger;
         }
-        public async Task<int> InsertOrganizationAsync(viOrganization organization, string phoneNum)
+        public async Task<Answer<long>> InsertOrganizationAsync(viOrganization organization, string phoneNum)
         {
-            int user_id = accessor.GetId();
-            var addOrganization = new spOrganization();
+            try
+            {
+                int user_id = accessor.GetId();
 
-            if (organization.ChatId.HasValue)
-                addOrganization.ChatId = organization.ChatId.Value;
+                using (var scope = provider.CreateScope())
+                {
+                    var telegramGroupCreator = scope.ServiceProvider.GetService<ITelegramGroupCreatorService>();
+                    var chatid = await telegramGroupCreator.CreateGroup(phoneNum, organization.Name);
 
-            if (organization.Latitude.HasValue)
-                addOrganization.Latitude = organization.Latitude.Value;
 
-            if (organization.Longitude.HasValue)
-                addOrganization.Longitude = organization.Longitude.Value;
+                    var addOrganization = new spOrganization();
 
-            if(organization.SpecializationId.HasValue)
-                addOrganization.SpecializationId = organization.SpecializationId.Value;
+                    if (organization.ChatId.HasValue)
+                        addOrganization.ChatId = organization.ChatId.Value;
 
-            if (organization.DinnerTimeStart.HasValue)
-                addOrganization.BreakTimeStart = organization.DinnerTimeStart.Value;
+                    if (organization.Latitude.HasValue)
+                        addOrganization.Latitude = organization.Latitude.Value;
 
-            if (organization.DinnerTimeEnd.HasValue)
-                addOrganization.BreakTimeEnd = organization.DinnerTimeEnd.Value;
+                    if (organization.Longitude.HasValue)
+                        addOrganization.Longitude = organization.Longitude.Value;
 
-            addOrganization.WorkStart = organization.WorkTimeStart;
-            addOrganization.WorkEnd = organization.WorkTimeEnd;
-            addOrganization.Name = organization.Name;
-            addOrganization.ChatId = await ClientTelegram.ClientTelegram.CreateClientGroup(addOrganization.Name, phoneNum);
-            addOrganization.CreateDate = DateTime.Now;
-            addOrganization.CreateUser = user_id;
-            addOrganization.Status = 1;
-            addOrganization.Address = organization.Address;
-            await db.spOrganizations.AddAsync(addOrganization);
-            await db.SaveChangesAsync();
+                    if (organization.SpecializationId.HasValue)
+                        addOrganization.SpecializationId = organization.SpecializationId.Value;
 
-            return addOrganization.Id;
-        }
-        public async Task UpdateOrganizationAsync(viOrganization organization)
-        { 
-            int user_id = accessor.GetId();
-            var updatedOrganization = await db.spOrganizations.FindAsync(organization.Id);
+                    if (organization.DinnerTimeStart.HasValue)
+                        addOrganization.BreakTimeStart = organization.DinnerTimeStart.Value;
 
-            if (organization.ChatId.HasValue)
-                updatedOrganization.ChatId = organization.ChatId.Value;
+                    if (organization.DinnerTimeEnd.HasValue)
+                        addOrganization.BreakTimeEnd = organization.DinnerTimeEnd.Value;
 
-            if (organization.Latitude.HasValue)
-                updatedOrganization.Latitude = organization.Latitude.Value;
+                    addOrganization.WorkStart = organization.WorkTimeStart;
+                    addOrganization.WorkEnd = organization.WorkTimeEnd;
+                    addOrganization.Name = organization.Name;
+                    addOrganization.ChatId = chatid.Data;
+                    addOrganization.CreateDate = DateTime.Now;
+                    addOrganization.CreateUser = user_id;
+                    addOrganization.Status = 1;
+                    addOrganization.Address = organization.Address;
+                    await db.spOrganizations.AddAsync(addOrganization);
+                    await db.SaveChangesAsync();
 
-            if (organization.Longitude.HasValue)
-                updatedOrganization.Longitude = organization.Longitude.Value;
+                    return new Answer<long>(true, "", addOrganization.Id);
+                }
+            }
+            catch (Exception ee)
+            {
+                logger.LogError($"OrganizationService.InsertOrganizationAsync Error:{ee.Message} Model:{organization.ToJson()}");
+                return new Answer<long>(false, "Ошибка программы", 0);
+            }
 
-            if(organization.SpecializationId.HasValue)
-                updatedOrganization.SpecializationId = organization.SpecializationId.Value;
-
-            if(organization.Status.HasValue)
-                updatedOrganization.Status = organization.Status.Value;
-
-            if (organization.DinnerTimeStart.HasValue)
-                updatedOrganization.BreakTimeStart = organization.DinnerTimeStart.Value;
-
-            if (organization.DinnerTimeEnd.HasValue)
-                updatedOrganization.BreakTimeEnd = organization.DinnerTimeEnd.Value;
-
-            if (organization.Name is not null)
-                updatedOrganization.Name = organization.Name;
-
-            updatedOrganization.UpdateDate = DateTime.Now;
-            updatedOrganization.UpdateUser = user_id;
-            await db.SaveChangesAsync();
         }
 
-        public async Task UpdateOrganizationStatus(int org_id, int status)
+        public async Task<AnswerBasic> UpdateOrganizationAsync(viOrganization organization)
         {
-            int user_id = accessor.GetId();
-            var organiztion = await db.spOrganizations.FindAsync(org_id);
-            organiztion.Status = status;
-            organiztion.UpdateDate = DateTime.Now;
-            organiztion.UpdateUser = user_id;
-            await db.SaveChangesAsync();
+            try
+            {
+                int user_id = accessor.GetId();
+                var updatedOrganization = await db.spOrganizations.FindAsync(organization.Id);
+
+                if (organization.ChatId.HasValue)
+                    updatedOrganization.ChatId = organization.ChatId.Value;
+
+                if (organization.Latitude.HasValue)
+                    updatedOrganization.Latitude = organization.Latitude.Value;
+
+                if (organization.Longitude.HasValue)
+                    updatedOrganization.Longitude = organization.Longitude.Value;
+
+                if (organization.SpecializationId.HasValue)
+                    updatedOrganization.SpecializationId = organization.SpecializationId.Value;
+
+                if (organization.Status.HasValue)
+                    updatedOrganization.Status = organization.Status.Value;
+
+                if (organization.DinnerTimeStart.HasValue)
+                    updatedOrganization.BreakTimeStart = organization.DinnerTimeStart.Value;
+
+                if (organization.DinnerTimeEnd.HasValue)
+                    updatedOrganization.BreakTimeEnd = organization.DinnerTimeEnd.Value;
+
+                if (organization.Name is not null)
+                    updatedOrganization.Name = organization.Name;
+
+                updatedOrganization.UpdateDate = DateTime.Now;
+                updatedOrganization.UpdateUser = user_id;
+                await db.SaveChangesAsync();
+
+                return new AnswerBasic(true, "");
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"OrganizationService.UpdateOrganizationAsync Error: {e.Message} Model: {organization.ToJson()}");
+                return new AnswerBasic(false, "Ошибка программы");
+            }
         }
 
-        public async Task<spOrganization> GetOrgByIdAsync(int organization_id)
+        public async Task<AnswerBasic> UpdateOrganizationStatus(int org_id, int status)
         {
-            return await db.spOrganizations.AsNoTracking().FirstAsync(x => x.Status == 1 && x.Id == organization_id);
+            try
+            {
+                int user_id = accessor.GetId();
+                var organiztion = await db.spOrganizations.FindAsync(org_id);
+            
+                organiztion.Status = status;
+                organiztion.UpdateDate = DateTime.Now;
+                organiztion.UpdateUser = user_id;
+                await db.SaveChangesAsync();
+                return new AnswerBasic(true, "");
+            } 
+            catch (Exception e)
+            {
+                logger.LogError($"OrganizationService.UpdateOrganizationStatus Error: {e.Message}");
+                return new AnswerBasic(false, "Ошибка в программе");
+            }
         }
-        public async Task<spOrganization[]> GetAllOrgsAsync()
+
+        public async Task<Answer<spOrganization>> GetOrgByIdAsync(int organization_id)
         {
-            return await db.spOrganizations.Where(x => x.Status == 1).AsNoTracking().ToArrayAsync();
+            try
+            {
+                var organization = await db.spOrganizations.AsNoTracking().FirstAsync(x => x.Status == 1 && x.Id == organization_id);
+                return new Answer<spOrganization>(true, "", organization);
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"OrganizationService.GetOrgByIdAsync Error: {e.Message}");
+                return new Answer<spOrganization>(false, "Ошибка в программе", null);
+            }
+        }
+
+        public async Task<Answer<spOrganization[]>> GetAllOrgsAsync()
+        {
+            try
+            {
+                var organizations = await db.spOrganizations.Where(x => x.Status == 1).AsNoTracking().ToArrayAsync();
+                return new Answer<spOrganization[]>(true, "", organizations);
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"OrganizationService.GetAllOrgsAsync Error: {e.Message}");
+                return new Answer<spOrganization[]>(false, "Ошибка в программе", null);
+            }
         }
     }
 }
