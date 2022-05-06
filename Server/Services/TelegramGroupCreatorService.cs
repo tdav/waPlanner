@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TdLib;
@@ -81,17 +82,13 @@ namespace waPlanner.Services
             //var bot = await TdApi.SearchPublicChatAsync(client, "clinic_test_uzbot");
 
             //await client.AddChatMemberAsync(group_id, bot.Id);
-            
-            var contact = await client.ImportContactsAsync(new TdApi.Contact[] { new TdApi.Contact { FirstName = OrgName, LastName = "Planner", PhoneNumber = PhoneNumber } });
+
+            var contact = await client.ch .ImportContactsAsync(new TdApi.Contact[] { new TdApi.Contact { FirstName = OrgName, LastName = "Planner", PhoneNumber = PhoneNumber } });
             var get_contacts = await client.GetContactsAsync();
-            long chat_id = 0;
-            foreach(long con in get_contacts.UserIds)
-            {
-                if (contact.UserIds[0] == con)
-                    chat_id = con;
-            }
-            
-            
+            long chat_id = get_contacts.UserIds.FirstOrDefault(x => x == contact.UserIds[0]);
+
+            var cc = await client.GetChatsAsync(limit: 1000);
+
             TdApi.InputMessageContent content = new TdApi.InputMessageContent.InputMessageText
             {
                 Text = new TdApi.FormattedText
@@ -99,9 +96,10 @@ namespace waPlanner.Services
                     Text = $"Ссылка для вашей группы организации "
                 }
             };
-            
-            await client.SendMessageAsync(chatId: chat_id, inputMessageContent: content);
-            
+
+
+            var rr = await client.SendMessageAsync(chatId: chat_id, inputMessageContent: content);
+
 
             return 1;
         }
