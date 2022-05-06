@@ -47,9 +47,6 @@ namespace waPlanner.Services
 
                     var addOrganization = new spOrganization();
 
-                    if (organization.ChatId.HasValue)
-                        addOrganization.ChatId = organization.ChatId.Value;
-
                     if (organization.Latitude.HasValue)
                         addOrganization.Latitude = organization.Latitude.Value;
 
