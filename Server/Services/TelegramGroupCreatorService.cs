@@ -55,7 +55,7 @@ namespace waPlanner.Services
         {
             ReadyToAuthenticate.Wait();
 
-            await client.ExecuteAsync(new TdApi.SetAuthenticationPhoneNumber { PhoneNumber = PhoneNumber, });
+            await client.ExecuteAsync(new TdApi.SetAuthenticationPhoneNumber { PhoneNumber = PhoneNumber });
         }
 
         public async Task SetAuthenticationCode(string code, string password)
@@ -74,28 +74,36 @@ namespace waPlanner.Services
         {
             ReadyToAuthenticate.Wait();
 
-            var new_group = await client.ExecuteAsync(new TdApi.CreateNewSupergroupChat { Title = OrgName, Description = "Planner", });
-            var group = new_group.Type as TdApi.ChatType.ChatTypeSupergroup;
-            var group_id = new_group.Id;
-            var get_chat = await client.GetSupergroupFullInfoAsync(group.SupergroupId);
-            var bot = await TdApi.SearchPublicChatAsync(client, "clinic_test_uzbot");
+            //var new_group = await client.ExecuteAsync(new TdApi.CreateNewSupergroupChat { Title = OrgName, Description = "Planner" });
+            //var group = new_group.Type as TdApi.ChatType.ChatTypeSupergroup;
+            //var group_id = new_group.Id;
+            //var getGroupInfo = await client.GetSupergroupFullInfoAsync(group.SupergroupId);
+            //var bot = await TdApi.SearchPublicChatAsync(client, "clinic_test_uzbot");
 
-            await client.AddChatMemberAsync(group_id, bot.Id);
+            //await client.AddChatMemberAsync(group_id, bot.Id);
             
             var contact = await client.ImportContactsAsync(new TdApi.Contact[] { new TdApi.Contact { FirstName = OrgName, LastName = "Planner", PhoneNumber = PhoneNumber } });
+            var get_contacts = await client.GetContactsAsync();
+            long chat_id = 0;
+            foreach(long con in get_contacts.UserIds)
+            {
+                if (contact.UserIds[0] == con)
+                    chat_id = con;
+            }
+            
             
             TdApi.InputMessageContent content = new TdApi.InputMessageContent.InputMessageText
             {
                 Text = new TdApi.FormattedText
                 {
-                    Text = $"Ссылка для вашей группы организации {get_chat.InviteLink.InviteLink}"
+                    Text = $"Ссылка для вашей группы организации "
                 }
             };
-            long user_id = contact.UserIds[0];
-            Console.WriteLine(contact.UserIds[0]);
-            await client.SendMessageAsync(user_id, inputMessageContent: content);
+            
+            await client.SendMessageAsync(chatId: chat_id, inputMessageContent: content);
+            
 
-            return group_id;
+            return 1;
         }
 
         private async Task ProcessUpdates(TdApi.Update update)

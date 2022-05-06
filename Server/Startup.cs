@@ -34,8 +34,8 @@ namespace waPlanner
             services.Configure<LangsModel>(conf.GetSection("SystemLangs"));
 
 
-            services.AddSingleton<IBotService, BotService>();
-            services.AddHostedService<TelegramBotBackgroundService>();
+            //services.AddSingleton<IBotService, BotService>();
+            //services.AddHostedService<TelegramBotBackgroundService>();
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IHttpContextAccessorExtensions, HttpContextAccessorExtensions>();

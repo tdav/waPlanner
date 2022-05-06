@@ -401,15 +401,7 @@ namespace waPlanner.TelegramBot.Services
                             break;
                         }
                     case PlannerStates.CHANGE_LANG:
-                        {
-                            cache.State = PlannerStates.SETTINGS;
-                            break;
-                        }
                     case PlannerStates.CHANGE_NAME:
-                        {
-                            cache.State = PlannerStates.SETTINGS;
-                            break;
-                        }
                     case PlannerStates.CHANGE_PHONE:
                         {
                             cache.State = PlannerStates.SETTINGS;
@@ -417,21 +409,13 @@ namespace waPlanner.TelegramBot.Services
                         }
 
                     case PlannerStates.FEEDBACK:
-                        {
-                            cache.State = PlannerStates.MAIN_MENU;
-                            break;
-                        }
-
                     case PlannerStates.SELECT_FAVORITES:
-                        {
-                            cache.State = PlannerStates.MAIN_MENU;
-                            break;
-                        }
                     case PlannerStates.ORGANIZATION:
                         {
                             cache.State = PlannerStates.MAIN_MENU;
                             break;
                         }
+                           
                     case PlannerStates.CATEGORY:
                         {
                             cache.State = PlannerStates.SPECIALIZATION;
