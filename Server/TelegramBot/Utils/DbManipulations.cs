@@ -14,11 +14,11 @@ namespace waPlanner.TelegramBot.Utils
     public interface IDbManipulations
     {
         Task<List<IdValue>> SendFavorites(long chatId);
-        Task<List<IdValue>> SendSpecializations();
+        Task<List<IdValue>> SendSpecializations(string lg);
         Task<int> GetSpecializationIdByName(string spec_name);
         Task<List<IdValue>> SendOrganizations(string spec_name);
         Task<int> GetOrganizationId(string organization_name);
-        Task<List<IdValue>> SendCategoriesByOrgName(string organization_name);
+        Task<List<IdValue>> SendCategoriesByOrgName(string organization_name, string lg);
         Task RegistrateUserPlanner(long chat_id, TelegramBotValuesModel value);
         Task<viSetup> GetUserLang(long chat_id);
         Task<int> GetUserId(long chat_id);
@@ -27,7 +27,7 @@ namespace waPlanner.TelegramBot.Utils
         Task<viStaffInfo> GetStaffInfoByName(string name);
         Task<List<IdValue>> GetStaffByCategory(string category);
         Task<bool> CheckStaffByCategory(string category, string value);
-        Task<List<string>> CheckCategory();
+        Task<List<string>> CheckCategory(string lg);
         Task<List<DateTime>> GetStaffBusyTime(TelegramBotValuesModel value);
         Task<int[]> CheckStaffAvailability(string staff_name);
         Task AddToFavorites(TelegramBotValuesModel value, long chat_id);
@@ -41,6 +41,10 @@ namespace waPlanner.TelegramBot.Utils
         Task<viOrgTimes> GetOrgWorkTime(string org_name);
         Task<viTelegramCommonStatistic> GetCommonStatistic();
         Task<List<viTelegramOrgsStatistic>> GetOrgsStatistics();
+        Task<bool> CheckGovermentOrg(string spec);
+        Task<bool> CheckUserPINFL(string pinfl);
+        Task<bool> CheckUserPassportSeria(string seria);
+        Task<string> GetOrgMessage(string organization, string lg);
     }
 
     public class DbManipulations : IDbManipulations
@@ -73,20 +77,41 @@ namespace waPlanner.TelegramBot.Utils
             return null;
         }
 
-        public async Task<List<IdValue>> SendSpecializations()
+        public async Task<List<IdValue>> SendSpecializations(string lg)
         {
-            return await db.spSpecializations
-                .AsNoTracking()
-                .Where(x => x.Status == 1)
-                .Select(x => new IdValue { Id = x.Id, Name = x.NameUz })
-                .ToListAsync();
+            switch (lg)
+            {
+                case "ru":
+                    {
+                        return await db.spSpecializations
+                            .AsNoTracking()
+                            .Where(x => x.Status == 1)
+                            .Select(x => new IdValue { Id = x.Id, Name = x.NameRu })
+                            .ToListAsync();
+                    }
+                case "uz":
+                    {
+
+                        return await db.spSpecializations
+                            .AsNoTracking()
+                            .Where(x => x.Status == 1)
+                            .Select(x => new IdValue { Id = x.Id, Name = x.NameUz })
+                            .ToListAsync();
+                    }
+                default:
+                    return await db.spSpecializations
+                            .AsNoTracking()
+                            .Where(x => x.Status == 1)
+                            .Select(x => new IdValue { Id = x.Id, Name = x.NameLt })
+                            .ToListAsync();
+            }
         }
 
         public async Task<int> GetSpecializationIdByName(string spec_name)
         {
             var spec_id = await db.spSpecializations
                 .AsNoTracking()
-                .Where(x => x.NameUz == spec_name)
+                .Where(x => x.NameUz == spec_name || x.NameRu == spec_name || x.NameLt == spec_name)
                 .FirstAsync();
             return spec_id.Id;
         }
@@ -109,14 +134,36 @@ namespace waPlanner.TelegramBot.Utils
             return organization.Id;
         }
 
-        public async Task<List<IdValue>> SendCategoriesByOrgName(string organization_name)
+        public async Task<List<IdValue>> SendCategoriesByOrgName(string organization_name, string lg)
         {
             int organization_id = await GetOrganizationId(organization_name);
-            return await db.spCategories
-                .AsNoTracking()
-                .Where(x => x.OrganizationId == organization_id && x.Status == 1)
-                .Select(x => new IdValue { Id = x.Id, Name = x.NameUz })
-                .ToListAsync();
+            switch (lg)
+            {
+                case "ru":
+                    {
+                        return await db.spCategories
+                            .AsNoTracking()
+                            .Where(x => x.OrganizationId == organization_id && x.Status == 1)
+                            .Select(x => new IdValue { Id = x.Id, Name = x.NameRu })
+                            .ToListAsync();
+                    }
+                case "uz":
+                    {
+                        return await db.spCategories
+                                .AsNoTracking()
+                                .Where(x => x.OrganizationId == organization_id && x.Status == 1)
+                                .Select(x => new IdValue { Id = x.Id, Name = x.NameUz })
+                                .ToListAsync();
+                    }
+                default:
+                    {
+                        return await db.spCategories
+                                .AsNoTracking()
+                                .Where(x => x.OrganizationId == organization_id && x.Status == 1)
+                                .Select(x => new IdValue { Id = x.Id, Name = x.NameLt })
+                                .ToListAsync();
+                    }
+            }
         }
         public async Task RegistrateUserPlanner(long chat_id, TelegramBotValuesModel value)
         {
@@ -248,7 +295,8 @@ namespace waPlanner.TelegramBot.Utils
             return await db.tbStaffs
                          .AsNoTracking()
                          .Include(i => i.Category)
-                         .Where(x => x.RoleId == (int)UserRoles.STAFF && x.Category.NameUz == category && x.Status == 1 && x.Online == true)
+                         .Where(x => x.RoleId == (int)UserRoles.STAFF && x.Status == 1 && x.Online == true &&
+                          (x.Category.NameUz == category || x.Category.NameRu == category || x.Category.NameLt == category))
                          .Select(x => new IdValue { Id = x.Id, Name = $"{x.Surname} {x.Name} {x.Patronymic}" })
                          .ToListAsync();
         }
@@ -258,16 +306,38 @@ namespace waPlanner.TelegramBot.Utils
             var list = await db.tbStaffs
                          .AsNoTracking()
                          .Include(i => i.Category)
-                         .Where(x => x.RoleId == (int)UserRoles.STAFF && x.Category.NameUz == category)
+                         .Where(x => x.RoleId == (int)UserRoles.STAFF &&
+                         (x.Category.NameUz == category || x.Category.NameRu == category || x.Category.NameLt == category))
                          .Select(x => new IdValue { Id = x.Id, Name = $"{x.Surname} {x.Name} {x.Patronymic}" })
                          .ToListAsync();
             return list.Any(x => x.Name == value);
         }
-        public async Task<List<string>> CheckCategory()
+        public async Task<List<string>> CheckCategory(string lg)
         {
-            return await db.spCategories
-                .AsNoTracking()
-                .Select(x => x.NameUz).ToListAsync();
+            switch (lg)
+            {
+                case "ru":
+                    {
+                        return await db.spCategories
+                            .AsNoTracking()
+                            .Select(x => x.NameRu)
+                            .ToListAsync();
+                    }
+                case "uz":
+                    {
+                        return await db.spCategories
+                            .AsNoTracking()
+                            .Select(x => x.NameUz)
+                            .ToListAsync();
+                    }
+                default:
+                    {
+                        return await db.spCategories
+                            .AsNoTracking()
+                            .Select(x => x.NameLt)
+                            .ToListAsync();
+                    }
+            }
         }
 
         public async Task<List<DateTime>> GetStaffBusyTime(TelegramBotValuesModel value)
@@ -345,8 +415,8 @@ namespace waPlanner.TelegramBot.Utils
                 .Where(x => x.UserId == user_id)
                 .FirstAsync();
             var sets = Newtonsoft.Json.JsonConvert.DeserializeObject<viSetup>(setup.Text);
-            
-            var setting = new viSetup { Lang = lg, Theme = sets.Theme};
+
+            var setting = new viSetup { Lang = lg, Theme = sets.Theme };
             setup.Text = Newtonsoft.Json.JsonConvert.SerializeObject(setting);
             db.spSetups.Update(setup);
             await db.SaveChangesAsync();
@@ -434,6 +504,59 @@ namespace waPlanner.TelegramBot.Utils
                     Count = x.Count()
                 })
                 .ToListAsync();
+        }
+
+        public async Task<bool> CheckGovermentOrg(string spec)
+        {
+            int spec_id = await GetSpecializationIdByName(spec);
+            var check = await db.spSpecializations
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == spec_id && (x.NameUz == "Davlat xizmatlari" || x.NameRu == "Госуслуги" || x.NameLt == "Госуслуги"));
+
+            if (check is not null)
+                return true;
+            return false;
+        }
+
+        public async Task<bool> CheckUserPINFL(string pinfl)
+        {
+            var check = await db.tbUsers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PINFL == pinfl);
+
+            if (check is not null)
+                return true;
+            return false;
+        }
+
+        public async Task<bool> CheckUserPassportSeria(string seria)
+        {
+            var check = await db.tbUsers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PassportSeria == seria);
+            if (check is not null)
+                return true;
+            return false;
+        }
+
+        public async Task<string> GetOrgMessage(string organization, string lg)
+        {
+            var get_org = await db.spOrganizations
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync(x => x.Name == organization);
+            switch (lg)
+            {
+                case "ru":
+                    {
+                        return get_org.MessageRu;
+                    }
+                case "uz":
+                    {
+                        return get_org.MessageUz;
+                    }
+                default:
+                    return get_org.MessageLt;
+            }
         }
     }
 }

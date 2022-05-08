@@ -14,7 +14,7 @@ namespace waPlanner.Services
 {
     public interface IOrganizationService
     {
-        Task<Answer<long>> InsertOrganizationAsync(viOrganization organization, string phoneNum);
+        Task<Answer<long>> InsertOrganizationAsync(viOrganization organization);
         Task<AnswerBasic> UpdateOrganizationAsync(viOrganization organziation);
         Task<AnswerBasic> UpdateOrganizationStatus(int org_id, int status);
         Task<Answer<spOrganization>> GetOrgByIdAsync(int id);
@@ -24,64 +24,55 @@ namespace waPlanner.Services
     {
         private readonly MyDbContext db;
         private readonly ILogger<OrganizationService> logger;
-        private readonly IServiceProvider provider;
         private readonly IHttpContextAccessorExtensions accessor;
-        public OrganizationService(MyDbContext db, IHttpContextAccessorExtensions accessor, IServiceProvider provider, ILogger<OrganizationService> logger)
+        public OrganizationService(MyDbContext db, IHttpContextAccessorExtensions accessor, ILogger<OrganizationService> logger)
         {
             this.accessor = accessor;
             this.db = db;
-            this.provider = provider;
             this.logger = logger;
         }
-        public async Task<Answer<long>> InsertOrganizationAsync(viOrganization organization, string phoneNum)
+        public async Task<Answer<long>> InsertOrganizationAsync(viOrganization organization)
         {
             try
             {
                 int user_id = accessor.GetId();
 
-                using (var scope = provider.CreateScope())
-                {
-                    var telegramGroupCreator = scope.ServiceProvider.GetService<ITelegramGroupCreatorService>();
-                    var chatid = await telegramGroupCreator.CreateGroup(phoneNum, organization.Name);
+                var addOrganization = new spOrganization();
 
+                if (organization.Latitude.HasValue)
+                    addOrganization.Latitude = organization.Latitude.Value;
 
-                    var addOrganization = new spOrganization();
+                if (organization.Longitude.HasValue)
+                    addOrganization.Longitude = organization.Longitude.Value;
 
-                    if (organization.Latitude.HasValue)
-                        addOrganization.Latitude = organization.Latitude.Value;
+                if (organization.SpecializationId.HasValue)
+                    addOrganization.SpecializationId = organization.SpecializationId.Value;
 
-                    if (organization.Longitude.HasValue)
-                        addOrganization.Longitude = organization.Longitude.Value;
+                if (organization.DinnerTimeStart.HasValue)
+                    addOrganization.BreakTimeStart = organization.DinnerTimeStart.Value;
 
-                    if (organization.SpecializationId.HasValue)
-                        addOrganization.SpecializationId = organization.SpecializationId.Value;
+                if (organization.DinnerTimeEnd.HasValue)
+                    addOrganization.BreakTimeEnd = organization.DinnerTimeEnd.Value;
 
-                    if (organization.DinnerTimeStart.HasValue)
-                        addOrganization.BreakTimeStart = organization.DinnerTimeStart.Value;
+                addOrganization.WorkStart = organization.WorkTimeStart;
+                addOrganization.WorkEnd = organization.WorkTimeEnd;
+                addOrganization.Name = organization.Name;
+                addOrganization.ChatId = 0;
+                addOrganization.CreateDate = DateTime.Now;
+                addOrganization.CreateUser = user_id;
+                addOrganization.Status = 1;
+                addOrganization.Address = organization.Address;
+                await db.spOrganizations.AddAsync(addOrganization);
+                await db.SaveChangesAsync();
 
-                    if (organization.DinnerTimeEnd.HasValue)
-                        addOrganization.BreakTimeEnd = organization.DinnerTimeEnd.Value;
-
-                    addOrganization.WorkStart = organization.WorkTimeStart;
-                    addOrganization.WorkEnd = organization.WorkTimeEnd;
-                    addOrganization.Name = organization.Name;
-                    addOrganization.ChatId = chatid.Data;
-                    addOrganization.CreateDate = DateTime.Now;
-                    addOrganization.CreateUser = user_id;
-                    addOrganization.Status = 1;
-                    addOrganization.Address = organization.Address;
-                    await db.spOrganizations.AddAsync(addOrganization);
-                    await db.SaveChangesAsync();
-
-                    return new Answer<long>(true, "", addOrganization.Id);
+                return new Answer<long>(true, "", addOrganization.Id);
                 }
-            }
+
             catch (Exception ee)
             {
                 logger.LogError($"OrganizationService.InsertOrganizationAsync Error:{ee.Message} Model:{organization.ToJson()}");
                 return new Answer<long>(false, "Ошибка программы", 0);
             }
-
         }
 
         public async Task<AnswerBasic> UpdateOrganizationAsync(viOrganization organization)

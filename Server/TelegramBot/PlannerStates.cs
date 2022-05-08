@@ -24,12 +24,16 @@
         MAIN_MENU = 11,
         SPECIALIZATION = 12,
         ORGANIZATION = 13,
-        CATEGORY = 14,
-        STUFF = 15,
-        CHOOSE_DATE = 16,
-        CHOOSE_TIME = 17,
-        PHONE = 18,
-        USERNAME = 19,
-        ADD_FAVORITES = 20,
+
+        GET_PINFL = 14,
+        GET_SERIA = 15,
+
+        CATEGORY = 16,
+        STUFF = 17,
+        CHOOSE_DATE = 18,
+        CHOOSE_TIME = 19,
+        PHONE = 20,
+        USERNAME = 21,
+        ADD_FAVORITES = 22,
     }
 }

@@ -138,6 +138,21 @@ namespace waPlanner.Migrations
                         .HasColumnType("real")
                         .HasColumnName("longitude");
 
+                    b.Property<string>("MessageLt")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("message_lt");
+
+                    b.Property<string>("MessageRu")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("message_ru");
+
+                    b.Property<string>("MessageUz")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("message_uz");
+
                     b.Property<string>("Name")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
@@ -620,6 +635,16 @@ namespace waPlanner.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("name");
+
+                    b.Property<string>("PINFL")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("pinfl");
+
+                    b.Property<string>("PassportSeria")
+                        .HasMaxLength(15)
+                        .HasColumnType("character varying(15)")
+                        .HasColumnName("passport_seria");
 
                     b.Property<string>("Patronymic")
                         .HasMaxLength(100)

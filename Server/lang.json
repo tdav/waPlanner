@@ -34,6 +34,9 @@
       "TOTAL_BOOKS": "Общее количество броней",
       "BOOKS_COUNT": "Количество броней",
       "OLD_TIME": "Нельзя выбирать прошедшее время.",
+      "PINFL": "Введите свой PINFL",
+      "SERIA": "Введите серию паспорта, например: <b>AA0909090</b>",
+      "WRONG_INFO": "Введены неправильные данные!",
 
       "back": "⬅️Назад",
       "book": "📄Сделать бронь",
@@ -82,6 +85,9 @@
       "TOTAL_BOOKS": "Bandliklarni umumiy soni:",
       "BOOKS_COUNT": "Bandliklar soni",
       "OLD_TIME": "O‘tgan vaqtni tanlay olmaysiz.",
+      "PINFL": "PINFL kiriting",
+      "SERIA": "Pasport seria raqamingizni kiriting misol uchun: <b>AA0909090</b>",
+      "WRONG_INFO": "Ma'lumotlar noto'g'ri kiritilgan!",
 
       "back": "⬅️Ortga",
       "book": "📄Band qilish",

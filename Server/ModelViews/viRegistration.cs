@@ -17,6 +17,11 @@ namespace waPlanner.ModelViews
         public DateTime WorkStart { get; set; }
         public DateTime WorkEnd { get; set; }
         public int SpecializationId { get; set; }
+        public float Latitude { get; set; }
+        public float Longitude { get; set; }
+        public string MessageUz { get; set; }
+        public string MessageRu { get; set; }
+        public string MessageLt { get; set; }
 
     }
 }

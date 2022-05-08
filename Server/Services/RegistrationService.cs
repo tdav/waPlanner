@@ -61,6 +61,11 @@ namespace waPlanner.Services
                     organization.BreakTimeEnd = viRegistration.BreakTimeEnd;
                     organization.WorkStart = viRegistration.WorkStart;
                     organization.WorkEnd = viRegistration.WorkEnd;
+                    organization.Latitude = viRegistration.Latitude;
+                    organization.Longitude = viRegistration.Longitude;
+                    organization.MessageRu = viRegistration.MessageRu;
+                    organization.MessageUz = viRegistration.MessageUz;
+                    organization.MessageLt = viRegistration.MessageLt;
                     organization.CreateDate = DateTime.Now;
                     organization.CreateUser = staff.Id;
                     organization.Status = 1;

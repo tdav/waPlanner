@@ -9,7 +9,6 @@ using waPlanner.Services;
 
 namespace waPlanner.Controllers.v1
 {
-    [Authorize]
     [ApiController]
     [ApiVersion("1.0")]
     [Route("[controller]")]
@@ -22,18 +21,21 @@ namespace waPlanner.Controllers.v1
             this.service = service;
         }
 
+        [Authorize]
         [HttpPost]
         public async Task AddSpecialization([FromBody] viSpecialization spec)
         {
             await service.AddSpecializationAsync(spec);
         }
 
+        [Authorize]
         [HttpPost("change")]
         public async Task UpdateSpecialization([FromBody] viSpecialization spec)
         {
             await service.UpdateSpecializationAsync( spec);
         }
 
+        [Authorize]
         [HttpPost("change/{spec}/{status}")]
         public async Task ChangeStatus(int spec, int status)
         {
@@ -46,6 +48,7 @@ namespace waPlanner.Controllers.v1
             return await service.GetSpecializationsAsync();
         }
 
+        [Authorize]
         [HttpGet("{spec_id}")]
         public async Task<Answer<spSpecialization>> GetSpecialization(int spec_id)
         {

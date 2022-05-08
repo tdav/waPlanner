@@ -34,6 +34,14 @@ namespace waPlanner.Database.Models
         public DateTime? WorkStart { get; set; }
         public DateTime? WorkEnd { get; set; }
 
+        [StringLength(150)]
+        public string MessageUz { get; set; }
+
+        [StringLength(150)]
+        public string MessageRu { get; set; }
+        [StringLength(150)]
+        public string MessageLt { get; set; }
+
         public int? SpecializationId { get; set; }
         public virtual spSpecialization Specialization { get; set; }
 

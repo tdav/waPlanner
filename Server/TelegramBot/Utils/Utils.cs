@@ -49,7 +49,7 @@ namespace waPlanner.TelegramBot.Utils
                                 $"👨‍👩‍👧‍👦{lang[cache.Lang]["PLATFORM_USERS"]} <b>{commonStats.TotalUsersCount}</b>\n" +
                                 $"📄{lang[cache.Lang]["TOTAL_BOOKS"]} <b>{commonStats.TotalBooks}</b>\n";
 
-            foreach(var stat in orgsStats)
+            foreach (var stat in orgsStats)
             {
                 totalStats += $"{lang[cache.Lang]["BOOKS_COUNT"]} 🏬<b>{stat.Name}: {stat.Count}</b>\n";
             }
@@ -57,3 +57,4 @@ namespace waPlanner.TelegramBot.Utils
         }
     }
 }
+

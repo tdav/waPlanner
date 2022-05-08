@@ -4,13 +4,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "waPlanner", "Server\waPlanner.csproj", "{2595D198-DDA0-426C-9A97-7E89234CC673}"
-	ProjectSection(ProjectDependencies) = postProject
-		{FC0EF3D0-14C0-4E02-A96F-236D88768DAD} = {FC0EF3D0-14C0-4E02-A96F-236D88768DAD}
-	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientTelegram", "ClientTelegram\ClientTelegram.csproj", "{FC0EF3D0-14C0-4E02-A96F-236D88768DAD}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utils", "Utils", "{58C9E4CE-77A8-4B2D-8288-6EA2570B6684}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jalollidin", "Jalollidin\Jalollidin.csproj", "{2F5A29AC-9361-4A2E-9CB2-AA22428935E1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,16 +17,13 @@ Global
 		{2595D198-DDA0-426C-9A97-7E89234CC673}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2595D198-DDA0-426C-9A97-7E89234CC673}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2595D198-DDA0-426C-9A97-7E89234CC673}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FC0EF3D0-14C0-4E02-A96F-236D88768DAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FC0EF3D0-14C0-4E02-A96F-236D88768DAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FC0EF3D0-14C0-4E02-A96F-236D88768DAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FC0EF3D0-14C0-4E02-A96F-236D88768DAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F5A29AC-9361-4A2E-9CB2-AA22428935E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F5A29AC-9361-4A2E-9CB2-AA22428935E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F5A29AC-9361-4A2E-9CB2-AA22428935E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F5A29AC-9361-4A2E-9CB2-AA22428935E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{FC0EF3D0-14C0-4E02-A96F-236D88768DAD} = {58C9E4CE-77A8-4B2D-8288-6EA2570B6684}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5B09B459-9998-4222-8EDC-F0A56FE41858}

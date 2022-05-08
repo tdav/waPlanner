@@ -22,9 +22,9 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpPost]
-        public async Task<Answer<long>> Insert([FromBody] viOrganization organization, string phoneNum)
+        public async Task<Answer<long>> Insert([FromBody] viOrganization organization)
         {
-            return await service.InsertOrganizationAsync(organization, phoneNum);
+            return await service.InsertOrganizationAsync(organization);
         }
 
         [HttpPost("change")]

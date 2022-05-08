@@ -16,6 +16,7 @@ namespace ClientTelegram
             using var client = new Client(Config);
             await client.LoginUserIfNeeded();
 
+            var cha = client.Messages_GetAllChats();
             Contacts_ResolvedPeer my_bot = await client.Contacts_ResolveUsername("clinic_test_uzbot");
             var new_user = await client.Contacts_ImportContacts(new[]
             {
@@ -46,11 +47,11 @@ namespace ClientTelegram
         {
             switch (what)
             {
-                case "api_id": return "12546946";
-                case "api_hash": return "47bd4f1d270a84059e0c0a75cc648ba1";
-                case "phone_number": return "+998977764669";
+                case "api_id": return "14819555";
+                case "api_hash": return "447c1b18db01d8baea52ab0d3dc77ec3";
+                case "phone_number": return "+998339900979";
                 case "verification_code": Console.Write("Code: "); return Console.ReadLine();
-                case "password": return "s8064025";     // if user has enabled 2FA
+                case "password": return "";     // if user has enabled 2FA
                 default: return null;                  // let WTelegramClient decide the default config
             }
         }
