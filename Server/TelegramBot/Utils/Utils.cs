@@ -59,7 +59,7 @@ namespace waPlanner.TelegramBot.Utils
 
         public static bool CheckUserCommand(string msg, TelegramBotValuesModel cache, LangsModel lang)
         {
-            if (cache.Lang is not null && (msg == lang[cache.Lang]["back"] || (cache.State == PlannerStates.MAIN_MENU || cache.State == PlannerStates.SETTINGS)))
+            if (cache.Lang is not null && (msg == lang[cache.Lang]["back"] || cache.State == PlannerStates.MAIN_MENU || cache.State == PlannerStates.SETTINGS))
                 return true;
             return false;
         }
