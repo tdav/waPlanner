@@ -12,7 +12,7 @@ namespace waPlanner.Services
 {
     public interface IRegistrationService
     {
-        Task<AnswerBasic> RegisterAsync(viRegistration viRegistration);
+        Task<AnswerBasic> RegistrAsync(viRegistration viRegistration);
     }
     public class RegistrationService: IRegistrationService
     {
@@ -27,7 +27,7 @@ namespace waPlanner.Services
             this.provider = provider;
         }
 
-        public async Task<AnswerBasic> RegisterAsync(viRegistration viRegistration)
+        public async Task<AnswerBasic> RegistrAsync(viRegistration viRegistration)
         {
             try
             {

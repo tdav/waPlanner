@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -54,6 +55,13 @@ namespace waPlanner.TelegramBot.Utils
                 totalStats += $"{lang[cache.Lang]["BOOKS_COUNT"]} 🏬<b>{stat.Name}: {stat.Count}</b>\n";
             }
             return totalStats;
+        }
+
+        public static bool CheckUserCommand(string msg, TelegramBotValuesModel cache, LangsModel lang)
+        {
+            if (cache.Lang is not null && (msg == lang[cache.Lang]["back"] || (cache.State == PlannerStates.MAIN_MENU || cache.State == PlannerStates.SETTINGS)))
+                return true;
+            return false;
         }
     }
 }

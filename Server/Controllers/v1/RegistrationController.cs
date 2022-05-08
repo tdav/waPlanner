@@ -23,7 +23,7 @@ namespace waPlanner.Controllers.v1
         [HttpPost]
         public Task Registration(viRegistration staff)
         {
-            return service.RegisterAsync(staff);
+            return service.RegistrAsync(staff);
         }
     }
 }

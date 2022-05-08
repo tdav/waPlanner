@@ -18,6 +18,7 @@ using waPlanner.Services;
 using waPlanner.TelegramBot.keyboards;
 using waPlanner.TelegramBot.Utils;
 
+
 namespace waPlanner.TelegramBot.Services
 {
     public interface IBotService
@@ -73,45 +74,45 @@ namespace waPlanner.TelegramBot.Services
 
             try
             {
-                foreach (var update in updates)
+                foreach (var update in  updates)
                 {
-                    if (update != null)
+                    if (update is null) return;
+                    if ((update.Type != UpdateType.Message || update.Type != UpdateType.CallbackQuery) && update.Message.Chat.Type != ChatType.Private) return;
+
+                    long chat_id = update.Message is not null ? update.Message.Chat.Id : update.CallbackQuery.Message.Chat.Id;
+                    using (var scope = provider.CreateScope())
                     {
-                        long chat_id = update.Message is not null ? update.Message.Chat.Id : update.CallbackQuery.Message.Chat.Id;
-                        using (var scope = provider.CreateScope())
+
+                        if (!cache.TryGetValue(chat_id, out TelegramBotValuesModel telg_obj))
                         {
+                            telg_obj = new TelegramBotValuesModel() { State = PlannerStates.NONE };
+                            cache.Set(chat_id, telg_obj, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(vars.CacheTimeOut)));
+                        }
 
-                            if (!cache.TryGetValue(chat_id, out TelegramBotValuesModel telg_obj))
+                        var db = scope.ServiceProvider.GetRequiredService<IDbManipulations>();
+
+                        if (string.IsNullOrEmpty(telg_obj.Lang))
+                        {
+                            var st = await db.GetUserLang(chat_id);
+                            if (st is not null)
                             {
-                                telg_obj = new TelegramBotValuesModel() { State = PlannerStates.NONE };
-                                cache.Set(chat_id, telg_obj, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(vars.CacheTimeOut)));
+                                telg_obj.Lang = st.Lang;
+                                telg_obj.State = PlannerStates.MAIN_MENU;
                             }
+                        }
 
-                            var db = scope.ServiceProvider.GetRequiredService<IDbManipulations>();
-
-                            if (string.IsNullOrEmpty(telg_obj.Lang))
-                            {
-                                var st = await db.GetUserLang(chat_id);
-                                if (st is not null)
+                        switch (update.Type)
+                        {
+                            case UpdateType.Message:
                                 {
-                                    telg_obj.Lang = st.Lang;
-                                    telg_obj.State = PlannerStates.MAIN_MENU;
+                                    await BotOnMessageReceivedAsync(update.Message, db, telg_obj);
+                                    break;
                                 }
-                            }
-
-                            switch (update.Type)
-                            {
-                                case UpdateType.Message:
-                                    {
-                                        await BotOnMessageReceivedAsync(update.Message, db, telg_obj);
-                                        break;
-                                    }
-                                case UpdateType.CallbackQuery:
-                                    {
-                                        await BotOnCallbackQueryReceivedAsync(update.CallbackQuery, db, telg_obj);
-                                        break;
-                                    }
-                            }
+                            case UpdateType.CallbackQuery:
+                                {
+                                    await BotOnCallbackQueryReceivedAsync(update.CallbackQuery, db, telg_obj);
+                                    break;
+                                }
                         }
                     }
                 }
@@ -134,9 +135,7 @@ namespace waPlanner.TelegramBot.Services
         private async Task BotOnMessageReceivedAsync(Message message, IDbManipulations db, TelegramBotValuesModel cache)
         {
             long chat_id = message.Chat.Id;
-            Console.WriteLine(chat_id);
-
-            if (cache.Lang is not null)
+            if (Utils.Utils.CheckUserCommand(message.Text, cache, lang))
                 await OnCommands(cache, message.Text, chat_id, db);
             await OnStateChanged(chat_id, message, cache, db);
         }

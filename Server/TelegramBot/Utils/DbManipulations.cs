@@ -312,6 +312,7 @@ namespace waPlanner.TelegramBot.Utils
                          .ToListAsync();
             return list.Any(x => x.Name == value);
         }
+
         public async Task<List<string>> CheckCategory(string lg)
         {
             switch (lg)
