@@ -74,47 +74,54 @@ namespace waPlanner.TelegramBot.Services
 
             try
             {
-                foreach (var update in  updates)
+                foreach (var update in updates)
                 {
                     if (update is null) return;
-                    if ((update.Type != UpdateType.Message || update.Type != UpdateType.CallbackQuery) && update.Message.Chat.Type != ChatType.Private) return;
 
-                    long chat_id = update.Message is not null ? update.Message.Chat.Id : update.CallbackQuery.Message.Chat.Id;
-                    using (var scope = provider.CreateScope())
+                    if (update.Type == UpdateType.Message || update.Type == UpdateType.CallbackQuery)
                     {
-
-                        if (!cache.TryGetValue(chat_id, out TelegramBotValuesModel telg_obj))
+                        long chat_id = update.Message is not null ? update.Message.Chat.Id : update.CallbackQuery.Message.Chat.Id;
+                        using (var scope = provider.CreateScope())
                         {
-                            telg_obj = new TelegramBotValuesModel() { State = PlannerStates.NONE };
-                            cache.Set(chat_id, telg_obj, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(vars.CacheTimeOut)));
-                        }
 
-                        var db = scope.ServiceProvider.GetRequiredService<IDbManipulations>();
-
-                        if (string.IsNullOrEmpty(telg_obj.Lang))
-                        {
-                            var st = await db.GetUserLang(chat_id);
-                            if (st is not null)
+                            if (!cache.TryGetValue(chat_id, out TelegramBotValuesModel telg_obj))
                             {
-                                telg_obj.Lang = st.Lang;
-                                telg_obj.State = PlannerStates.MAIN_MENU;
+                                telg_obj = new TelegramBotValuesModel() { State = PlannerStates.NONE };
+                                cache.Set(chat_id, telg_obj, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(vars.CacheTimeOut)));
+                            }
+
+                            var db = scope.ServiceProvider.GetRequiredService<IDbManipulations>();
+
+                            if (string.IsNullOrEmpty(telg_obj.Lang))
+                            {
+                                var st = await db.GetUserLang(chat_id);
+                                if (st is not null)
+                                {
+                                    telg_obj.Lang = st.Lang;
+                                    telg_obj.State = PlannerStates.MAIN_MENU;
+                                }
+                            }
+
+                            switch (update.Type)
+                            {
+                                case UpdateType.Message:
+                                    {
+                                        if (update.Message.Chat.Type == ChatType.Private)
+                                        {
+                                            await BotOnMessageReceivedAsync(update.Message, db, telg_obj);
+                                            break;
+                                        }
+                                        break;
+                                    }
+                                case UpdateType.CallbackQuery:
+                                    {
+                                        await BotOnCallbackQueryReceivedAsync(update.CallbackQuery, db, telg_obj);
+                                        break;
+                                    }
                             }
                         }
-
-                        switch (update.Type)
-                        {
-                            case UpdateType.Message:
-                                {
-                                    await BotOnMessageReceivedAsync(update.Message, db, telg_obj);
-                                    break;
-                                }
-                            case UpdateType.CallbackQuery:
-                                {
-                                    await BotOnCallbackQueryReceivedAsync(update.CallbackQuery, db, telg_obj);
-                                    break;
-                                }
-                        }
                     }
+
                 }
             }
             catch (Exception ex)
@@ -234,7 +241,7 @@ namespace waPlanner.TelegramBot.Services
                         await DbManipulations.UpdateUserName(chat_id, msg);
                         cache.State = PlannerStates.SETTINGS;
                         await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["CONFIRMED"] + msg);
-                        await bot.SendTextMessageAsync(chat_id, msg, replyMarkup: ReplyKeyboards.Settings(cache.Lang, lang));
+                        await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["settings"], replyMarkup: ReplyKeyboards.Settings(cache.Lang, lang));
                         break;
                     }
                 case PlannerStates.CHANGE_PHONE:
@@ -409,7 +416,8 @@ namespace waPlanner.TelegramBot.Services
                                 parseMode: ParseMode.Html);
                         }
                         else return;
-                        cache.State = PlannerStates.NONE;
+
+                        cache.State = PlannerStates.MAIN_MENU;
                         await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["NONE"], replyMarkup: ReplyKeyboards.MainMenu(cache.Lang, lang));
                         break;
                     }
