@@ -27,7 +27,7 @@
       "NO": "Нет❌",
       "SHOULD_REGISTR": "Сначала пройдите регистрацию",
       "CONFIRMED": "Принято ",
-      "ON_CHANGE_PHONE": "Введите в следующем типе: <b>+998 xx xxx xxx xxx</b>",
+      "ON_CHANGE_PHONE": "Введите ваш номер в следующем типе: <b>+998 xx xxx xxx xxx</b>",
       "ON_FEEDBACK": "Здесь вы можете оставить пожелания разработчикам платформы.",
       "SUCCESS_FEEDBACK": "Отзыв успешно доставлен администрации.",
       "PLATFORM_USERS": "Общее количество пользователей платформы:",
@@ -37,6 +37,7 @@
       "PINFL": "Введите свой PINFL",
       "SERIA": "Введите серию паспорта, например: <b>AA0909090</b>",
       "WRONG_INFO": "Введены неправильные данные!",
+      "PASSWORD": "Введите пароль",
 
       "back": "⬅️Назад",
       "book": "📄Сделать бронь",
@@ -46,6 +47,7 @@
       "about_us": "💬О нас",
       "contacts": "📱Контакты",
       "statistic": "📊Статистика",
+      "gen_qr": "🖋Сгенерировать QR код",
       "change_name": "Изменить имя",
       "change_phone": "☎️Изменить номер",
       "change_lang": "Изменить язык🇷🇺"
@@ -78,7 +80,7 @@
       "NO": "Yoq❌",
       "SHOULD_REGISTR": "Avval ro'xatdan o'ting",
       "CONFIRMED": "Qabul qilindi ",
-      "ON_CHANGE_PHONE": "Quydagi turda kiriting: <b>+998 xx xxx xxx xxx</b>",
+      "ON_CHANGE_PHONE": "Raqamingizni quydagi turda kiriting: <b>+998 xx xxx xxx xxx</b>",
       "ON_FEEDBACK": "Bu yerda siz platforma ishlab chiquvchilariga tilaklaringizni qoldirishingiz mumkin.",
       "SUCCESS_FEEDBACK": "Fikr-mulohazangiz ma'muriyatga muvaffaqiyatli yetkazildi.",
       "PLATFORM_USERS": "Platforma foydalanuvchilarining umumiy soni:",
@@ -88,6 +90,7 @@
       "PINFL": "PINFL kiriting",
       "SERIA": "Pasport seria raqamingizni kiriting misol uchun: <b>AA0909090</b>",
       "WRONG_INFO": "Ma'lumotlar noto'g'ri kiritilgan!",
+      "PASSWORD": "Parolingizni kiriting",
 
       "back": "⬅️Ortga",
       "book": "📄Band qilish",
@@ -97,6 +100,7 @@
       "about_us": "💬Biz haqimizda",
       "contacts": "📱Kontaktlar",
       "statistic": "📊Statistika",
+      "gen_qr": "🖋QR kodini yaratish",
       "change_name": "Ismni o'zgartirish",
       "change_phone": "☎️Nomerni o'zgartirish",
       "change_lang": "Tilni o'zgartirish🇺🇿"

@@ -54,20 +54,6 @@ namespace waPlanner.TelegramBot.Services
             return Task.CompletedTask;
         }
 
-        //public async Task HandleAsync1(ITelegramBotClient bot, Update[] updates, CancellationToken token)
-        //{
-        //    var qrcode = provider.GetService<IGenerateQrCode>();
-        //    var ba = qrcode.Run("url");
-
-        //    using (var ms = new MemoryStream(ba))
-        //    {
-        //        var aa = new InputOnlineFile(ms);
-        //        await bot.SendPhotoAsync()
-        //    }
-
-        //}
-
-
         public async Task HandleAsync(ITelegramBotClient bot, Update[] updates, CancellationToken token)
         {
             this.bot = bot;
@@ -108,8 +94,17 @@ namespace waPlanner.TelegramBot.Services
                                     {
                                         if (update.Message.Chat.Type == ChatType.Private)
                                         {
+                                            if (update.Message.Type != MessageType.Contact && update.Message.Text.Length > 6 && update.Message.Text[0..6] == "/start")
+                                            {
+                                                long.TryParse(update.Message.Text[6..].Replace(" ", ""), out long deep_link);
+                                                await db.AddNewUserChat(chat_id);
+                                                if (!await db.CheckFavorites(telg_obj.Staff, chat_id, deep_link))
+                                                {
+                                                    await db.AddToFavorites(telg_obj, chat_id, deep_link);
+                                                    await bot.SendTextMessageAsync(chat_id, "Добавился в избранное");
+                                                }
+                                            }
                                             await BotOnMessageReceivedAsync(update.Message, db, telg_obj);
-                                            break;
                                         }
                                         break;
                                     }
@@ -130,6 +125,17 @@ namespace waPlanner.TelegramBot.Services
             }
         }
 
+        //public async Task GenerateQr(long chat_id)
+        //{
+        //    var qrcode = provider.GetService<IGenerateQrCode>();
+        //    var qr_run = qrcode.Run("url");
+
+        //    using (var ms = new MemoryStream(qr_run))
+        //    {
+        //        var photo = new InputOnlineFile(ms);
+        //        await bot.SendPhotoAsync(chat_id, photo);
+        //    }
+        //}
 
         private async Task BotOnCallbackQueryReceivedAsync(CallbackQuery call, IDbManipulations db, TelegramBotValuesModel cache)
         {
@@ -142,6 +148,7 @@ namespace waPlanner.TelegramBot.Services
         private async Task BotOnMessageReceivedAsync(Message message, IDbManipulations db, TelegramBotValuesModel cache)
         {
             long chat_id = message.Chat.Id;
+
             if (Utils.Utils.CheckUserCommand(message.Text, cache, lang))
                 await OnCommands(cache, message.Text, chat_id, db);
             await OnStateChanged(chat_id, message, cache, db);
@@ -179,6 +186,37 @@ namespace waPlanner.TelegramBot.Services
                             return;
                         }
                     }
+
+                case PlannerStates.PREPARE_CHECK_PHONE:
+                    {
+                        cache.State = PlannerStates.CHECK_PHONE;
+                        break;
+                    }
+                case PlannerStates.CHECK_PHONE:
+                    {
+                        if (await DbManipulations.CheckNumber(msg) && msg != lang[cache.Lang]["back"])
+                        {
+                            cache.State = PlannerStates.CHECK_PASSWORD;
+                            cache.Phone = msg;
+                            await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["PASSWORD"]);
+                            break;
+                        }
+                        await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["WRONG_INFO"]);
+                        return;
+                    }
+                case PlannerStates.CHECK_PASSWORD:
+                    {
+                        if (await DbManipulations.CheckPassword(msg, chat_id, cache.Phone) && msg != lang[cache.Lang]["back"])
+                        {
+                            await Utils.Utils.GenerateQr(chat_id, bot);
+                            cache.State = PlannerStates.MAIN_MENU;
+                            await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["NONE"], replyMarkup: ReplyKeyboards.MainMenu(cache.Lang, lang));
+                            break;
+                        }
+                        await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["WRONG_INFO"]);
+                        return;
+                    }
+
                 case PlannerStates.FAVORITES:
                     {
                         menu = await DbManipulations.SendFavorites(chat_id);
@@ -200,7 +238,7 @@ namespace waPlanner.TelegramBot.Services
                     {
                         string staff_name = msg.Substring(msg.LastIndexOf(')') + 2);
                         cache.Staff = msg != lang[cache.Lang]["back"] ? staff_name : cache.Staff;
-                        viStaffInfo staffInfo = await DbManipulations.GetStaffInfoByName(cache.Staff);
+                        viStaffInfo staffInfo = await DbManipulations.GetStaffInfo(cache.Staff);
                         if (staffInfo is not null)
                         {
                             cache.Specialization = staffInfo.Specialization;
@@ -387,6 +425,7 @@ namespace waPlanner.TelegramBot.Services
                         cache.UserName = msg;
                         await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["BID"]);
                         await DbManipulations.FinishProcessAsync(chat_id, cache);
+                        await DbManipulations.RegisterUserSettings(chat_id, cache.Lang);
                         await DbManipulations.RegistrateUserPlanner(chat_id, cache);
                         await Utils.Utils.SendOrder(cache, bot, DbManipulations, chat_id);
 
@@ -396,7 +435,7 @@ namespace waPlanner.TelegramBot.Services
                             await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["ADD_FAVORITES"], replyMarkup: ReplyKeyboards.SendConfirmKeyboards(cache.Lang, lang));
                             break;
                         }
-                        cache.State = PlannerStates.NONE;
+                        cache.State = PlannerStates.MAIN_MENU;
                         await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["NONE"], replyMarkup: ReplyKeyboards.MainMenu(cache.Lang, lang));
                         break;
                     }
@@ -417,6 +456,7 @@ namespace waPlanner.TelegramBot.Services
                         }
                         else return;
 
+                        cache.Staff = null;
                         cache.State = PlannerStates.MAIN_MENU;
                         await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["NONE"], replyMarkup: ReplyKeyboards.MainMenu(cache.Lang, lang));
                         break;
@@ -455,6 +495,8 @@ namespace waPlanner.TelegramBot.Services
 
                     case PlannerStates.FEEDBACK:
                     case PlannerStates.SELECT_FAVORITES:
+                    case PlannerStates.CHECK_PHONE:
+                    case PlannerStates.CHECK_PASSWORD:
                     case PlannerStates.ORGANIZATION:
                         {
                             cache.State = PlannerStates.MAIN_MENU;
@@ -570,6 +612,12 @@ namespace waPlanner.TelegramBot.Services
             else if (msg == lang[cache.Lang]["statistic"])
             {
                 await bot.SendTextMessageAsync(chat_id, await Utils.Utils.SendStatistic(db, cache, lang), parseMode: ParseMode.Html);
+            }
+
+            else if (msg == lang[cache.Lang]["gen_qr"])
+            {
+                cache.State = PlannerStates.PREPARE_CHECK_PHONE;
+                await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["ON_CHANGE_PHONE"], replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang), parseMode: ParseMode.Html);
             }
         }
     }

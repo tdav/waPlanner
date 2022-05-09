@@ -97,7 +97,8 @@ namespace waPlanner.TelegramBot.keyboards
                                 cache.State = PlannerStates.ADD_FAVORITES;
                                 break;
                             }
-                            cache.State = PlannerStates.NONE;
+                            cache.State = PlannerStates.MAIN_MENU;
+                            cache.Staff = null;
                             await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["NONE"], replyMarkup: ReplyKeyboards.MainMenu(cache.Lang, lang));
                             break;
                         }

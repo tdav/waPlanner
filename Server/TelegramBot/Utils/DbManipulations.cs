@@ -20,18 +20,20 @@ namespace waPlanner.TelegramBot.Utils
         Task<int> GetOrganizationId(string organization_name);
         Task<List<IdValue>> SendCategoriesByOrgName(string organization_name, string lg);
         Task RegistrateUserPlanner(long chat_id, TelegramBotValuesModel value);
+        Task RegisterUserSettings(long chat_id, string lg);
         Task<viSetup> GetUserLang(long chat_id);
         Task<int> GetUserId(long chat_id);
         Task FinishProcessAsync(long chat_id, TelegramBotValuesModel value);
         Task<bool> CheckUser(long chat_id);
-        Task<viStaffInfo> GetStaffInfoByName(string name);
+        Task<bool> CheckUserChat(long chat_id);
+        Task<viStaffInfo> GetStaffInfo(string name);
         Task<List<IdValue>> GetStaffByCategory(string category);
         Task<bool> CheckStaffByCategory(string category, string value);
         Task<List<string>> CheckCategory(string lg);
         Task<List<DateTime>> GetStaffBusyTime(TelegramBotValuesModel value);
         Task<int[]> CheckStaffAvailability(string staff_name);
-        Task AddToFavorites(TelegramBotValuesModel value, long chat_id);
-        Task<bool> CheckFavorites(string value, long chat_id);
+        Task AddToFavorites(TelegramBotValuesModel value, long user_chat, long staff_chat = 0);
+        Task<bool> CheckFavorites(string value, long user_chat, long staff_chat = 0);
         Task UpdateUserName(long chat_id, string name);
         Task UpdateUserPhone(long chat_id, string phone);
         Task UpdateUserLang(long chat_id, string lg);
@@ -45,6 +47,9 @@ namespace waPlanner.TelegramBot.Utils
         Task<bool> CheckUserPINFL(string pinfl);
         Task<bool> CheckUserPassportSeria(string seria);
         Task<string> GetOrgMessage(string organization, string lg);
+        Task AddNewUserChat(long chat_id);
+        Task<bool> CheckNumber(string number);
+        Task<bool> CheckPassword(string password, long chat_id, string phone);
     }
 
     public class DbManipulations : IDbManipulations
@@ -167,7 +172,7 @@ namespace waPlanner.TelegramBot.Utils
         }
         public async Task RegistrateUserPlanner(long chat_id, TelegramBotValuesModel value)
         {
-            viStaffInfo staff = await GetStaffInfoByName(value.Staff);
+            viStaffInfo staff = await GetStaffInfo(value.Staff);
             int userId = await GetUserId(chat_id);
             string[] userSelectedTime = value.Time.Split(":");
             DateTime plannerDate = value.Calendar
@@ -215,8 +220,11 @@ namespace waPlanner.TelegramBot.Utils
                 var setup = await db.spSetups
                    .AsNoTracking()
                    .FirstOrDefaultAsync(x => x.UserId == user_id);
-                viSetup a = JsonSerializer.Deserialize<viSetup>(setup.Text);
-                return a;
+                if (setup is not null)
+                {
+                    return JsonSerializer.Deserialize<viSetup>(setup.Text);
+                }
+                return null;
             }
             return null;
         }
@@ -245,19 +253,36 @@ namespace waPlanner.TelegramBot.Utils
 
         public async Task FinishProcessAsync(long chat_id, TelegramBotValuesModel value)
         {
-            var telegramUser = new tbUser
+            var check_user = await CheckUserChat(chat_id);
+
+            if (!check_user)
             {
-                TelegramId = chat_id,
-                Surname = "TelegramUser",
-                Name = value.UserName,
-                Patronymic = "",
-                PhoneNum = value.Phone,
-                CreateDate = DateTime.Now,
-                Status = 1
-            };
-            await db.tbUsers.AddAsync(telegramUser);
-            await db.SaveChangesAsync();
-            await RegisterUserSettings(chat_id, value.Lang);
+                var telegramUser = new tbUser
+                {
+                    TelegramId = chat_id,
+                    Surname = "TelegramUser",
+                    Name = value.UserName,
+                    Patronymic = "",
+                    PhoneNum = value.Phone,
+                    CreateDate = DateTime.Now,
+                    Status = 1
+                };
+                await db.tbUsers.AddAsync(telegramUser);
+                await db.SaveChangesAsync();
+                
+            }
+            else
+            {
+                var user = await db.tbUsers.AsNoTracking().FirstOrDefaultAsync(x => x.TelegramId == chat_id);
+                var userFind = await db.tbUsers.FindAsync(user.Id);
+                userFind.TelegramId = chat_id;
+                userFind.Name = value.UserName;
+                userFind.PhoneNum = value.Phone;
+                userFind.CreateDate = DateTime.Now;
+                userFind.Status = 1;
+                db.Update(userFind);
+                await db.SaveChangesAsync();
+            }
         }
 
         public async Task<bool> CheckUser(long chat_id)
@@ -266,11 +291,21 @@ namespace waPlanner.TelegramBot.Utils
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.TelegramId == chat_id);
 
-            if (result != null) return true;
+            if (result != null && result.PhoneNum != null) return true;
             return false;
         }
 
-        public async Task<viStaffInfo> GetStaffInfoByName(string name)
+        public async Task<bool> CheckUserChat(long chat_id)
+        {
+            var result = await db.tbUsers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.TelegramId == chat_id);
+
+            if (result is not null && result.TelegramId is not null) return true;
+            return false;
+        }
+
+        public async Task<viStaffInfo> GetStaffInfo(string name)
         {
             var snp = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             var stuff = await db.tbStaffs
@@ -343,7 +378,7 @@ namespace waPlanner.TelegramBot.Utils
 
         public async Task<List<DateTime>> GetStaffBusyTime(TelegramBotValuesModel value)
         {
-            var staff = await GetStaffInfoByName(value.Staff);
+            var staff = await GetStaffInfo(value.Staff);
             return await db.tbSchedulers
                 .AsNoTracking()
                 .Where(x => x.StaffId == staff.StaffId && x.AppointmentDateTime.Date == value.Calendar.Date)
@@ -353,7 +388,7 @@ namespace waPlanner.TelegramBot.Utils
 
         public async Task<int[]> CheckStaffAvailability(string staff_name)
         {
-            var staff = await GetStaffInfoByName(staff_name);
+            var staff = await GetStaffInfo(staff_name);
             return await db.tbStaffs
                 .AsNoTracking()
                 .Where(x => x.Id == staff.StaffId && x.Status == 1)
@@ -361,14 +396,35 @@ namespace waPlanner.TelegramBot.Utils
                 .FirstOrDefaultAsync();
         }
 
-        public async Task AddToFavorites(TelegramBotValuesModel value, long chat_id)
+        public async Task<viStaffInfo> GetStaffInfo(long chat_id)
         {
-            var staff = await GetStaffInfoByName(value.Staff);
-            var user = await GetUserId(chat_id);
+            var staff = await db.tbStaffs
+                .AsNoTracking()
+                .Where(x => x.TelegramId == chat_id)
+                .Select(x => new viStaffInfo
+                {
+                    Staff = $"{x.Surname} {x.Name} {x.Patronymic}",
+                    StaffId = x.Id,
+                    Organization = x.Organization.Name,
+                    OrganizationId = x.OrganizationId,
+                    Category = x.Category.NameUz,
+                    CategoryId = x.CategoryId,
+                    Specialization = x.Organization.Specialization.NameUz
+                })
+                .FirstOrDefaultAsync();
+            return staff;
+        }
+
+        public async Task AddToFavorites(TelegramBotValuesModel value, long user_chat, long staff_chat = 0)
+        {
+            var staff = await GetStaffInfo(staff_chat);
+            if (value.Staff is not null)
+                staff = await GetStaffInfo(value.Staff);
+            var user = await GetUserId(user_chat);
             var addFavorite = new tbFavorites();
             addFavorite.StaffId = staff.StaffId.Value;
             addFavorite.UserId = user;
-            addFavorite.TelegramId = chat_id;
+            addFavorite.TelegramId = user_chat;
             addFavorite.OrganizationId = staff.OrganizationId.Value;
             addFavorite.Status = 1;
             addFavorite.CreateDate = DateTime.Now;
@@ -378,10 +434,12 @@ namespace waPlanner.TelegramBot.Utils
 
         }
 
-        public async Task<bool> CheckFavorites(string value, long chat_id)
+        public async Task<bool> CheckFavorites(string value, long user_chat, long staff_chat = 0)
         {
-            var staff = await GetStaffInfoByName(value);
-            var user = await GetUserId(chat_id);
+            var staff = await GetStaffInfo(staff_chat);
+            if (value is not null)
+                staff = await GetStaffInfo(value);
+            var user = await GetUserId(user_chat);
             var result = await db.tbFavorites
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.StaffId == staff.StaffId && x.UserId == user);
@@ -558,6 +616,51 @@ namespace waPlanner.TelegramBot.Utils
                 default:
                     return get_org.MessageLt;
             }
+        }
+
+        public async Task AddNewUserChat(long chat_id)
+        {
+            var check_user = await CheckUser(chat_id);
+            if (!check_user)
+            {
+               var telegramUser = new tbUser
+                {
+                    TelegramId = chat_id,
+                    Surname = "TelegramUser",
+                    Name = "TelegramUser",
+                    Patronymic = "",
+                    CreateDate = DateTime.Now,
+                    Status = 1
+                };
+                await db.AddAsync(telegramUser);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        public async Task<bool> CheckNumber(string number)
+        {
+            var check = await db.tbStaffs
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.PhoneNum == number && x.RoleId == (int)UserRoles.STAFF);
+            if (check is not null)
+                return true;
+            return false;
+        }
+
+        public async Task<bool> CheckPassword(string password, long chat_id, string phone)
+        {
+            var get_staff = await db.tbStaffs
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Password == waPlanner.Utils.CHash.EncryptMD5(password) && x.RoleId == (int)UserRoles.STAFF && x.PhoneNum == phone);
+            if (get_staff is not null)
+            {
+                var staff = await db.tbStaffs.FindAsync(get_staff.Id);
+                staff.TelegramId = chat_id;
+                db.Update(staff);
+                await db.SaveChangesAsync();
+                return true;
+            }
+            return false;
         }
     }
 }

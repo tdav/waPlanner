@@ -56,6 +56,7 @@ namespace waPlanner.TelegramBot.keyboards
                         new KeyboardButton[] { lang[lg]["favorites"], lang[lg]["settings"] },
                         new KeyboardButton[] { lang[lg]["feedback"], lang[lg]["about_us"] },
                         new KeyboardButton[] { lang[lg]["contacts"], lang[lg]["statistic"] },
+                        new KeyboardButton[] { lang[lg]["gen_qr"] },
                 })
             {
                 ResizeKeyboard = true

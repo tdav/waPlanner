@@ -1,9 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using waPlanner.ModelViews;
+using IronBarCode;
+using Telegram.Bot.Types.InputFiles;
+using System.IO;
 
 namespace waPlanner.TelegramBot.Utils
 {
@@ -63,6 +65,25 @@ namespace waPlanner.TelegramBot.Utils
                 return true;
             return false;
         }
+
+        public static byte[] Run(string url)
+        {
+            return QRCodeWriter.CreateQrCode(url, 500, QRCodeWriter.QrErrorCorrectionLevel.Medium).ToPngBinaryData();
+        }
+
+        public static async Task GenerateQr(long chat_id, ITelegramBotClient bot)
+        {
+            var get_bot = await bot.GetMeAsync();
+            var qr_run = Run($"https://t.me/{get_bot.Username}?start={chat_id}");
+
+            using (var ms = new MemoryStream(qr_run))
+            {
+                var photo = new InputOnlineFile(ms);
+                await bot.SendPhotoAsync(chat_id, photo);
+            }
+        }
     }
 }
+
+
 
