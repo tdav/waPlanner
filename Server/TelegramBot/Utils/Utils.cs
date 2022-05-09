@@ -71,14 +71,13 @@ namespace waPlanner.TelegramBot.Utils
             return QRCodeWriter.CreateQrCode(url, 500, QRCodeWriter.QrErrorCorrectionLevel.Medium).ToPngBinaryData();
         }
 
-        public static async Task GenerateQr(long chat_id, string bot_username)
+        public static async Task<InputOnlineFile> GenerateQr(long chat_id, string bot_username)
         {
             var qr_run = Run($"https://t.me/{bot_username}?start={chat_id}");
 
             using (var ms = new MemoryStream(qr_run))
             {
-                var photo = new InputOnlineFile(ms);
-                await bot.SendPhotoAsync(chat_id, photo);
+                return new InputOnlineFile(ms);
             }
         }
     }
