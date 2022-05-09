@@ -477,9 +477,9 @@ namespace waPlanner.TelegramBot.Services
                 return;
             }
         }
-        private async Task OnCommands(TelegramBotValuesModel cache, string msg, long chat_id, IDbManipulations db)
+        private async Task OnCommands(TelegramBotValuesModel cache, string command, long chat_id, IDbManipulations db)
         {
-            if (msg == lang[cache.Lang]["back"])
+            if (command == lang[cache.Lang]["back"])
             {
                 switch (cache.State)
                 {
@@ -542,7 +542,7 @@ namespace waPlanner.TelegramBot.Services
                     case PlannerStates.PHONE:
                         {
                             cache.State = PlannerStates.CHOOSE_TIME;
-                            await bot.SendTextMessageAsync(chat_id, msg, replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang));
+                            await bot.SendTextMessageAsync(chat_id, command, replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang));
                             await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["CUZY_TIME"], replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
                             return;
                         }
@@ -556,22 +556,22 @@ namespace waPlanner.TelegramBot.Services
                 }
             }
 
-            else if (msg == lang[cache.Lang]["favorites"])
+            else if (command == lang[cache.Lang]["favorites"])
                 cache.State = PlannerStates.FAVORITES;
 
-            else if (msg == lang[cache.Lang]["book"])
+            else if (command == lang[cache.Lang]["book"])
                 cache.State = PlannerStates.SPECIALIZATION;
 
-            else if (msg == lang[cache.Lang]["settings"])
+            else if (command == lang[cache.Lang]["settings"])
                 cache.State = PlannerStates.SETTINGS;
 
-            else if (msg == lang[cache.Lang]["change_lang"])
+            else if (command == lang[cache.Lang]["change_lang"])
             {
                 cache.State = PlannerStates.CHANGE_LANG;
                 await bot.SendTextMessageAsync(chat_id, choose_lang, replyMarkup: ReplyKeyboards.SendLanguages());
             }
 
-            else if (msg == lang[cache.Lang]["change_name"])
+            else if (command == lang[cache.Lang]["change_name"])
             {
                 if (await db.GetUserId(chat_id) == 0)
                 {
@@ -579,12 +579,12 @@ namespace waPlanner.TelegramBot.Services
                     cache.State = PlannerStates.MAIN_MENU;
                     return;
                 }
-                await bot.SendTextMessageAsync(chat_id, msg, replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang));
+                await bot.SendTextMessageAsync(chat_id, command, replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang));
                 cache.State = PlannerStates.PREPARE_CHANGE_NAME;
                 return;
             }
 
-            else if (msg == lang[cache.Lang]["change_phone"])
+            else if (command == lang[cache.Lang]["change_phone"])
             {
                 if (await db.GetUserId(chat_id) == 0)
                 {
@@ -596,28 +596,28 @@ namespace waPlanner.TelegramBot.Services
                 return;
             }
 
-            else if (msg == lang[cache.Lang]["feedback"])
+            else if (command == lang[cache.Lang]["feedback"])
             {
                 cache.State = PlannerStates.ON_PREPARE_FEEDBACK;
                 return;
             }
 
-            else if (msg == lang[cache.Lang]["about_us"])
+            else if (command == lang[cache.Lang]["about_us"])
             {
                 await bot.SendTextMessageAsync(chat_id, "MALUMOT");
             }
 
-            else if (msg == lang[cache.Lang]["contacts"])
+            else if (command == lang[cache.Lang]["contacts"])
             {
                 await bot.SendTextMessageAsync(chat_id, "MALUMOT");
             }
 
-            else if (msg == lang[cache.Lang]["statistic"])
+            else if (command == lang[cache.Lang]["statistic"])
             {
                 await bot.SendTextMessageAsync(chat_id, await Utils.Utils.SendStatistic(db, cache, lang), parseMode: ParseMode.Html);
             }
 
-            else if (msg == lang[cache.Lang]["gen_qr"])
+            else if (command == lang[cache.Lang]["gen_qr"])
             {
                 cache.State = PlannerStates.PREPARE_CHECK_PHONE;
                 await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["ON_CHANGE_PHONE"], replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang), parseMode: ParseMode.Html);
