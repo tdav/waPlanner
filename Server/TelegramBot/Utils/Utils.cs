@@ -71,10 +71,9 @@ namespace waPlanner.TelegramBot.Utils
             return QRCodeWriter.CreateQrCode(url, 500, QRCodeWriter.QrErrorCorrectionLevel.Medium).ToPngBinaryData();
         }
 
-        public static async Task GenerateQr(long chat_id, ITelegramBotClient bot)
+        public static async Task GenerateQr(long chat_id, string bot_username)
         {
-            var get_bot = await bot.GetMeAsync();
-            var qr_run = Run($"https://t.me/{get_bot.Username}?start={chat_id}");
+            var qr_run = Run($"https://t.me/{bot_username}?start={chat_id}");
 
             using (var ms = new MemoryStream(qr_run))
             {
