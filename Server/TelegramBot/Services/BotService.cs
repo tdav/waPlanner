@@ -209,7 +209,8 @@ namespace waPlanner.TelegramBot.Services
                         if (await DbManipulations.CheckPassword(msg, chat_id, cache.Phone) && msg != lang[cache.Lang]["back"])
                         {
                             var my_bot = await bot.GetMeAsync();
-                            var photo = await Utils.Utils.GenerateQr(chat_id, my_bot.Username);
+                            string url = $"https://t.me/{my_bot.Username}?start={chat_id}";
+                            var photo = await Utils.Utils.GenerateQr(url);
                             await bot.SendPhotoAsync(chat_id, photo);
                             cache.State = PlannerStates.MAIN_MENU;
                             await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["NONE"], replyMarkup: ReplyKeyboards.MainMenu(cache.Lang, lang));
