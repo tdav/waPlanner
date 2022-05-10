@@ -100,7 +100,7 @@ namespace waPlanner.TelegramBot.Services
                                                 if (!await db.CheckFavorites(telg_obj.Staff, chat_id, deep_link))
                                                 {
                                                     await db.AddToFavorites(telg_obj, chat_id, deep_link);
-                                                    await bot.SendTextMessageAsync(chat_id, "Добавился в избранное");
+                                                    await bot.SendTextMessageAsync(chat_id, "Добавился в избранное\nSevimlilarga qo'shildi");
                                                 }
                                             }
                                             await BotOnMessageReceivedAsync(update.Message, db, telg_obj);

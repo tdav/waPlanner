@@ -158,6 +158,10 @@ namespace waPlanner.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("name");
 
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("order_index");
+
                     b.Property<int?>("SpecializationId")
                         .HasColumnType("integer")
                         .HasColumnName("specialization_id");

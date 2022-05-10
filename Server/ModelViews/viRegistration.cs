@@ -9,9 +9,9 @@ namespace waPlanner.ModelViews
         public string Patronymic { get; set; }
         public string Phone { get; set; }
         public string Password { get; set; }
+        public DateTime BirthDay { get; set; }
 
         public string OrganizationName { get; set; }
         public int SpecializationId { get; set; }
-
     }
 }

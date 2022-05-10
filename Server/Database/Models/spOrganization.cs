@@ -42,6 +42,8 @@ namespace waPlanner.Database.Models
         [StringLength(150)]
         public string MessageLt { get; set; }
 
+        public int OrderIndex { get; set; } = 1;
+
         public int? SpecializationId { get; set; }
         public virtual spSpecialization Specialization { get; set; }
 

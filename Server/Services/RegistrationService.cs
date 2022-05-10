@@ -40,7 +40,7 @@ namespace waPlanner.Services
                         Patronymic = viRegistration.Patronymic,
                         PhoneNum = viRegistration.Phone,
                         Password = CHash.EncryptMD5(viRegistration.Password),
-                        BirthDay = DateTime.Now,
+                        BirthDay = viRegistration.BirthDay,
                         RoleId = (int)UserRoles.ADMIN,
                         Status = 1,
                         CreateDate = DateTime.Now,
@@ -69,6 +69,7 @@ namespace waPlanner.Services
                     organization.CreateDate = DateTime.Now;
                     organization.CreateUser = staff.Id;
                     organization.Status = 1;
+                    organization.OrderIndex = 1;
 
                     await db.spOrganizations.AddAsync(organization);
                     await db.SaveChangesAsync();
