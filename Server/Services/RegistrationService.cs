@@ -12,7 +12,7 @@ namespace waPlanner.Services
 {
     public interface IRegistrationService
     {
-        Task<AnswerBasic> RegistrAsync(viRegistration viRegistration);
+        Task<Answer<viRegistration>> RegistrAsync(viRegistration viRegistration);
     }
     public class RegistrationService: IRegistrationService
     {
@@ -27,7 +27,7 @@ namespace waPlanner.Services
             this.provider = provider;
         }
 
-        public async Task<AnswerBasic> RegistrAsync(viRegistration viRegistration)
+        public async Task<Answer<viRegistration>> RegistrAsync(viRegistration viRegistration)
         {
             try
             {
@@ -79,12 +79,12 @@ namespace waPlanner.Services
                     await db.SaveChangesAsync();
                 }
 
-                return new AnswerBasic(true, "");
+                return new Answer<viRegistration>(true, "", viRegistration);
             }
             catch (Exception e)
             {
-                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message}");
-                return new AnswerBasic(false, "Ошибка программы");
+                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message} Model: {viRegistration}");
+                return new Answer<viRegistration>(false, "Ошибка программы", null);
             }
         }
 

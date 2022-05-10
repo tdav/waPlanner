@@ -476,6 +476,7 @@ namespace waPlanner.TelegramBot.Services
                 return;
             }
         }
+
         private async Task OnCommands(TelegramBotValuesModel cache, string command, long chat_id, IDbManipulations db)
         {
             if (command == lang[cache.Lang]["back"])
