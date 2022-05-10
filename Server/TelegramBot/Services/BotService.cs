@@ -12,7 +12,6 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types.ReplyMarkups;
-using waPlanner.Database.Models;
 using waPlanner.ModelViews;
 using waPlanner.Services;
 using waPlanner.TelegramBot.keyboards;
@@ -35,12 +34,12 @@ namespace waPlanner.TelegramBot.Services
         private ITelegramBotClient bot;
         private readonly string choose_lang = "Выберите язык\nTilni tanlang";
 
-        public BotService(IServiceProvider provider, IOptions<LangsModel> options, IOptions<Vars> voptions, IMemoryCache caches)
+        public BotService(IServiceProvider provider, IOptions<LangsModel> options, IOptions<Vars> voptions, IMemoryCache cache)
         {
             this.provider = provider;
-            this.cache = caches;
-            this.lang = options.Value;
-            this.vars = voptions.Value;
+            this.cache = cache;
+            lang = options.Value;
+            vars = voptions.Value;
         }
 
         public static Task HandleErrorAsync(Exception exception)
@@ -125,17 +124,20 @@ namespace waPlanner.TelegramBot.Services
             }
         }
 
-        //public async Task GenerateQr(long chat_id)
-        //{
-        //    var qrcode = provider.GetService<IGenerateQrCode>();
-        //    var qr_run = qrcode.Run("url");
+        public async Task GenerateQr(long chat_id, TelegramBotValuesModel cache)
+        {
+            var my_bot = await bot.GetMeAsync();
+            string url = $"https://t.me/{my_bot.Username}?start={chat_id}";
+            using (var scope = provider.CreateScope())
+            {
+                var qrs = scope.ServiceProvider.GetService<IGenerateQrCodeService>();
+                var data = qrs.Run(url);
+                InputOnlineFile photo = new InputOnlineFile(new MemoryStream(data));
 
-        //    using (var ms = new MemoryStream(qr_run))
-        //    {
-        //        var photo = new InputOnlineFile(ms);
-        //        await bot.SendPhotoAsync(chat_id, photo);
-        //    }
-        //}
+                await bot.SendPhotoAsync(chat_id, photo);
+                cache.State = PlannerStates.MAIN_MENU;
+            }
+        }
 
         private async Task BotOnCallbackQueryReceivedAsync(CallbackQuery call, IDbManipulations db, TelegramBotValuesModel cache)
         {
@@ -208,14 +210,11 @@ namespace waPlanner.TelegramBot.Services
                     {
                         if (await DbManipulations.CheckPassword(msg, chat_id, cache.Phone) && msg != lang[cache.Lang]["back"])
                         {
-                            var my_bot = await bot.GetMeAsync();
-                            string url = $"https://t.me/{my_bot.Username}?start={chat_id}";
-                            var photo = await Utils.Utils.GenerateQr(url);
-                            await bot.SendPhotoAsync(chat_id, photo);
-                            cache.State = PlannerStates.MAIN_MENU;
+                            await GenerateQr(chat_id, cache);
                             await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["NONE"], replyMarkup: ReplyKeyboards.MainMenu(cache.Lang, lang));
                             break;
                         }
+                           
                         await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["WRONG_INFO"]);
                         return;
                     }
@@ -619,6 +618,12 @@ namespace waPlanner.TelegramBot.Services
 
             else if (command == lang[cache.Lang]["gen_qr"])
             {
+                long staffTgId = await db.GetStaffTelegramId(chat_id);
+                if (staffTgId != 0)
+                {
+                    await GenerateQr(chat_id, cache);
+                    return;
+                }
                 cache.State = PlannerStates.PREPARE_CHECK_PHONE;
                 await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["ON_CHANGE_PHONE"], replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang), parseMode: ParseMode.Html);
             }

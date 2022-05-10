@@ -20,5 +20,8 @@ namespace waPlanner.ModelViews
         public float? Latitude { get; set; }
         public float? Longitude { get; set; }
         public int? Status { get; set; }
+        public string MessageRu { get; set; }
+        public string MessageUz { get; set; }
+        public string MessageLt { get; set; }
     }
 }

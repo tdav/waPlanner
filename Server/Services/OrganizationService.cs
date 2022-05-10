@@ -106,6 +106,11 @@ namespace waPlanner.Services
                 if (organization.Name is not null)
                     updatedOrganization.Name = organization.Name;
 
+                updatedOrganization.WorkStart = organization.WorkTimeStart;
+                updatedOrganization.WorkEnd = organization.WorkTimeEnd;
+                updatedOrganization.MessageRu = organization.MessageRu;
+                updatedOrganization.MessageLt = organization.MessageLt;
+                updatedOrganization.MessageUz = organization.MessageUz;
                 updatedOrganization.UpdateDate = DateTime.Now;
                 updatedOrganization.UpdateUser = user_id;
                 await db.SaveChangesAsync();

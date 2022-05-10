@@ -2,13 +2,13 @@
 
 namespace waPlanner.Services
 {
-    public interface IGenerateQrCode
+    public interface IGenerateQrCodeService
     {
         byte[] Run(string url);
     }
 
 
-    public class GenerateQrCode : IGenerateQrCode
+    public class GenerateQrCodeService : IGenerateQrCodeService
     {
         public byte[] Run(string url)
         {

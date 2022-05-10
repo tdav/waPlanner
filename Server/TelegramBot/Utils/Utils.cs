@@ -71,15 +71,7 @@ namespace waPlanner.TelegramBot.Utils
             return QRCodeWriter.CreateQrCode(url, 500, QRCodeWriter.QrErrorCorrectionLevel.Medium).ToPngBinaryData();
         }
 
-        public static async Task<InputOnlineFile> GenerateQr(string url)
-        {
-            var qr_run = Run(url);
-
-            using (var ms = new MemoryStream(qr_run))
-            {
-                return new InputOnlineFile(ms);
-            }
-        }
+       
     }
 }
 

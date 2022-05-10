@@ -50,6 +50,7 @@ namespace waPlanner.TelegramBot.Utils
         Task AddNewUserChat(long chat_id);
         Task<bool> CheckNumber(string number);
         Task<bool> CheckPassword(string password, long chat_id, string phone);
+        Task<long> GetStaffTelegramId(long chat_id);
     }
 
     public class DbManipulations : IDbManipulations
@@ -661,6 +662,16 @@ namespace waPlanner.TelegramBot.Utils
                 return true;
             }
             return false;
+        }
+
+        public async Task<long> GetStaffTelegramId(long chat_id)
+        {
+            var staff = await db.tbStaffs
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.TelegramId == chat_id);
+            if (staff is not null)
+                return staff.TelegramId.Value;
+            return 0;
         }
     }
 }

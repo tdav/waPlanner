@@ -56,16 +56,16 @@ namespace waPlanner.Services
 
                     organization.SpecializationId = viRegistration.SpecializationId;
                     organization.ChatId = chatid.Data;
-                    organization.Address = viRegistration.Address;
-                    organization.BreakTimeStart = viRegistration.BreakTimeStart;
-                    organization.BreakTimeEnd = viRegistration.BreakTimeEnd;
-                    organization.WorkStart = viRegistration.WorkStart;
-                    organization.WorkEnd = viRegistration.WorkEnd;
-                    organization.Latitude = viRegistration.Latitude;
-                    organization.Longitude = viRegistration.Longitude;
-                    organization.MessageRu = viRegistration.MessageRu;
-                    organization.MessageUz = viRegistration.MessageUz;
-                    organization.MessageLt = viRegistration.MessageLt;
+                    organization.Address = "address";
+                    organization.BreakTimeStart = new DateTime(2022, 01, 01, 13, 0, 0);
+                    organization.BreakTimeEnd = new DateTime(2022, 01, 01, 14, 0, 0);
+                    organization.WorkStart = new DateTime(2022, 01, 01, 09, 0, 0);
+                    organization.WorkEnd = new DateTime(2022, 01, 01, 18, 0, 0);
+                    organization.Latitude = 0;
+                    organization.Longitude = 0;
+                    organization.MessageRu = "Выберите что-то";
+                    organization.MessageUz = "Nimadur tanlang";
+                    organization.MessageLt = "Nimadur tanlang";
                     organization.CreateDate = DateTime.Now;
                     organization.CreateUser = staff.Id;
                     organization.Status = 1;
