@@ -124,7 +124,7 @@ namespace waPlanner.TelegramBot.Services
             }
         }
 
-        public async Task GenerateQr(long chat_id, TelegramBotValuesModel cache)
+        private async Task GenerateQr(long chat_id, TelegramBotValuesModel cache)
         {
             var my_bot = await bot.GetMeAsync();
             string url = $"https://t.me/{my_bot.Username}?start={chat_id}";
