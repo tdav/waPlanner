@@ -29,7 +29,7 @@ namespace waPlanner
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddOptions();            
+            services.AddOptions();
             services.Configure<Vars>(conf.GetSection("SystemVars"));
             services.Configure<LangsModel>(conf.GetSection("SystemLangs"));
 
@@ -63,22 +63,19 @@ namespace waPlanner
             services.AddMyAuthentication(conf);
             services.AddMySwagger();
             services.ApiMyVersion();
-            services.AddHttpContextAccessor();          
+            services.AddHttpContextAccessor();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
         {
-            if (env.IsDevelopment())
-            {
-
-            }
+            if (env.IsDevelopment()) { }
             else
             {
-                app.UseExceptionHandler("/Error");                
+                app.UseExceptionHandler("/Error");
             }
             app.UseCompression();
             app.UseDeveloperExceptionPage();
-            
+
             app.UseRequestLocalization();
 
             var options = new DefaultFilesOptions();
