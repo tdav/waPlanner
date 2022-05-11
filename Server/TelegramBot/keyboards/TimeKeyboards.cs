@@ -36,17 +36,7 @@ namespace waPlanner.TelegramBot.keyboards
             decimal row_limit = Math.Ceiling(to_decimal / 2);
 
             if (staff_avail[dayOfWeek] == 2)
-            {
-                if (breakTime.Start.HasValue)
-                    time = new(breakTime.End.Value.Hour, breakTime.End.Value.Minute, 0);
-                else
-                {
-                    res = workTime_end - workTime_start;
-                    time = new(res.Hours, res.Minutes, 0);
-                }
-                
-            }
-                
+                time = new(breakTime.End.Value.Hour, breakTime.End.Value.Minute, 0);
 
             var keyboards = new List<List<InlineKeyboardButton>>();
 
