@@ -44,21 +44,21 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpPost()]
-        public async Task AddStaff(viStaff staff)
+        public async Task<Answer<viStaff>> AddStaff(viStaff staff)
         {
-            await service.AddStaffAsync(staff);
+            return await service.AddStaffAsync(staff);
         }
 
         [HttpPost("change/{staff_id}/{status}")]
-        public async Task ChagneStaffStatus(int staff_id, int status)
+        public async Task<AnswerBasic> ChagneStaffStatus(int staff_id, int status)
         {
-            await service.SetStatusAsync(staff_id, status);
+            return await service.SetStatusAsync(staff_id, status);
         }
 
         [HttpPost("change")]
-        public async Task ChangeStaff(viStaff staff)
+        public async Task<Answer<viStaff>> ChangeStaff(viStaff staff)
         {
-            await service.UpdateStaff(staff);
+            return await service.UpdateStaff(staff);
         }
         
         [HttpGet("{staff_id}")]
@@ -74,9 +74,9 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpPost("set/{staff_id}/{activity}")]
-        public async Task SetActivity(int staff_id, bool activity)
+        public async Task<AnswerBasic> SetActivity(int staff_id, bool activity)
         {
-            await service.SetActivity(staff_id, activity);
+            return await service.SetActivity(staff_id, activity);
         }
 
         //[HttpGet("{staff_id}/availability")]

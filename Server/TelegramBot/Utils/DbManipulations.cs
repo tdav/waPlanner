@@ -51,6 +51,13 @@ namespace waPlanner.TelegramBot.Utils
         Task<bool> CheckNumber(string number);
         Task<bool> CheckPassword(string password, long chat_id, string phone);
         Task<long> GetStaffTelegramId(long chat_id);
+        Task<int> GetStaffRole(long chat_id);
+        Task<int> GetAdminOrganization(long chat_id);
+        Task AddOrgFavorites(int org_id, long user_chat);
+        Task<bool> CheckOrgFavorites(long user_chat, int org_id);
+        Task<List<IdValue>> SendOrgFavorites(long chat_id);
+        Task<string> GetSpecializationByOrganization(string organization);
+        Task<bool> CheckValidOrg(string org_name);
     }
 
     public class DbManipulations : IDbManipulations
@@ -69,16 +76,19 @@ namespace waPlanner.TelegramBot.Utils
             int user_id = await GetUserId(chat_id);
             if (user_id != 0)
             {
-                return await db.tbFavorites
+                var fav = await db.tbFavorites
                 .Include(x => x.Organization)
                 .AsNoTracking()
                 .Where(f => f.UserId == user_id)
                 .Select(f => new IdValue
                 {
-                    Id = f.StaffId,
+                    Id = f.StaffId != null ? f.StaffId.Value : 0  ,
                     Name = $"({f.Organization.Name}) {f.Staff.Surname} {f.Staff.Name} {f.Staff.Patronymic}"
                 })
                 .ToListAsync();
+                if (fav[0].Id != 0)
+                    return fav;
+                return null;
             }
             return null;
         }
@@ -270,7 +280,7 @@ namespace waPlanner.TelegramBot.Utils
                 };
                 await db.tbUsers.AddAsync(telegramUser);
                 await db.SaveChangesAsync();
-                
+
             }
             else
             {
@@ -435,11 +445,11 @@ namespace waPlanner.TelegramBot.Utils
 
         }
 
-        public async Task<bool> CheckFavorites(string value, long user_chat, long staff_chat = 0)
+        public async Task<bool> CheckFavorites(string staffInfo, long user_chat, long staff_chat = 0)
         {
             var staff = await GetStaffInfo(staff_chat);
-            if (value is not null)
-                staff = await GetStaffInfo(value);
+            if (staffInfo is not null)
+                staff = await GetStaffInfo(staffInfo);
             var user = await GetUserId(user_chat);
             var result = await db.tbFavorites
                 .AsNoTracking()
@@ -621,10 +631,10 @@ namespace waPlanner.TelegramBot.Utils
 
         public async Task AddNewUserChat(long chat_id)
         {
-            var check_user = await CheckUser(chat_id);
+            var check_user = await CheckUserChat(chat_id);
             if (!check_user)
             {
-               var telegramUser = new tbUser
+                var telegramUser = new tbUser
                 {
                     TelegramId = chat_id,
                     Surname = "TelegramUser",
@@ -642,7 +652,7 @@ namespace waPlanner.TelegramBot.Utils
         {
             var check = await db.tbStaffs
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.PhoneNum == number && x.RoleId == (int)UserRoles.STAFF);
+                .FirstOrDefaultAsync(x => x.PhoneNum == number);
             if (check is not null)
                 return true;
             return false;
@@ -652,7 +662,7 @@ namespace waPlanner.TelegramBot.Utils
         {
             var get_staff = await db.tbStaffs
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Password == waPlanner.Utils.CHash.EncryptMD5(password) && x.RoleId == (int)UserRoles.STAFF && x.PhoneNum == phone);
+                .FirstOrDefaultAsync(x => x.Password == waPlanner.Utils.CHash.EncryptMD5(password) && x.PhoneNum == phone);
             if (get_staff is not null)
             {
                 var staff = await db.tbStaffs.FindAsync(get_staff.Id);
@@ -672,6 +682,91 @@ namespace waPlanner.TelegramBot.Utils
             if (staff is not null)
                 return staff.TelegramId.Value;
             return 0;
+        }
+
+        public async Task<int> GetStaffRole(long chat_id)
+        {
+            var staff = await db.tbStaffs
+                .AsNoTracking()
+                .Where(x => x.TelegramId == chat_id)
+                .FirstOrDefaultAsync();
+
+            if (staff is not null)
+                return staff.RoleId;
+            return 0;
+        }
+
+        public async Task<int> GetAdminOrganization(long chat_id)
+        {
+            var admin = await db.tbStaffs
+                .AsNoTracking()
+                .Where(x => x.RoleId == (int)UserRoles.ADMIN && x.TelegramId == chat_id)
+                .FirstOrDefaultAsync();
+
+            if (admin is not null)
+                return admin.OrganizationId.Value;
+            return 0;
+        }
+
+        public async Task AddOrgFavorites(int org_id, long user_chat)
+        {
+            var user = await GetUserId(user_chat);
+            var addFavoriteOrg = new tbFavorites();
+            addFavoriteOrg.UserId = user;
+            addFavoriteOrg.OrganizationId = org_id;
+            addFavoriteOrg.TelegramId = user_chat;
+            addFavoriteOrg.Status = 1;
+            addFavoriteOrg.CreateDate = DateTime.Now;
+
+            await db.tbFavorites.AddAsync(addFavoriteOrg);
+            await db.SaveChangesAsync();
+        }
+
+        public async Task<bool> CheckOrgFavorites(long user_chat, int org_id)
+        {
+            int user = await GetUserId(user_chat);
+
+            return await db.tbFavorites
+                .AsNoTracking()
+                .Where(x => x.OrganizationId == org_id && x.UserId == user)
+                .AnyAsync();
+        }
+
+        public async Task<List<IdValue>> SendOrgFavorites(long chat_id)
+        {
+            int user_id = await GetUserId(chat_id);
+            if (user_id != 0)
+            {
+                return await db.tbFavorites
+                    .AsNoTracking()
+                    .Where(f => f.UserId == user_id && f.StaffId == null)
+                    .Select(f => new IdValue
+                    {
+                        Id = f.OrganizationId,
+                        Name = f.Organization.Name
+                    })
+                    .ToListAsync();
+            }
+            return null;
+        }
+
+        public async Task<string> GetSpecializationByOrganization(string organization)
+        {
+            var spec = await db.spOrganizations
+                .Include(x => x.Specialization)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Name == organization);
+            if (spec is not null)
+                return spec.Specialization.NameUz;
+            return null;
+        }
+
+        public async Task<bool> CheckValidOrg(string org_name)
+        {
+            return await db.spOrganizations
+                .AsNoTracking()
+                .Where(x => x.Name == org_name)
+                .AnyAsync();
         }
     }
 }

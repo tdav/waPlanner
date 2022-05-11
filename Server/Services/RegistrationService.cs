@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
@@ -31,6 +33,14 @@ namespace waPlanner.Services
         {
             try
             {
+                var check = db.tbStaffs
+                    .AsNoTracking()
+                    .Where(x => x.RoleId == (int)UserRoles.ADMIN)
+                    .Any(x => x.PhoneNum == viRegistration.Phone);
+
+                if (check)
+                    return new Answer<viRegistration>(false, "Такой номер уже зарегистрирован", viRegistration);
+
                 using (var scope = provider.CreateScope())
                 {
                     var staff = new tbStaff

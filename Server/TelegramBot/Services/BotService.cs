@@ -95,13 +95,27 @@ namespace waPlanner.TelegramBot.Services
                                         {
                                             if (update.Message.Type != MessageType.Contact && update.Message.Text.Length > 6 && update.Message.Text[0..6] == "/start")
                                             {
-                                                long.TryParse(update.Message.Text[6..].Replace(" ", ""), out long deep_link);
+                                                
                                                 await db.AddNewUserChat(chat_id);
-                                                if (!await db.CheckFavorites(telg_obj.Staff, chat_id, deep_link))
+                                                if (update.Message.Text[7] == 'o')
                                                 {
-                                                    await db.AddToFavorites(telg_obj, chat_id, deep_link);
-                                                    await bot.SendTextMessageAsync(chat_id, "Добавился в избранное\nSevimlilarga qo'shildi");
+                                                    int.TryParse(update.Message.Text[7..].Replace("o", ""), out int org_link);
+                                                    if (!await db.CheckOrgFavorites(chat_id, org_link))
+                                                    {
+                                                        await db.AddOrgFavorites(org_link, chat_id);
+                                                    }
+
                                                 }
+                                                
+                                                else
+                                                {
+                                                    long.TryParse(update.Message.Text[6..].Replace(" ", ""), out long deep_link);
+                                                    if (!await db.CheckFavorites(telg_obj.Staff, chat_id, deep_link))
+                                                    {
+                                                        await db.AddToFavorites(telg_obj, chat_id, deep_link);
+                                                    }
+                                                } 
+                                                await bot.SendTextMessageAsync(chat_id, "Добавился в избранное\nSevimlilarga qo'shildi");
                                             }
                                             await BotOnMessageReceivedAsync(update.Message, db, telg_obj);
                                         }
@@ -124,10 +138,18 @@ namespace waPlanner.TelegramBot.Services
             }
         }
 
-        private async Task GenerateQr(long chat_id, TelegramBotValuesModel cache)
+        private async Task GenerateQr(long chat_id, TelegramBotValuesModel cache, IDbManipulations db)
         {
             var my_bot = await bot.GetMeAsync();
+            int user_role = await db.GetStaffRole(chat_id);
             string url = $"https://t.me/{my_bot.Username}?start={chat_id}";
+
+            if (user_role != 0 && user_role == (int)UserRoles.ADMIN)
+            {
+                var admin_org = await db.GetAdminOrganization(chat_id);
+                url = $"https://t.me/{my_bot.Username}?start=o{admin_org}";
+            }
+
             using (var scope = provider.CreateScope())
             {
                 var qrs = scope.ServiceProvider.GetService<IGenerateQrCodeService>();
@@ -210,33 +232,39 @@ namespace waPlanner.TelegramBot.Services
                     {
                         if (await DbManipulations.CheckPassword(msg, chat_id, cache.Phone) && msg != lang[cache.Lang]["back"])
                         {
-                            await GenerateQr(chat_id, cache);
+                            await GenerateQr(chat_id, cache, DbManipulations);
                             await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["NONE"], replyMarkup: ReplyKeyboards.MainMenu(cache.Lang, lang));
                             break;
                         }
-                           
+
                         await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["WRONG_INFO"]);
                         return;
                     }
 
                 case PlannerStates.FAVORITES:
                     {
+                        await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["CHOOSE_FAVORITES_TYPE"], replyMarkup: ReplyKeyboards.Favorites(cache.Lang, lang));
+                        break;
+                    }
+
+                case PlannerStates.SEND_STAFF_FAVORITES:
+                    {
                         menu = await DbManipulations.SendFavorites(chat_id);
                         if (menu is not null && menu.Count > 0)
                         {
-                            cache.State = PlannerStates.SELECT_FAVORITES;
+                            cache.State = PlannerStates.SELECT_STAFF_FAVORITES;
                             message_for_user = lang[cache.Lang]["CHOOSE_SPECIALIST"];
                             break;
                         }
                         else
                         {
                             await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["EMPTY_LIST"]);
-                            cache.State = PlannerStates.MAIN_MENU;
+                            cache.State = PlannerStates.FAVORITES;
                             return;
                         }
 
                     }
-                case PlannerStates.SELECT_FAVORITES:
+                case PlannerStates.SELECT_STAFF_FAVORITES:
                     {
                         string staff_name = msg.Substring(msg.LastIndexOf(')') + 2);
                         cache.Staff = msg != lang[cache.Lang]["back"] ? staff_name : cache.Staff;
@@ -249,6 +277,36 @@ namespace waPlanner.TelegramBot.Services
                             cache.Staff = staffInfo.Staff;
                             cache.State = PlannerStates.CHOOSE_DATE;
                             await CalendarKeyboards.SendCalendar(bot, chat_id, cache.Lang, lang);
+                        }
+                        break;
+                    }
+
+                case PlannerStates.SEND_ORG_FAVORITES:
+                    {
+                        menu = await DbManipulations.SendOrgFavorites(chat_id);
+                        if (menu is not null && menu.Count > 0)
+                        {
+                            cache.State = PlannerStates.SELECT_ORG_FAVORITES;
+                            message_for_user = lang[cache.Lang]["CHOOSE_ORG"];
+                            break;
+                        }
+                        else
+                        {
+                            await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["EMPTY_LIST"]);
+                            cache.State = PlannerStates.FAVORITES;
+                            return;
+                        }
+                    }
+                case PlannerStates.SELECT_ORG_FAVORITES:
+                    {
+                        cache.Organization = msg;
+                        var spec = await DbManipulations.GetSpecializationByOrganization(cache.Organization);
+                        if (spec is not null)
+                        {
+                            menu = await DbManipulations.SendCategoriesByOrgName(cache.Organization, cache.Lang);
+                            message_for_user = lang[cache.Lang]["CHOOSE_CAT"];
+                            cache.Specialization = spec;
+                            cache.State = PlannerStates.STUFF;
                         }
                         break;
                     }
@@ -371,6 +429,9 @@ namespace waPlanner.TelegramBot.Services
                 case PlannerStates.CATEGORY:
                     {
                         cache.Organization = msg != lang[cache.Lang]["back"] ? msg : cache.Organization;
+                        //if (await DbManipulations.CheckValidOrg(msg))
+                        //    cache.Organization = msg;
+
                         if (await DbManipulations.CheckGovermentOrg(cache.Specialization) && msg != lang[cache.Lang]["back"])
                         {
                             await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["PINFL"], replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang));
@@ -497,12 +558,19 @@ namespace waPlanner.TelegramBot.Services
                         }
 
                     case PlannerStates.FEEDBACK:
-                    case PlannerStates.SELECT_FAVORITES:
+                    case PlannerStates.FAVORITES:
                     case PlannerStates.CHECK_PHONE:
                     case PlannerStates.CHECK_PASSWORD:
                     case PlannerStates.ORGANIZATION:
                         {
                             cache.State = PlannerStates.MAIN_MENU;
+                            break;
+                        }
+
+                    case PlannerStates.SELECT_ORG_FAVORITES:
+                    case PlannerStates.SELECT_STAFF_FAVORITES:
+                        {
+                            cache.State = PlannerStates.FAVORITES;
                             break;
                         }
 
@@ -617,12 +685,24 @@ namespace waPlanner.TelegramBot.Services
                 await bot.SendTextMessageAsync(chat_id, await Utils.Utils.SendStatistic(db, cache, lang), parseMode: ParseMode.Html);
             }
 
+            else if (command == lang[cache.Lang]["staff_favorites"])
+            {
+                cache.State = PlannerStates.SEND_STAFF_FAVORITES;
+                return;
+            }
+
+            else if (command == lang[cache.Lang]["org_favorites"])
+            {
+                cache.State = PlannerStates.SEND_ORG_FAVORITES;
+                return;
+            }
+
             else if (command == lang[cache.Lang]["gen_qr"])
             {
                 long staffTgId = await db.GetStaffTelegramId(chat_id);
                 if (staffTgId != 0)
                 {
-                    await GenerateQr(chat_id, cache);
+                    await GenerateQr(chat_id, cache, db);
                     return;
                 }
                 cache.State = PlannerStates.PREPARE_CHECK_PHONE;

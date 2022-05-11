@@ -38,6 +38,7 @@
       "SERIA": "Введите серию паспорта, например: <b>AA0909090</b>",
       "WRONG_INFO": "Введены неправильные данные!",
       "PASSWORD": "Введите пароль",
+      "CHOOSE_FAVORITES_TYPE": "Выберите тип",
 
       "back": "⬅️Назад",
       "book": "📄Сделать бронь",
@@ -50,7 +51,9 @@
       "gen_qr": "🖋Сгенерировать QR код",
       "change_name": "Изменить имя",
       "change_phone": "☎️Изменить номер",
-      "change_lang": "Изменить язык🇷🇺"
+      "change_lang": "Изменить язык🇷🇺",
+      "org_favorites": "🏬Организации",
+      "staff_favorites": "👤Специалисты"
     },
 
     "uz": {
@@ -91,6 +94,7 @@
       "SERIA": "Pasport seria raqamingizni kiriting misol uchun: <b>AA0909090</b>",
       "WRONG_INFO": "Ma'lumotlar noto'g'ri kiritilgan!",
       "PASSWORD": "Parolingizni kiriting",
+      "CHOOSE_FAVORITES_TYPE": "Tipini tanlang",
 
       "back": "⬅️Ortga",
       "book": "📄Band qilish",
@@ -103,7 +107,9 @@
       "gen_qr": "🖋QR kodini yaratish",
       "change_name": "Ismni o'zgartirish",
       "change_phone": "☎️Nomerni o'zgartirish",
-      "change_lang": "Tilni o'zgartirish🇺🇿"
+      "change_lang": "Tilni o'zgartirish🇺🇿",
+      "org_favorites": "🏬Tashkilotlar",
+      "staff_favorites": "👤Mutaxasislar"
     }
   }
 }

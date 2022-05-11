@@ -29,9 +29,9 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpPost]
-        public async Task SetSetup(viSetup setup)
+        public async Task<AnswerBasic> SetSetup(viSetup setup)
         {
-            await service.Set(setup);
+            return await service.Set(setup);
         }
     }
 }

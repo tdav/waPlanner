@@ -8,15 +8,12 @@ namespace waPlanner.Database.Models
     {
         public int Id { get; set; }
 
-        [IndexColumn(IsUnique = true)]
         [StringLength(200)]
         public new string NameUz { get; set; }
 
-        [IndexColumn(IsUnique = true)]
         [StringLength(200)]
         public new string NameLt { get; set; }
 
-        [IndexColumn(IsUnique = true)]
         [StringLength(200)]
         public new string NameRu { get; set; }
 

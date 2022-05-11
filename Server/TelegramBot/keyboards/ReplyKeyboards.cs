@@ -118,6 +118,18 @@ namespace waPlanner.TelegramBot.keyboards
                 })
             { ResizeKeyboard = true };
             return markup;
-        } 
+        }
+        
+        public static ReplyKeyboardMarkup Favorites(string lg, LangsModel lang)
+        {
+            ReplyKeyboardMarkup markup = new(
+                new[]
+                {
+                    new KeyboardButton[]{ lang[lg]["org_favorites"], lang[lg]["staff_favorites"] },
+                    new KeyboardButton[]{ lang[lg]["back"] }
+                })
+            { ResizeKeyboard = true };
+            return markup;
+        }
     }
 }

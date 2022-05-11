@@ -75,7 +75,7 @@ namespace waPlanner.Services
                         CategoryId = x.CategoryId,
                         Category = x.Category.NameUz,
                         RoleId = x.RoleId,
-                        Photo = x.PhotoUrl,
+                        PhotoUrl = x.PhotoUrl,
                         Gender = x.Gender
                     })
                     .Take(20)
@@ -115,7 +115,7 @@ namespace waPlanner.Services
                 newStaff.Patronymic = staff.Patronymic;
                 newStaff.PhoneNum = staff.PhoneNum;
                 newStaff.BirthDay = staff.BirthDay;
-                newStaff.PhotoUrl = staff.Photo;
+                newStaff.PhotoUrl = staff.PhotoUrl;
                 newStaff.OrganizationId = org_id;
                 newStaff.RoleId = staff_role;
                 newStaff.TelegramId = staff.TelegramId;
@@ -240,7 +240,7 @@ namespace waPlanner.Services
                 updateStaff.Patronymic = staff.Patronymic;
 
                 if (staff.Password is not null)
-                    updateStaff.Password = staff.Password;
+                    updateStaff.Password = CHash.EncryptMD5(staff.Password);
 
                 //if (staff.PhoneNum is not null)
                 updateStaff.PhoneNum = staff.PhoneNum;
@@ -257,6 +257,7 @@ namespace waPlanner.Services
                     org_id = staff.OrganizationId.Value;
                 }
 
+                updateStaff.PhotoUrl = staff.PhotoUrl;
                 updateStaff.Availability = staff.Availability;
                 updateStaff.OrganizationId = org_id;
                 updateStaff.RoleId = staff_role;
@@ -300,7 +301,7 @@ namespace waPlanner.Services
                         CategoryId = x.CategoryId,
                         Category = x.Category.NameUz,
                         RoleId = x.RoleId,
-                        Photo = x.PhotoUrl,
+                        PhotoUrl = x.PhotoUrl,
                         Gender = x.Gender
                     })
                     .FirstOrDefaultAsync();
@@ -344,7 +345,7 @@ namespace waPlanner.Services
                                 CategoryId = x.CategoryId,
                                 Category = x.Category.NameUz,
                                 RoleId = x.RoleId,
-                                Photo = x.PhotoUrl,
+                                PhotoUrl = x.PhotoUrl,
                                 Gender = x.Gender
                             })
                             .ToArrayAsync();

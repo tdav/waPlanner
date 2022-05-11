@@ -73,18 +73,6 @@ namespace waPlanner.Migrations
                     b.HasKey("Id")
                         .HasName("pk_sp_categories");
 
-                    b.HasIndex("NameLt")
-                        .IsUnique()
-                        .HasDatabaseName("ix_sp_categories_name_lt");
-
-                    b.HasIndex("NameRu")
-                        .IsUnique()
-                        .HasDatabaseName("ix_sp_categories_name_ru");
-
-                    b.HasIndex("NameUz")
-                        .IsUnique()
-                        .HasDatabaseName("ix_sp_categories_name_uz");
-
                     b.HasIndex("OrganizationId")
                         .HasDatabaseName("ix_sp_categories_organization_id");
 
@@ -372,7 +360,7 @@ namespace waPlanner.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("organization_id");
 
-                    b.Property<int>("StaffId")
+                    b.Property<int?>("StaffId")
                         .HasColumnType("integer")
                         .HasColumnName("staff_id");
 
@@ -750,7 +738,6 @@ namespace waPlanner.Migrations
                         .WithMany()
                         .HasForeignKey("StaffId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
                         .HasConstraintName("fk_tb_favorites_tb_staffs_staff_id");
 
                     b.HasOne("waPlanner.Database.Models.tbUser", "User")

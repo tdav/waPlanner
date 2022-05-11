@@ -14,7 +14,7 @@ namespace waPlanner.Database.Models
         public virtual tbUser User { get; set; }
         public long TelegramId { get; set; }
 
-        public int StaffId { get; set; }
+        public int? StaffId { get; set; }
         public virtual tbStaff Staff { get; set; }
 
         public int OrganizationId { get; set; }

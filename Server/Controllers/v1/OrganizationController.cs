@@ -28,15 +28,15 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpPost("change")]
-        public async Task UpdateOrganizationA(viOrganization organziation)
+        public async Task<AnswerBasic> UpdateOrganizationA(viOrganization organziation)
         {
-            await service.UpdateOrganizationAsync(organziation);
+            return await service.UpdateOrganizationAsync(organziation);
         }
 
         [HttpPost("change/{organization}/{status}")]
-        public async Task ChangeStatus(int organization, int status)
+        public async Task<AnswerBasic> ChangeStatus(int organization, int status)
         {
-            await service.UpdateOrganizationStatus(organization, status);
+            return await service.UpdateOrganizationStatus(organization, status);
         }
 
         [HttpGet("Id")]

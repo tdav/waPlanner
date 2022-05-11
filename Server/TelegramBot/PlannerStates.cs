@@ -9,34 +9,40 @@
     public enum PlannerStates
     {
         NONE = 0,
+
         FAVORITES = 1,
-        SELECT_FAVORITES = 2,
-        PREPARE_CHECK_PHONE = 3,
-        CHECK_PHONE = 4,
-        CHECK_PASSWORD = 5,
+        SELECT_STAFF_FAVORITES = 2,
+        SEND_STAFF_FAVORITES = 3,
 
-        SETTINGS = 6,
-        PREPARE_CHANGE_NAME = 7,
-        CHANGE_NAME = 8,
-        CHANGE_PHONE = 9,
-        CHANGE_LANG = 10,
+        SELECT_ORG_FAVORITES = 4,
+        SEND_ORG_FAVORITES = 5,
+        
+        PREPARE_CHECK_PHONE = 6,
+        CHECK_PHONE = 7,
+        CHECK_PASSWORD = 8,
 
-        ON_PREPARE_FEEDBACK = 11,
-        FEEDBACK = 12,
+        SETTINGS = 9,
+        PREPARE_CHANGE_NAME = 10,
+        CHANGE_NAME = 11,
+        CHANGE_PHONE = 12,
+        CHANGE_LANG = 13,
 
-        MAIN_MENU = 13,
-        SPECIALIZATION = 14,
-        ORGANIZATION = 15,
+        ON_PREPARE_FEEDBACK = 14,
+        FEEDBACK = 15,
 
-        GET_PINFL = 16,
-        GET_SERIA = 17,
+        MAIN_MENU = 16,
+        SPECIALIZATION = 17,
+        ORGANIZATION = 18,
 
-        CATEGORY = 18,
-        STUFF = 19,
-        CHOOSE_DATE = 20,
-        CHOOSE_TIME = 21,
-        PHONE = 22,
-        USERNAME = 23,
-        ADD_FAVORITES = 24,
+        GET_PINFL = 19,
+        GET_SERIA = 20,
+
+        CATEGORY = 21,
+        STUFF = 22,
+        CHOOSE_DATE = 23,
+        CHOOSE_TIME = 24,
+        PHONE = 25,
+        USERNAME = 26,
+        ADD_FAVORITES = 27,
     }
 }

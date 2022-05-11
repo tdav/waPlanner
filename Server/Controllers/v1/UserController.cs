@@ -29,15 +29,15 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpPost("change")]
-        public async Task UpdatePatient(viPatient patient)
+        public async Task<AnswerBasic> UpdatePatient(viPatient patient)
         {
-            await service.UpdateAsync(patient);
+            return await service.UpdateAsync(patient);
         }
 
         [HttpPost("change/{patient_id}/{status}")]
-        public async Task UpdatePatientStatus(int patient_id, int status)
+        public async Task<AnswerBasic> UpdatePatientStatus(int patient_id, int status)
         {
-            await service.SetStatusAsync(patient_id, status);
+            return await service.SetStatusAsync(patient_id, status);
         }
 
         [HttpGet("all")]
