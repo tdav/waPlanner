@@ -68,7 +68,10 @@ namespace waPlanner
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
         {
-            if (env.IsDevelopment()) { }
+            if (env.IsDevelopment()) 
+            {
+                app.UseMySwagger(provider);
+            }
             else
             {
                 app.UseExceptionHandler("/Error");
@@ -104,8 +107,7 @@ namespace waPlanner
                 endpoints.MapControllers();
             });
 
-            app.UseSerilogRequestLogging();
-            app.UseMySwagger(provider);
+            app.UseSerilogRequestLogging();           
 
             app.UpdateMigrateDatabase();
         }
