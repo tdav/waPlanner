@@ -35,8 +35,11 @@
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.3" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.0.0" />		
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="6.0.3" />		
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.3" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.3" />		
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
+		<PackageReference Include="Scrutor" Version="4.1.0" />
+		<PackageReference Include="Scrutor.AspNetCore" Version="3.3.0" />
 		<PackageReference Include="SixLabors.ImageSharp" Version="2.1.1" />
 		
 		<PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
