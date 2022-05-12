@@ -10,6 +10,7 @@ using TdLib;
 using TDLib.Bindings;
 using waPlanner.Database;
 using waPlanner.Extensions;
+using waPlanner.Interfaces;
 using waPlanner.ModelViews;
 using waPlanner.TelegramBot;
 
@@ -20,10 +21,10 @@ namespace waPlanner.Services
         Task<AnswerBasic> GetAuthenticationCode();
         Task<AnswerBasic> SetAuthenticationCode(string code, string password);
         Task<Answer<long[]>> CreateGroup(string PhoneNumber, string OrgName);
-        ValueTask<Answer<string>> SendRandomPassword(string PhoneNum);
+        ValueTask<Answer<IdValue>> SendRandomPassword(string PhoneNum);
     }
 
-    public class TelegramGroupCreatorService : ITelegramGroupCreatorService
+    public class TelegramGroupCreatorService : ITelegramGroupCreatorService, IAutoRegistrationSingletonLifetimeService
     {
         private readonly IConfiguration conf;
         private readonly ILogger<TelegramGroupCreatorService> logger;
@@ -159,7 +160,7 @@ namespace waPlanner.Services
 
         }
 
-        public async ValueTask<Answer<string>> SendRandomPassword(string PhoneNum)
+        public async ValueTask<Answer<IdValue>> SendRandomPassword(string PhoneNum)
         {
             try
             {
@@ -169,28 +170,39 @@ namespace waPlanner.Services
                     var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
                     ReadyToAuthenticate.Wait();
                     var staff = await db.tbStaffs
+                        .Include(x => x.Organization)
                         .AsNoTracking()
                         .FirstOrDefaultAsync(x => x.PhoneNum == PhoneNum);
 
                     if (staff is null)
-                        return new Answer<string>(false, "Такой номер не зарегистрирован!", "");
+                        return new Answer<IdValue>(false, "Такой номер не зарегистрирован!", null);
 
+                    var text = await client.ParseTextEntitiesAsync($"Ваш новый пароль: <code>{generatePassword}</code>. Никому не передавайте!", new TdApi.TextParseMode.TextParseModeHTML());
                     var content = new TdApi.InputMessageContent.InputMessageText
                     {
-                        Text = new TdApi.FormattedText
-                        {
-                            Text = $"Ваш новый пароль <code>{generatePassword}</code>"
-                        }
+                        Text = text
                     };
-                    var chat = client.CreatePrivateChatAsync(staff.TelegramId.Value);
+                    
+                    var contact = await client.ImportContactsAsync(new TdApi.Contact[]
+                    {
+                        new TdApi.Contact
+                        {
+                            FirstName = staff.Organization.Name,
+                            LastName = "Planner",
+                            PhoneNumber = PhoneNum
+                        }
+                    });
+                    
+                    var chat = await client.CreatePrivateChatAsync(contact.UserIds[0]);
                     await client.SendMessageAsync(chatId: chat.Id, inputMessageContent: content);
-                }
-                return new Answer<string>(false, "bla", generatePassword);
+
+                    return new Answer<IdValue>(true, "", new IdValue { Id = staff.Id, Name = generatePassword});
+                } 
             }
             catch (Exception e)
             {
                 logger.LogError($"TelegramGroupCreatorService.SendRandomPassword Error: {e.Message}");
-                return new Answer<string>(false, $"Ошибка программы", "");
+                return new Answer<IdValue>(false, $"Ошибка программы", null);
             }
         }
 

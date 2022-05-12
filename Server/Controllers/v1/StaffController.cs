@@ -90,8 +90,9 @@ namespace waPlanner.Controllers.v1
             return service.ChangePaswwordAsync(value);
         }
 
+        [AllowAnonymous]
         [HttpPost("forgot_password")]
-        public ValueTask<AnswerBasic> ForgotPassword(string PhoneNum)
+        public ValueTask<Answer<IdValue>> ForgotPassword(string PhoneNum)
         {
             return service.OnForgotPassword(PhoneNum);
         }

@@ -33,7 +33,7 @@ namespace waPlanner.Services
         //Task<viStaffAvailability> GetStaffAvailabilityAsync(int staff_id);
         ValueTask<Answer<TokenModel>> TokenAsync(LoginModel value);
         ValueTask<AnswerBasic> ChangePaswwordAsync(ChangePasswordModel value);
-        ValueTask<AnswerBasic> OnForgotPassword(string PhoneNum);
+        ValueTask<Answer<IdValue>> OnForgotPassword(string PhoneNum);
     }
 
     public class StaffService : IStaffService, IAutoRegistrationScopedLifetimeService
@@ -444,28 +444,48 @@ namespace waPlanner.Services
 
         public async ValueTask<AnswerBasic> ChangePaswwordAsync(ChangePasswordModel value)
         {
-            int user_id = GetAccessor().GetId();
-            var staff = await db.tbStaffs.FindAsync(user_id);
-
-            if (staff.Password == CHash.EncryptMD5(value.oldPassword) && staff.Id == user_id)
+            try
             {
-                staff.Password = CHash.EncryptMD5(value.newPassword);
-                db.Update(staff);
-                await db.SaveChangesAsync();
-                return new AnswerBasic(true, "");
+                int user_id = GetAccessor().GetId();
+                var staff = await db.tbStaffs.FindAsync(user_id);
+
+                if (staff.Password == CHash.EncryptMD5(value.oldPassword) && staff.Id == user_id)
+                {
+                    staff.Password = CHash.EncryptMD5(value.newPassword);
+                    db.Update(staff);
+                    await db.SaveChangesAsync();
+                    return new AnswerBasic(true, "");
+                }
+                return new AnswerBasic(false, "Старый пароль не верен, повторите еще раз!");
             }
-            return new AnswerBasic(false, "Старый пароль не верен, повторите еще раз!");
+            catch (Exception e)
+            {
+                logger.LogError($"StaffService.ChangePaswwordAsync Error:{e.Message}");
+                return new AnswerBasic(false, "Ошибка программы");
+            }
+            
         }
 
-        public async ValueTask<AnswerBasic> OnForgotPassword(string PhoneNum)
+        public async ValueTask<Answer<IdValue>> OnForgotPassword(string PhoneNum)
         {
-            using (var scope = provider.CreateScope())
+            try
             {
-                var a = scope.ServiceProvider.GetService<ITelegramGroupCreatorService>();
-                await a.SendRandomPassword(PhoneNum); 
+                using (var scope = provider.CreateScope())
+                {
+                    var telegram = scope.ServiceProvider.GetService<ITelegramGroupCreatorService>();
+                    var value = await telegram.SendRandomPassword(PhoneNum);
+                    var staff = await db.tbStaffs.FindAsync(value.Data.Id);
+                    staff.Password = CHash.EncryptMD5(value.Data.Name);
+                    db.Update(staff);
+                    await db.SaveChangesAsync();
+                }
+                return new Answer<IdValue>(true, "", null);
             }
-            return new AnswerBasic(true, "aaa");
-
+            catch (Exception e)
+            {
+                logger.LogError($"StaffService.OnForgotPassword Error:{e.Message}");
+                return new Answer<IdValue>(false, "Ошибка программы", null);
+            }
         }
     }
 }

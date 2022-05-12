@@ -172,7 +172,6 @@ namespace waPlanner.TelegramBot.Services
         private async Task BotOnMessageReceivedAsync(Message message, IDbManipulations db, TelegramBotValuesModel cache)
         {
             long chat_id = message.Chat.Id;
-
             if (Utils.Utils.CheckUserCommand(message.Text, cache, lang))
                 await OnCommands(cache, message.Text, chat_id, db);
             await OnStateChanged(chat_id, message, cache, db);
