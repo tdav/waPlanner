@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using waPlanner.Utils;
 using waPlanner.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace waPlanner.Services
 {
@@ -29,30 +30,40 @@ namespace waPlanner.Services
         Task<Answer<viStaff[]>> SearchStaffAsync(string name);
         Task<AnswerBasic> SetActivity(int staff_id, bool online);
         //Task<viStaffAvailability> GetStaffAvailabilityAsync(int staff_id);
-        ValueTask<Answer< TokenModel>> TokenAsync(LoginModel value);
+        ValueTask<Answer<TokenModel>> TokenAsync(LoginModel value);
         ValueTask<AnswerBasic> ChangePaswwordAsync(ChangePasswordModel value);
+        ValueTask<AnswerBasic> OnForgotPassword(string PhoneNum);
     }
 
-    public class StaffService: IStaffService
+    public class StaffService : IStaffService
     {
         private readonly MyDbContext db;
         private readonly IConfiguration conf;
-        private readonly IHttpContextAccessorExtensions accessor;
         private readonly ILogger<StaffService> logger;
+        private readonly IServiceProvider provider;
 
-        public StaffService(MyDbContext db, IConfiguration conf, IHttpContextAccessorExtensions accessor, ILogger<StaffService> logger)
+        public StaffService(MyDbContext db, IConfiguration conf, ILogger<StaffService> logger, IServiceProvider provider)
         {
-            this.accessor = accessor;
             this.db = db;
             this.conf = conf;
             this.logger = logger;
+            this.provider = provider;
+        }
+
+        private IHttpContextAccessorExtensions GetAccessor()
+        {
+            using (var scope = provider.CreateScope())
+            {
+                var accessor = scope.ServiceProvider.GetService<IHttpContextAccessorExtensions>();
+                return accessor;
+            }
         }
 
         public async Task<Answer<viStaff[]>> GetStaffsByOrganizationId()
         {
             try
             {
-                int org_id = accessor.GetOrgId();
+                int org_id = GetAccessor().GetOrgId();
                 var staffs = await db.tbStaffs
                     .AsNoTracking()
                     .Include(s => s.Organization)
@@ -87,7 +98,7 @@ namespace waPlanner.Services
                 logger.LogError($"StaffService.GetStaffByOrganizationId Error:{e.Message}");
                 return new Answer<viStaff[]>(false, "Ошибка программы", null);
             }
-            
+
         }
 
         public async Task<Answer<viStaff>> AddStaffAsync(viStaff staff)
@@ -96,10 +107,10 @@ namespace waPlanner.Services
             {
                 var newStaff = new tbStaff();
 
-                int user_id = accessor.GetId();
-                int role_id = accessor.GetRoleId();
+                int user_id = GetAccessor().GetId();
+                int role_id = GetAccessor().GetRoleId();
                 int staff_role = (int)UserRoles.STAFF;
-                int org_id = accessor.GetOrgId();
+                int org_id = GetAccessor().GetOrgId();
 
                 if (role_id == (int)UserRoles.SUPER_ADMIN)
                 {
@@ -138,14 +149,14 @@ namespace waPlanner.Services
                 logger.LogError($"StaffService.AddStaffAsync Error:{e.Message} Model: {staff}");
                 return new Answer<viStaff>(false, "Ошибка программы", null);
             }
-           
+
         }
 
         public async Task<Answer<List<IdValue>>> GetStuffList(int category_id)
         {
             try
             {
-                int org_id = accessor.GetOrgId();
+                int org_id = GetAccessor().GetOrgId();
                 var staffList = await db.tbStaffs
                                .AsNoTracking()
                                .Where(s => s.OrganizationId == org_id && s.CategoryId == category_id && s.RoleId == (int)UserRoles.STAFF && s.Status == 1)
@@ -162,15 +173,15 @@ namespace waPlanner.Services
                 logger.LogError($"StaffService.GetStuffList Error:{e.Message}");
                 return new Answer<List<IdValue>>(false, "Ошибка программы", null);
             }
-            
-            
+
+
         }
 
         public async Task<AnswerBasic> SetStatusAsync(int staff_id, int status)
         {
             try
             {
-                int user_id = accessor.GetId();
+                int user_id = GetAccessor().GetId();
                 var st = await db.tbStaffs.FindAsync(staff_id);
                 st.Status = status;
                 st.UpdateUser = user_id;
@@ -184,14 +195,14 @@ namespace waPlanner.Services
                 logger.LogError($"StaffService.SetStatusAsync Error:{e.Message}");
                 return new AnswerBasic(false, "Ошибка программы");
             }
-            
+
         }
 
         public async Task<AnswerBasic> SetActivity(int staff_id, bool activity)
         {
             try
             {
-                int user_id = accessor.GetId();
+                int user_id = GetAccessor().GetId();
                 var st = await db.tbStaffs.FindAsync(staff_id);
                 st.Online = activity;
                 st.UpdateDate = DateTime.Now;
@@ -205,7 +216,7 @@ namespace waPlanner.Services
                 logger.LogError($"StaffService.SetActivity Error:{e.Message}");
                 return new AnswerBasic(false, "Ошибка программы");
             }
-            
+
         }
 
         public async Task<Answer<viStaff>> UpdateStaff(viStaff staff)
@@ -213,9 +224,9 @@ namespace waPlanner.Services
             try
             {
                 var updateStaff = await db.tbStaffs.FindAsync(staff.Id);
-                int org_id = accessor.GetOrgId();
-                int user_id = accessor.GetId();
-                int role_id = accessor.GetRoleId();
+                int org_id = GetAccessor().GetOrgId();
+                int user_id = GetAccessor().GetId();
+                int role_id = GetAccessor().GetRoleId();
                 int staff_role = (int)UserRoles.STAFF;
 
                 if (staff.BirthDay.HasValue)
@@ -272,13 +283,13 @@ namespace waPlanner.Services
                 logger.LogError($"StaffService.UpdateStaff Error:{e.Message} Model: {staff}");
                 return new Answer<viStaff>(false, "Ошибка программы", null);
             }
-            
+
         }
         public async Task<Answer<viStaff>> GetStaffById(int staff_id)
         {
             try
             {
-                int org_id = accessor.GetOrgId();
+                int org_id = GetAccessor().GetOrgId();
                 var staff = await db.tbStaffs
                     .AsNoTracking()
                     .Include(s => s.Organization)
@@ -313,14 +324,14 @@ namespace waPlanner.Services
                 logger.LogError($"StaffService.GetStaffById Error:{e.Message}");
                 return new Answer<viStaff>(false, "Ошибка программы", null);
             }
-            
+
         }
 
         public async Task<Answer<viStaff[]>> SearchStaffAsync(string name)
         {
             try
             {
-                int org_id = accessor.GetOrgId();
+                int org_id = GetAccessor().GetOrgId();
                 var search = await (from s in db.tbStaffs
                                     where EF.Functions.ILike(s.Surname, $"%{name}%")
                                     || EF.Functions.ILike(s.Name, $"%{name}%")
@@ -357,7 +368,7 @@ namespace waPlanner.Services
                 logger.LogError($"StaffService.SearchStaffAsync Error:{e.Message}");
                 return new Answer<viStaff[]>(false, "Ошибка программы", null);
             }
-            
+
         }
 
         //public async Task<viStaffAvailability> GetStaffAvailabilityAsync(int staff_id)
@@ -378,11 +389,11 @@ namespace waPlanner.Services
         //}
 
         public async ValueTask<Answer<TokenModel>> TokenAsync(LoginModel value)
-        {            
+        {
             var hash_pasw = CHash.EncryptMD5(value.password);
             var user = await db.tbStaffs.FirstOrDefaultAsync(x => x.PhoneNum == value.phoneNum && x.Password == hash_pasw);
             if (user != null)
-            {                
+            {
 
                 return new Answer<TokenModel>(true, "", GenerateToken(user));
             }
@@ -427,13 +438,33 @@ namespace waPlanner.Services
             };
             if (user.OrganizationId.HasValue)
                 modelToken.orgId = user.OrganizationId.Value;
-            return modelToken;   
-    }
+            return modelToken;
+        }
 
         public async ValueTask<AnswerBasic> ChangePaswwordAsync(ChangePasswordModel value)
         {
-            //TODO
-            return new AnswerBasic(true, "");
+            int user_id = GetAccessor().GetId();
+            var staff = await db.tbStaffs.FindAsync(user_id);
+
+            if (staff.Password == CHash.EncryptMD5(value.oldPassword) && staff.Id == user_id)
+            {
+                staff.Password = CHash.EncryptMD5(value.newPassword);
+                db.Update(staff);
+                await db.SaveChangesAsync();
+                return new AnswerBasic(true, "");
+            }
+            return new AnswerBasic(false, "Старый пароль не верен, повторите еще раз!");
+        }
+
+        public async ValueTask<AnswerBasic> OnForgotPassword(string PhoneNum)
+        {
+            using (var scope = provider.CreateScope())
+            {
+                var a = scope.ServiceProvider.GetService<ITelegramGroupCreatorService>();
+                await a.SendRandomPassword(PhoneNum); 
+            }
+            return new AnswerBasic(true, "aaa");
+
         }
     }
 }

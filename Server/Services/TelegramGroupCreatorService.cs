@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -7,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TdLib;
 using TDLib.Bindings;
+using waPlanner.Database;
 using waPlanner.Extensions;
 using waPlanner.ModelViews;
 using waPlanner.TelegramBot;
@@ -17,7 +19,8 @@ namespace waPlanner.Services
     {
         Task<AnswerBasic> GetAuthenticationCode();
         Task<AnswerBasic> SetAuthenticationCode(string code, string password);
-        Task<Answer<long>> CreateGroup(string PhoneNumber, string OrgName);
+        Task<Answer<long[]>> CreateGroup(string PhoneNumber, string OrgName);
+        ValueTask<Answer<string>> SendRandomPassword(string PhoneNum);
     }
 
     public class TelegramGroupCreatorService : ITelegramGroupCreatorService
@@ -113,7 +116,7 @@ namespace waPlanner.Services
         }
 
 
-        public async Task<Answer<long>> CreateGroup(string PhoneNumber, string OrgName)
+        public async Task<Answer<long[]>> CreateGroup(string PhoneNumber, string OrgName)
         {
             try
             {
@@ -123,7 +126,7 @@ namespace waPlanner.Services
                 var group_id = new_group.Id;
                 var group = new_group.Type as TdApi.ChatType.ChatTypeSupergroup;
                 var getGroupInfo = await client.GetSupergroupFullInfoAsync(group.SupergroupId);
-                var bot = await TdApi.SearchPublicChatAsync(client, "clinic_test_uzbot");
+                var bot = await client.SearchPublicChatAsync("clinic_test_uzbot");
                 await client.AddChatMemberAsync(group_id, bot.Id);
 
                 var contact = await client.ImportContactsAsync(new TdApi.Contact[]
@@ -146,14 +149,49 @@ namespace waPlanner.Services
                 var chat = await client.CreatePrivateChatAsync(contact.UserIds[0]);
                 await client.SendMessageAsync(chatId: chat.Id, inputMessageContent: content);
 
-                return new Answer<long>(true, "", group_id);
+                return new Answer<long[]>(true, "", new long[] { group_id, chat.Id });
             }
             catch (Exception e)
             {
                 logger.LogError($"TelegramGroupCreatorService.CreateGroup Error:{e.Message}");
-                return new Answer<long>(false, "Ошибка программы", 0);
+                return new Answer<long[]>(false, $"Ошибка при отправке сообщения в телеграм на номер: <b>{PhoneNumber}</b>. Проверьте вашу приватность", null);
             }
 
+        }
+
+        public async ValueTask<Answer<string>> SendRandomPassword(string PhoneNum)
+        {
+            try
+            {
+                string generatePassword = Utils.GeneratePassword.CreatePassword();
+                using (var scope = provider.CreateScope())
+                {
+                    var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+                    ReadyToAuthenticate.Wait();
+                    var staff = await db.tbStaffs
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(x => x.PhoneNum == PhoneNum);
+
+                    if (staff is null)
+                        return new Answer<string>(false, "Такой номер не зарегистрирован!", "");
+
+                    var content = new TdApi.InputMessageContent.InputMessageText
+                    {
+                        Text = new TdApi.FormattedText
+                        {
+                            Text = $"Ваш новый пароль <code>{generatePassword}</code>"
+                        }
+                    };
+
+                    await client.SendMessageAsync(chatId: staff.TelegramId.Value, inputMessageContent: content);
+                }
+                return new Answer<string>(false, "bla", generatePassword);
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"TelegramGroupCreatorService.SendRandomPassword Error: {e.Message}");
+                return new Answer<string>(false, $"Ошибка программы", "");
+            }
         }
 
         private async Task ProcessUpdates(TdApi.Update update)

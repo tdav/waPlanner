@@ -39,7 +39,7 @@ namespace waPlanner.Services
                     .Any(x => x.PhoneNum == viRegistration.Phone);
 
                 if (check)
-                    return new Answer<viRegistration>(false, "Такой номер уже зарегистрирован", viRegistration);
+                    return new Answer<viRegistration>(false, "Такой номер уже зарегистрирован", null);
 
                 using (var scope = provider.CreateScope())
                 {
@@ -50,7 +50,7 @@ namespace waPlanner.Services
                         Patronymic = viRegistration.Patronymic,
                         PhoneNum = viRegistration.Phone,
                         Password = CHash.EncryptMD5(viRegistration.Password),
-                        BirthDay = viRegistration.BirthDay,
+                        BirthDay = new DateTime(1970, 01, 27, 14, 0, 0),
                         RoleId = (int)UserRoles.ADMIN,
                         Status = 1,
                         CreateDate = DateTime.Now,
@@ -62,10 +62,10 @@ namespace waPlanner.Services
                     var organization = new spOrganization();
                     organization.Name = viRegistration.OrganizationName;
 
-                    var chatid = await telegramGroupCreator.CreateGroup(staff.PhoneNum, organization.Name);
+                    var chatIds = await telegramGroupCreator.CreateGroup(staff.PhoneNum, organization.Name);
 
                     organization.SpecializationId = viRegistration.SpecializationId;
-                    organization.ChatId = chatid.Data;
+                    organization.ChatId = chatIds.Data[0];
                     organization.Address = "address";
                     organization.BreakTimeStart = new DateTime(2022, 01, 01, 13, 0, 0);
                     organization.BreakTimeEnd = new DateTime(2022, 01, 01, 14, 0, 0);
@@ -84,6 +84,7 @@ namespace waPlanner.Services
                     await db.spOrganizations.AddAsync(organization);
                     await db.SaveChangesAsync();
 
+                    staff.TelegramId = chatIds.Data[1];
                     staff.OrganizationId = organization.Id;
                     await db.tbStaffs.AddAsync(staff);
                     await db.SaveChangesAsync();

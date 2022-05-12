@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using waPlanner.Database.Models;
 using waPlanner.ModelViews;
 using waPlanner.Services;
 
@@ -85,11 +84,17 @@ namespace waPlanner.Controllers.v1
         //    return service.GetStaffAvailabilityAsync(staff_id);
         //}
 
-        //[HttpPost("change_password")]
-        //public async ValueTask<AnswerBasic> ChangePassword()
-        //{
-        //    return await service.ChangePaswwordAsync();
-        //}
+        [HttpPost("change_password")]
+        public ValueTask<AnswerBasic> ChangePassword(ChangePasswordModel value)
+        {
+            return service.ChangePaswwordAsync(value);
+        }
+
+        [HttpPost("forgot_password")]
+        public ValueTask<AnswerBasic> ForgotPassword(string PhoneNum)
+        {
+            return service.OnForgotPassword(PhoneNum);
+        }
     }
     
 }
