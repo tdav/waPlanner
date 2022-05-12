@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using waPlanner.Controllers.v1;
+using waPlanner.Interfaces;
 using waPlanner.Services;
 using waPlanner.TelegramBot.Utils;
 
@@ -20,8 +22,16 @@ namespace waPlanner.Extensions
             services.AddScoped<ISpecializationService, SpecializationService>();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<IGenerateQrCodeService, GenerateQrCodeService>();
-            services.AddSingleton<ITelegramGroupCreatorService, TelegramGroupCreatorService>();
             services.AddScoped<IRegistrationService, RegistrationService>();
+            services.AddSingleton<ITelegramGroupCreatorService, TelegramGroupCreatorService>();
+
+
+
+            services.Scan(s => s.FromAssemblyOf<IAutoRegistrationScopedLifetimeService>()
+               .AddClasses(c => c.AssignableTo<IAutoRegistrationScopedLifetimeService>())
+                   .AsImplementedInterfaces()
+                   .WithScopedLifetime());
+
         }
     }
 }
