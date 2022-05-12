@@ -10,6 +10,7 @@ using TdLib;
 using TDLib.Bindings;
 using waPlanner.Database;
 using waPlanner.Extensions;
+using waPlanner.Interfaces;
 using waPlanner.ModelViews;
 using waPlanner.TelegramBot;
 
@@ -23,7 +24,7 @@ namespace waPlanner.Services
         ValueTask<Answer<string>> SendRandomPassword(string PhoneNum);
     }
 
-    public class TelegramGroupCreatorService : ITelegramGroupCreatorService
+    public class TelegramGroupCreatorService : ITelegramGroupCreatorService, IAutoRegistrationSingletonLifetimeService
     {
         private readonly IConfiguration conf;
         private readonly ILogger<TelegramGroupCreatorService> logger;

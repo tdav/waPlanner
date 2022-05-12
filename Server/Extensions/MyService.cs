@@ -23,9 +23,7 @@ namespace waPlanner.Extensions
             //services.AddScoped<IFileService, FileService>();
             //services.AddScoped<IGenerateQrCodeService, GenerateQrCodeService>();
             //services.AddScoped<IRegistrationService, RegistrationService>();
-
-
-            services.AddSingleton<ITelegramGroupCreatorService, TelegramGroupCreatorService>();
+            //services.AddSingleton<ITelegramGroupCreatorService, TelegramGroupCreatorService>();
 
 
 
@@ -33,6 +31,11 @@ namespace waPlanner.Extensions
                .AddClasses(c => c.AssignableTo<IAutoRegistrationScopedLifetimeService>())
                    .AsImplementedInterfaces()
                    .WithScopedLifetime());
+
+             services.Scan(s => s.FromAssemblyOf<IAutoRegistrationSingletonLifetimeService>()
+               .AddClasses(c => c.AssignableTo<IAutoRegistrationSingletonLifetimeService>())
+                   .AsImplementedInterfaces()
+                   .WithSingletonLifetime());
 
         }
     }
