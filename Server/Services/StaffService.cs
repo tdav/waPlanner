@@ -16,6 +16,7 @@ using waPlanner.Utils;
 using waPlanner.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using waPlanner.Interfaces;
 
 namespace waPlanner.Services
 {
@@ -35,7 +36,7 @@ namespace waPlanner.Services
         ValueTask<AnswerBasic> OnForgotPassword(string PhoneNum);
     }
 
-    public class StaffService : IStaffService
+    public class StaffService : IStaffService, IAutoRegistrationScopedLifetimeService
     {
         private readonly MyDbContext db;
         private readonly IConfiguration conf;

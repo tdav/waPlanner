@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
+using waPlanner.Interfaces;
 using waPlanner.ModelViews;
 using waPlanner.TelegramBot;
 using waPlanner.Utils;
@@ -16,7 +17,7 @@ namespace waPlanner.Services
     {
         Task<Answer<viRegistration>> RegistrAsync(viRegistration viRegistration);
     }
-    public class RegistrationService: IRegistrationService
+    public class RegistrationService: IRegistrationService, IAutoRegistrationScopedLifetimeService
     {
         private readonly ILogger<RegistrationService> logger;
         private readonly MyDbContext db;

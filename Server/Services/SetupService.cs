@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Extensions;
+using waPlanner.Interfaces;
 using waPlanner.ModelViews;
 
 namespace waPlanner.Services
@@ -14,7 +15,7 @@ namespace waPlanner.Services
         Task<AnswerBasic> Set(viSetup v);
     }
 
-    public class SetupService : ISetupService
+    public class SetupService : ISetupService, IAutoRegistrationScopedLifetimeService
     {
         private readonly MyDbContext db;
         private readonly IHttpContextAccessorExtensions accessor;

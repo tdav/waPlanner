@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
 using waPlanner.Extensions;
+using waPlanner.Interfaces;
 using waPlanner.ModelViews;
 
 namespace waPlanner.Services
@@ -18,7 +19,7 @@ namespace waPlanner.Services
         Task<Answer<spSpecialization>> GetSpecializationByIdAsync(int spec_id);
         Task<AnswerBasic> ChangeSpecializationStatus(int spec_id, int status);
     }
-    public class SpecializationService: ISpecializationService
+    public class SpecializationService: ISpecializationService, IAutoRegistrationScopedLifetimeService
     {
         private readonly MyDbContext db;
         private readonly IHttpContextAccessorExtensions accessor;

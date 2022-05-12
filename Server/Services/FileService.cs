@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using waPlanner.Interfaces;
 using waPlanner.ModelViews;
 using waPlanner.Utils;
 
@@ -13,7 +14,7 @@ namespace waPlanner.Controllers.v1
         ValueTask<Answer<string>> SaveFile(IFormFile fileForm, int seller);
     }
         
-    public class FileService : IFileService
+    public class FileService : IFileService, IAutoRegistrationScopedLifetimeService
     {
         public async ValueTask<Answer<string>> SaveFile(IFormFile fileForm, int seller)
         {

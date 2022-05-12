@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
+using waPlanner.Interfaces;
 using waPlanner.ModelViews;
 
 namespace waPlanner.TelegramBot.Utils
@@ -60,7 +61,7 @@ namespace waPlanner.TelegramBot.Utils
         Task<bool> CheckValidOrg(string org_name);
     }
 
-    public class DbManipulations : IDbManipulations
+    public class DbManipulations : IDbManipulations, IAutoRegistrationScopedLifetimeService
     {
         private readonly MyDbContext db;
         private readonly IMemoryCache cache;

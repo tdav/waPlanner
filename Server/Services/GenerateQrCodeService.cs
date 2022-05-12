@@ -1,4 +1,5 @@
 ﻿using IronBarCode;
+using waPlanner.Interfaces;
 
 namespace waPlanner.Services
 {
@@ -8,7 +9,7 @@ namespace waPlanner.Services
     }
 
 
-    public class GenerateQrCodeService : IGenerateQrCodeService
+    public class GenerateQrCodeService : IGenerateQrCodeService, IAutoRegistrationScopedLifetimeService
     {
         public byte[] Run(string url)
         {

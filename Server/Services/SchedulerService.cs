@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
 using waPlanner.Extensions;
+using waPlanner.Interfaces;
 using waPlanner.ModelViews;
 
 namespace waPlanner.Services
@@ -21,7 +22,7 @@ namespace waPlanner.Services
 
 
     }
-    public class SchedulerService: ISchedulerService
+    public class SchedulerService: ISchedulerService, IAutoRegistrationScopedLifetimeService
     {
         private readonly MyDbContext db;
         private readonly IHttpContextAccessorExtensions accessor;

@@ -182,8 +182,8 @@ namespace waPlanner.Services
                             Text = $"Ваш новый пароль <code>{generatePassword}</code>"
                         }
                     };
-
-                    await client.SendMessageAsync(chatId: staff.TelegramId.Value, inputMessageContent: content);
+                    var chat = client.CreatePrivateChatAsync(staff.TelegramId.Value);
+                    await client.SendMessageAsync(chatId: chat.Id, inputMessageContent: content);
                 }
                 return new Answer<string>(false, "bla", generatePassword);
             }

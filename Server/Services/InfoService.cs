@@ -8,6 +8,7 @@ using System;
 using waPlanner.TelegramBot;
 using waPlanner.Extensions;
 using Microsoft.Extensions.Logging;
+using waPlanner.Interfaces;
 
 namespace waPlanner.Services
 {
@@ -19,7 +20,7 @@ namespace waPlanner.Services
         Task<Answer<List<viRecentSchedulers>>> GetRecentUsers();
         Task<Answer<List<viSchedulerDiagramma>>> GetSchedulerDiagramma();
     }
-    public class InfoService : IInfoService
+    public class InfoService : IInfoService, IAutoRegistrationScopedLifetimeService
     {
         private readonly MyDbContext db;
         private readonly IHttpContextAccessorExtensions accessor;

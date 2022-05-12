@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
 using waPlanner.Extensions;
+using waPlanner.Interfaces;
 using waPlanner.ModelViews;
 using waPlanner.Utils;
 
@@ -20,7 +21,7 @@ namespace waPlanner.Services
         Task<Answer<spOrganization>> GetOrgByIdAsync(int id);
         Task<Answer<spOrganization[]>> GetAllOrgsAsync();
     }
-    public class OrganizationService : IOrganizationService
+    public class OrganizationService : IOrganizationService, IAutoRegistrationScopedLifetimeService
     {
         private readonly MyDbContext db;
         private readonly ILogger<OrganizationService> logger;

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
 using waPlanner.Extensions;
+using waPlanner.Interfaces;
 using waPlanner.ModelViews;
 using waPlanner.Utils;
 
@@ -21,7 +22,7 @@ namespace waPlanner.Services
         Task<Answer<viPatient[]>> SearchUserAsync(string name);
     }
 
-    public class UserService : IUserService
+    public class UserService : IUserService, IAutoRegistrationScopedLifetimeService
     {
         private readonly MyDbContext db;
         private readonly IHttpContextAccessorExtensions accessor;

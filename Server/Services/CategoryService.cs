@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
 using waPlanner.Extensions;
+using waPlanner.Interfaces;
 using waPlanner.ModelViews;
 using waPlanner.TelegramBot;
 
@@ -21,7 +22,7 @@ namespace waPlanner.Services
         Task<Answer<viCategory[]>> SearchCategory(string name);
     }
 
-    public class CategoryService : ICategoryService
+    public class CategoryService : ICategoryService, IAutoRegistrationScopedLifetimeService
     {
         private readonly MyDbContext db;
         private readonly IHttpContextAccessorExtensions accessor;
