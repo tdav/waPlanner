@@ -70,7 +70,7 @@ namespace waPlanner
         {
             if (env.IsDevelopment()) 
             {
-                app.UseMySwagger(provider);
+                
             }
             else
             {
@@ -107,8 +107,8 @@ namespace waPlanner
                 endpoints.MapControllers();
             });
 
-            app.UseSerilogRequestLogging();           
-
+            app.UseSerilogRequestLogging();
+            app.UseMySwagger(provider);
             app.UpdateMigrateDatabase();
         }
     }
