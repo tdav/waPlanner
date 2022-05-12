@@ -1,9 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using waPlanner.Controllers.v1;
 using waPlanner.Interfaces;
-using waPlanner.Services;
-using waPlanner.TelegramBot.Utils;
 
 namespace waPlanner.Extensions
 {
