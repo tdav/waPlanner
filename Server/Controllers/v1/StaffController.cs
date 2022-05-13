@@ -91,7 +91,7 @@ namespace waPlanner.Controllers.v1
         }
 
         [AllowAnonymous]
-        [HttpPost("forgot_password")]
+        [HttpPost("forgot_password/{PhoneNum}")]
         public ValueTask<Answer<IdValue>> ForgotPassword(string PhoneNum)
         {
             return service.OnForgotPassword(PhoneNum);

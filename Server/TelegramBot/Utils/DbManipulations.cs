@@ -28,7 +28,7 @@ namespace waPlanner.TelegramBot.Utils
         Task<bool> CheckUser(long chat_id);
         Task<bool> CheckUserChat(long chat_id);
         Task<viStaffInfo> GetStaffInfo(string name);
-        Task<List<IdValue>> GetStaffByCategory(string category);
+        Task<List<IdValue>> GetStaffByCategory(string category, string org_name);
         Task<bool> CheckStaffByCategory(string category, string value);
         Task<List<string>> CheckCategory(string lg);
         Task<List<DateTime>> GetStaffBusyTime(TelegramBotValuesModel value);
@@ -337,12 +337,13 @@ namespace waPlanner.TelegramBot.Utils
             return stuff;
         }
 
-        public async Task<List<IdValue>> GetStaffByCategory(string category)
+        public async Task<List<IdValue>> GetStaffByCategory(string category, string org_name)
         {
             return await db.tbStaffs
                          .AsNoTracking()
                          .Include(i => i.Category)
-                         .Where(x => x.RoleId == (int)UserRoles.STAFF && x.Status == 1 && x.Online == true &&
+                         .Include(i => i.Organization)
+                         .Where(x => x.RoleId == (int)UserRoles.STAFF && x.Status == 1 && x.Online == true && x.Organization.Name == org_name &&
                           (x.Category.NameUz == category || x.Category.NameRu == category || x.Category.NameLt == category))
                          .Select(x => new IdValue { Id = x.Id, Name = $"{x.Surname} {x.Name} {x.Patronymic}" })
                          .ToListAsync();

@@ -463,28 +463,33 @@ namespace waPlanner.Services
                 logger.LogError($"StaffService.ChangePaswwordAsync Error:{e.Message}");
                 return new AnswerBasic(false, "Ошибка программы");
             }
-            
+
         }
 
         public async ValueTask<Answer<IdValue>> OnForgotPassword(string PhoneNum)
         {
-            try
+            using (var scope = provider.CreateScope())
             {
-                using (var scope = provider.CreateScope())
+                var telegram = scope.ServiceProvider.GetService<ITelegramGroupCreatorService>();
+                try
                 {
-                    var telegram = scope.ServiceProvider.GetService<ITelegramGroupCreatorService>();
                     var value = await telegram.SendRandomPassword(PhoneNum);
-                    var staff = await db.tbStaffs.FindAsync(value.Data.Id);
+
+                    if (value.Data is null)
+                        return new Answer<IdValue>(false, "Такой номер не зарегистрирован!", null);
+
+                    var staff = await db.tbStaffs.FindAsync(value.Data.Id);     
                     staff.Password = CHash.EncryptMD5(value.Data.Name);
                     db.Update(staff);
                     await db.SaveChangesAsync();
+                    return new Answer<IdValue>(true, "", null);
                 }
-                return new Answer<IdValue>(true, "", null);
-            }
-            catch (Exception e)
-            {
-                logger.LogError($"StaffService.OnForgotPassword Error:{e.Message}");
-                return new Answer<IdValue>(false, "Ошибка программы", null);
+
+                catch (Exception e)
+                {
+                    logger.LogError($"StaffService.OnForgotPassword Error:{e.Message}");
+                    return await telegram.SendRandomPassword(null);
+                }
             }
         }
     }
