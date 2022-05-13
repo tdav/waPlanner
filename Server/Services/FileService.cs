@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using waPlanner.Extensions;
 using waPlanner.Interfaces;
 using waPlanner.ModelViews;
 using waPlanner.Utils;
@@ -17,9 +18,17 @@ namespace waPlanner.Controllers.v1
         
     public class FileService : IFileService, IAutoRegistrationScopedLifetimeService
     {
+        private readonly IHttpContextAccessorExtensions accessor;
+
+        public FileService(IHttpContextAccessorExtensions accessor)
+        {
+            this.accessor = accessor;
+        }
+
         public async ValueTask<Answer<string>> SaveAnalizeResultFile(viAnalizeResultFile fileForm, int uid)
-        {            
-            var path = $"{AppDomain.CurrentDomain.BaseDirectory}wwwroot{Path.DirectorySeparatorChar}store{Path.DirectorySeparatorChar}";
+        {
+            int org_id = accessor.GetOrgId();
+            var path = $"{AppDomain.CurrentDomain.BaseDirectory}wwwroot{Path.DirectorySeparatorChar}store{Path.DirectorySeparatorChar}analize{Path.DirectorySeparatorChar}{org_id}";
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
 
