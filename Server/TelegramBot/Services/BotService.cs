@@ -348,7 +348,7 @@ namespace waPlanner.TelegramBot.Services
                             await DbManipulations.UpdateUserPhone(chat_id, msg);
                             await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["CONFIRMED"]);
                             cache.State = PlannerStates.SETTINGS;
-                            await bot.SendTextMessageAsync(chat_id, msg, replyMarkup: ReplyKeyboards.Settings(cache.Lang, lang));
+                            await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["settings"], replyMarkup: ReplyKeyboards.Settings(cache.Lang, lang));
                         }
                         else
                         {
@@ -428,8 +428,6 @@ namespace waPlanner.TelegramBot.Services
                 case PlannerStates.CATEGORY:
                     {
                         cache.Organization = msg != lang[cache.Lang]["back"] ? msg : cache.Organization;
-                        //if (await DbManipulations.CheckValidOrg(msg))
-                        //    cache.Organization = msg;
 
                         if (await DbManipulations.CheckGovermentOrg(cache.Specialization) && msg != lang[cache.Lang]["back"])
                         {

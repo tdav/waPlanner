@@ -17,7 +17,7 @@ namespace waPlanner.Controllers.v1
         
     public class FileService : IFileService, IAutoRegistrationScopedLifetimeService
     {
-        public ValueTask<Answer<string>> SaveAnalizeResultFile(viAnalizeResultFile fileForm, int uid)
+        public async ValueTask<Answer<string>> SaveAnalizeResultFile(viAnalizeResultFile fileForm, int uid)
         {            
             var path = $"{AppDomain.CurrentDomain.BaseDirectory}wwwroot{Path.DirectorySeparatorChar}store{Path.DirectorySeparatorChar}";
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
@@ -33,7 +33,7 @@ namespace waPlanner.Controllers.v1
 
             using (var ms = new MemoryStream())
             {
-                await fileForm.CopyToAsync(ms);         
+                //await fileForm.CopyToAsync(ms);         
 
                 await File.WriteAllBytesAsync(path + fileName, ms.ToArray());
 

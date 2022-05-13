@@ -58,7 +58,6 @@ namespace waPlanner.TelegramBot.Utils
         Task<bool> CheckOrgFavorites(long user_chat, int org_id);
         Task<List<IdValue>> SendOrgFavorites(long chat_id);
         Task<string> GetSpecializationByOrganization(string organization);
-        Task<bool> CheckValidOrg(string org_name);
     }
 
     public class DbManipulations : IDbManipulations, IAutoRegistrationScopedLifetimeService
@@ -80,14 +79,14 @@ namespace waPlanner.TelegramBot.Utils
                 var fav = await db.tbFavorites
                 .Include(x => x.Organization)
                 .AsNoTracking()
-                .Where(f => f.UserId == user_id)
+                .Where(f => f.UserId == user_id && f.StaffId != null)
                 .Select(f => new IdValue
                 {
                     Id = f.StaffId != null ? f.StaffId.Value : 0  ,
                     Name = $"({f.Organization.Name}) {f.Staff.Surname} {f.Staff.Name} {f.Staff.Patronymic}"
                 })
                 .ToListAsync();
-                if (fav[0].Id != 0)
+                if (fav is not null && fav[0].Id != 0)
                     return fav;
                 return null;
             }
@@ -482,6 +481,8 @@ namespace waPlanner.TelegramBot.Utils
         public async Task UpdateUserLang(long chat_id, string lg)
         {
             var user_id = await GetUserId(chat_id);
+            if (user_id == 0) return;
+
             var setup = await db.spSetups
                 .AsNoTracking()
                 .Where(x => x.UserId == user_id)
@@ -761,14 +762,6 @@ namespace waPlanner.TelegramBot.Utils
             if (spec is not null)
                 return spec.Specialization.NameUz;
             return null;
-        }
-
-        public async Task<bool> CheckValidOrg(string org_name)
-        {
-            return await db.spOrganizations
-                .AsNoTracking()
-                .Where(x => x.Name == org_name)
-                .AnyAsync();
         }
     }
 }
