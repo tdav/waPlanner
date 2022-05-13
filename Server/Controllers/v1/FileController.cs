@@ -37,5 +37,20 @@ namespace waPlanner.Controllers.v1
             
             return info;
         }
+
+
+        [HttpPost("send-analize-result")]
+        [Consumes("multipart/form-data")]
+        public async ValueTask<Answer<string>> PostAnalizeResultFile(viAnalizeResultFile fileForm)
+        {
+            //var roles = accessor.GetRoles();
+            //if (!roles.Contains("2")) return new Answer<string>(false, "Role Продавец булиши керак", null);
+
+            var uid = accessor.GetId();
+
+            var info = await service.SaveAnalizeResultFile(fileForm, uid);
+
+            return info;
+        }
     }
 }

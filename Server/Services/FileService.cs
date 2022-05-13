@@ -12,10 +12,39 @@ namespace waPlanner.Controllers.v1
     public interface IFileService
     {
         ValueTask<Answer<string>> SaveFile(IFormFile fileForm, int seller);
+        ValueTask<Answer<string>> SaveAnalizeResultFile(viAnalizeResultFile fileForm, int uid);
     }
         
     public class FileService : IFileService, IAutoRegistrationScopedLifetimeService
     {
+        public ValueTask<Answer<string>> SaveAnalizeResultFile(viAnalizeResultFile fileForm, int uid)
+        {            
+            var path = $"{AppDomain.CurrentDomain.BaseDirectory}wwwroot{Path.DirectorySeparatorChar}store{Path.DirectorySeparatorChar}";
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+
+
+            //  "/store/2022-05-13/10/fileName
+
+            //Kun buych popka ochish
+            //UserId papka ochish
+
+
+            var fileName = $"{fileForm.UserId}_{fileForm.StaffId}_{Guid.NewGuid().ToString("N")}.jpg";
+
+            using (var ms = new MemoryStream())
+            {
+                await fileForm.CopyToAsync(ms);         
+
+                await File.WriteAllBytesAsync(path + fileName, ms.ToArray());
+
+                var fileUrl = $"/store/{fileName}";
+
+
+
+                return new Answer<string>(true, "Downloaded", fileUrl);
+            }
+        }
+
         public async ValueTask<Answer<string>> SaveFile(IFormFile fileForm, int seller)
         {
             if (fileForm == null || fileForm.FileName == "") return new Answer<string>(false, "Юборилган файл келмади", null);

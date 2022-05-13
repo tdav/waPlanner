@@ -15,6 +15,7 @@ namespace waPlanner.Database
         public DbSet<spRole> spRoles { get; set; }
         public DbSet<spSetup> spSetups { get; set; }
         public DbSet<spSpecialization> spSpecializations{ get; set; }
+        public DbSet<tbAnalizeResult> tbAnalizeResults{ get; set; }
         public DbSet<tbFavorites> tbFavorites { get; set; }
         public DbSet<tbScheduler> tbSchedulers { get; set; }
         public DbSet<tbStaff> tbStaffs { get; set; }
