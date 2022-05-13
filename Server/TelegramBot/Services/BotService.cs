@@ -449,7 +449,7 @@ namespace waPlanner.TelegramBot.Services
                         if (!check_category.Contains(msg) && msg != lang[cache.Lang]["back"]) return;
 
                         cache.Category = msg != lang[cache.Lang]["back"] ? msg : cache.Category;
-                        menu = await DbManipulations.GetStaffByCategory(cache.Category);
+                        menu = await DbManipulations.GetStaffByCategory(cache.Category, cache.Organization);
                         cache.State = msg != lang[cache.Lang]["back"] ? PlannerStates.CHOOSE_DATE : cache.State;
                         message_for_user = await DbManipulations.GetOrgMessage(cache.Organization, cache.Lang);
                         break;

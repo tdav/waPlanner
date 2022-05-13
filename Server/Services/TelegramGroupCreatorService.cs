@@ -164,7 +164,6 @@ namespace waPlanner.Services
         {
             try
             {
-                string generatePassword = Utils.GeneratePassword.CreatePassword();
                 using (var scope = provider.CreateScope())
                 {
                     var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
@@ -175,8 +174,9 @@ namespace waPlanner.Services
                         .FirstOrDefaultAsync(x => x.PhoneNum == PhoneNum);
 
                     if (staff is null)
-                        return new Answer<IdValue>(false, "Такой номер не зарегистрирован!", null);
+                        return new Answer<IdValue>(false, "", null);
 
+                    string generatePassword = Utils.GeneratePassword.CreatePassword();
                     var text = await client.ParseTextEntitiesAsync($"Ваш новый пароль: <code>{generatePassword}</code>. Никому не передавайте!", new TdApi.TextParseMode.TextParseModeHTML());
                     var content = new TdApi.InputMessageContent.InputMessageText
                     {
