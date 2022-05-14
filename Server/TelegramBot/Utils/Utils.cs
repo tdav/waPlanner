@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using waPlanner.ModelViews;
 using IronBarCode;
-using Telegram.Bot.Types.InputFiles;
-using System.IO;
 
 namespace waPlanner.TelegramBot.Utils
 {

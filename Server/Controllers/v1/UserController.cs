@@ -23,13 +23,13 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpPost("new")]
-        public async Task<Answer<viPatient>> AddNewPatient(viPatient patient)
+        public async Task<Answer<viPatient>> AddNewPatient([FromBody] viPatient patient)
         {
             return await service.AddAsync(patient);
         }
 
         [HttpPost("change")]
-        public async Task<AnswerBasic> UpdatePatient(viPatient patient)
+        public async Task<AnswerBasic> UpdatePatient([FromBody] viPatient patient)
         {
             return await service.UpdateAsync(patient);
         }

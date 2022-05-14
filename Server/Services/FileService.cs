@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using waPlanner.Database;
+using waPlanner.Database.Models;
 using waPlanner.Extensions;
 using waPlanner.Interfaces;
 using waPlanner.ModelViews;
@@ -9,7 +12,6 @@ using waPlanner.Utils;
 
 namespace waPlanner.Controllers.v1
 {
-    [DInjectionAttribute]
     public interface IFileService
     {
         ValueTask<Answer<string>> SaveFile(IFormFile fileForm, int seller);
@@ -19,39 +21,71 @@ namespace waPlanner.Controllers.v1
     public class FileService : IFileService, IAutoRegistrationScopedLifetimeService
     {
         private readonly IHttpContextAccessorExtensions accessor;
+        private readonly MyDbContext db;
+        private readonly ILogger<FileService> logger;
 
-        public FileService(IHttpContextAccessorExtensions accessor)
+        public FileService(IHttpContextAccessorExtensions accessor, ILogger<FileService> logger, MyDbContext db)
         {
             this.accessor = accessor;
+            this.logger = logger;
+            this.db = db;
         }
 
         public async ValueTask<Answer<string>> SaveAnalizeResultFile(viAnalizeResultFile fileForm, int uid)
         {
-            int org_id = accessor.GetOrgId();
-            var path = $"{AppDomain.CurrentDomain.BaseDirectory}wwwroot{Path.DirectorySeparatorChar}store{Path.DirectorySeparatorChar}analize{Path.DirectorySeparatorChar}{org_id}";
-            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-
-
-            //  "/store/2022-05-13/10/fileName
-
-            //Kun buych popka ochish
-            //UserId papka ochish
-
-
-            var fileName = $"{fileForm.UserId}_{fileForm.StaffId}_{Guid.NewGuid().ToString("N")}.jpg";
-
-            using (var ms = new MemoryStream())
+            try
             {
-                //await fileForm.CopyToAsync(ms);         
+                int org_id = accessor.GetOrgId();
+                int user_id = accessor.GetId();
+                var path = $"{AppDomain.CurrentDomain.BaseDirectory}wwwroot{Path.DirectorySeparatorChar}store{Path.DirectorySeparatorChar}analysis{Path.DirectorySeparatorChar}{org_id}";
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+                //  "/store/2022-05-13/10/fileName
 
-                await File.WriteAllBytesAsync(path + fileName, ms.ToArray());
+                //Kun buych popka ochish
+                //UserId papka ochish
 
-                var fileUrl = $"/store/{fileName}";
+                path += $"{Path.DirectorySeparatorChar}{DateTime.Now.Date:yyyy-MM-dd}";
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+
+                path += $"{Path.DirectorySeparatorChar}{fileForm.UserId}{Path.DirectorySeparatorChar}";
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
 
 
+                var fileName = $"{fileForm.UserId}_{fileForm.StaffId}_{Guid.NewGuid()}.pdf";
+                using (var ms = new MemoryStream())
+                {
+                    var fileUrl = $"/store/analysis/{org_id}/{DateTime.Now.Date:yyyy-MM-dd}/{fileForm.UserId}/{fileName}";
 
-                return new Answer<string>(true, "Downloaded", fileUrl);
+                    var analysisResult = new tbAnalizeResult
+                    {
+                        UserId = fileForm.UserId,
+                        StaffId = fileForm.StaffId,
+                        OrganizationId = org_id,
+                        Url = fileUrl,
+                        CreateDate = DateTime.Now,
+                        CreateUser = user_id,
+                        Status = 1
+                    };
+                    if (fileForm.AdInfo is not null)
+                        analysisResult.AdInfo = fileForm.AdInfo;
+                    
+                    await db.AddAsync(analysisResult);
+                    await db.SaveChangesAsync();
+
+                    await fileForm.FileData.CopyToAsync(ms);
+                    await File.WriteAllBytesAsync(path + fileName, ms.ToArray());
+                    return new Answer<string>(true, "Downloaded", fileUrl);
+                }
             }
+            catch (Exception e)
+            {
+                logger.LogError($"FileService.SaveAnalizeResultFile Error:{e.Message} Model:{fileForm.ToJson()}");
+                return new Answer<string>(false, "Ошибка программы", null);
+            }
+            
         }
 
         public async ValueTask<Answer<string>> SaveFile(IFormFile fileForm, int seller)

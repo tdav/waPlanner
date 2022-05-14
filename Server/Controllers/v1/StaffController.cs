@@ -43,7 +43,7 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpPost()]
-        public async Task<Answer<viStaff>> AddStaff(viStaff staff)
+        public async Task<Answer<viStaff>> AddStaff([FromBody] viStaff staff)
         {
             return await service.AddStaffAsync(staff);
         }
@@ -55,7 +55,7 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpPost("change")]
-        public async Task<Answer<viStaff>> ChangeStaff(viStaff staff)
+        public async Task<Answer<viStaff>> ChangeStaff([FromBody] viStaff staff)
         {
             return await service.UpdateStaff(staff);
         }

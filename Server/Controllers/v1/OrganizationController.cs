@@ -28,7 +28,7 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpPost("change")]
-        public async Task<AnswerBasic> UpdateOrganizationA(viOrganization organziation)
+        public async Task<AnswerBasic> UpdateOrganizationA([FromBody] viOrganization organziation)
         {
             return await service.UpdateOrganizationAsync(organziation);
         }

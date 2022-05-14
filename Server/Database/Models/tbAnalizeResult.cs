@@ -1,13 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using Toolbelt.ComponentModel.DataAnnotations.Schema.V5;
 using waPlanner.ModelViews;
 
 namespace waPlanner.Database.Models
 {
-    /// <summary>
-    /// Тизим фойдаланувчилар (Доктор, Официант)
-    /// </summary>
     public class tbAnalizeResult : BaseModel
     {
         public int Id { get; set; }

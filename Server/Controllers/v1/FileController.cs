@@ -41,7 +41,7 @@ namespace waPlanner.Controllers.v1
 
         [HttpPost("send-analize-result")]
         [Consumes("multipart/form-data")]
-        public async ValueTask<Answer<string>> PostAnalizeResultFile(viAnalizeResultFile fileForm)
+        public async ValueTask<Answer<string>> PostAnalizeResultFile([FromForm]viAnalizeResultFile fileForm)
         {
             //var roles = accessor.GetRoles();
             //if (!roles.Contains("2")) return new Answer<string>(false, "Role Продавец булиши керак", null);

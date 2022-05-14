@@ -3,12 +3,12 @@ using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
 using waPlanner.Interfaces;
 using waPlanner.ModelViews;
+using waPlanner.Utils;
 
 namespace waPlanner.TelegramBot.Utils
 {
@@ -214,7 +214,7 @@ namespace waPlanner.TelegramBot.Utils
             var setup = new spSetup
             {
                 UserId = user_id,
-                Text = Newtonsoft.Json.JsonConvert.SerializeObject(setting),
+                Text = ObectsExtensions.ToJson(setting),
                 CreateDate = DateTime.Now,
                 CreateUser = user_id,
                 Status = 1
@@ -233,7 +233,7 @@ namespace waPlanner.TelegramBot.Utils
                    .FirstOrDefaultAsync(x => x.UserId == user_id);
                 if (setup is not null)
                 {
-                    return JsonSerializer.Deserialize<viSetup>(setup.Text);
+                    return ObectsExtensions.FromJson<viSetup>(setup.Text);
                 }
                 return null;
             }
@@ -487,10 +487,10 @@ namespace waPlanner.TelegramBot.Utils
                 .AsNoTracking()
                 .Where(x => x.UserId == user_id)
                 .FirstAsync();
-            var sets = Newtonsoft.Json.JsonConvert.DeserializeObject<viSetup>(setup.Text);
+            var sets = ObectsExtensions.FromJson<viSetup>(setup.Text);
 
             var setting = new viSetup { Lang = lg, Theme = sets.Theme };
-            setup.Text = Newtonsoft.Json.JsonConvert.SerializeObject(setting);
+            setup.Text = ObectsExtensions.ToJson(setting);
             db.spSetups.Update(setup);
             await db.SaveChangesAsync();
         }

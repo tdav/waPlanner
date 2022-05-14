@@ -21,7 +21,7 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpPost]
-        public Task<Answer<viRegistration>> Registration(viRegistration staff)
+        public Task<Answer<viRegistration>> Registration([FromBody] viRegistration staff)
         {
             return service.RegistrAsync(staff);
         }
