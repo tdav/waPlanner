@@ -38,11 +38,12 @@
         GET_SERIA = 20,
 
         CATEGORY = 21,
-        STUFF = 22,
+        STAFF = 22,
         CHOOSE_DATE = 23,
         CHOOSE_TIME = 24,
         PHONE = 25,
         USERNAME = 26,
         ADD_FAVORITES = 27,
+        ANALYSIS = 28,
     }
 }

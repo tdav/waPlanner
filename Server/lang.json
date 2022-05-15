@@ -39,6 +39,8 @@
       "WRONG_INFO": "Введены неправильные данные!",
       "PASSWORD": "Введите пароль",
       "CHOOSE_FAVORITES_TYPE": "Выберите тип",
+      "ANALYS_RESULT": "<b>Дополнительная информация:</b>",
+      "EMTY_RESULT": "У вас нет результатов анализов!",
 
       "back": "⬅️Назад",
       "book": "📄Сделать бронь",
@@ -53,7 +55,8 @@
       "change_phone": "☎️Изменить номер",
       "change_lang": "Изменить язык🇷🇺",
       "org_favorites": "🏬Организации",
-      "staff_favorites": "👤Специалисты"
+      "staff_favorites": "👤Специалисты",
+      "analysis": "🧬Результаты Анализов"
     },
 
     "uz": {
@@ -95,6 +98,8 @@
       "WRONG_INFO": "Ma'lumotlar noto'g'ri kiritilgan!",
       "PASSWORD": "Parolingizni kiriting",
       "CHOOSE_FAVORITES_TYPE": "Tipini tanlang",
+      "ANALYS_RESULT": "<b>Qo'shimcha ma'lumot:</b>",
+      "EMTY_RESULT": "Sizda test natijalari yo'q!",
 
       "back": "⬅️Ortga",
       "book": "📄Band qilish",
@@ -109,7 +114,8 @@
       "change_phone": "☎️Nomerni o'zgartirish",
       "change_lang": "Tilni o'zgartirish🇺🇿",
       "org_favorites": "🏬Tashkilotlar",
-      "staff_favorites": "👤Mutaxasislar"
+      "staff_favorites": "👤Mutaxasislar",
+      "analysis": "🧬Tahlil natijalari"
     }
   }
 }

@@ -95,7 +95,7 @@ namespace waPlanner.TelegramBot.Services
                                         {
                                             if (update.Message.Type != MessageType.Contact && update.Message.Text.Length > 6 && update.Message.Text[0..6] == "/start")
                                             {
-                                                
+
                                                 await db.AddNewUserChat(chat_id);
                                                 if (update.Message.Text[7] == 'o')
                                                 {
@@ -106,7 +106,7 @@ namespace waPlanner.TelegramBot.Services
                                                     }
 
                                                 }
-                                                
+
                                                 else
                                                 {
                                                     long.TryParse(update.Message.Text[6..].Replace(" ", ""), out long deep_link);
@@ -114,7 +114,7 @@ namespace waPlanner.TelegramBot.Services
                                                     {
                                                         await db.AddToFavorites(telg_obj, chat_id, deep_link);
                                                     }
-                                                } 
+                                                }
                                                 await bot.SendTextMessageAsync(chat_id, "Добавился в избранное\nSevimlilarga qo'shildi");
                                             }
                                             await BotOnMessageReceivedAsync(update.Message, db, telg_obj);
@@ -305,7 +305,7 @@ namespace waPlanner.TelegramBot.Services
                             menu = await DbManipulations.SendCategoriesByOrgName(cache.Organization, cache.Lang);
                             message_for_user = lang[cache.Lang]["CHOOSE_CAT"];
                             cache.Specialization = spec;
-                            cache.State = PlannerStates.STUFF;
+                            cache.State = PlannerStates.STAFF;
                         }
                         break;
                     }
@@ -388,63 +388,30 @@ namespace waPlanner.TelegramBot.Services
                     }
                 case PlannerStates.ORGANIZATION:
                     {
+                        var check_spec = await DbManipulations.CheckSpecialization(msg);
+                        if (!check_spec && msg != lang[cache.Lang]["back"]) return;
+
                         cache.Specialization = msg != lang[cache.Lang]["back"] ? msg : cache.Specialization;
                         message_for_user = lang[cache.Lang]["CHOOSE_ORG"];
                         menu = await DbManipulations.SendOrganizations(cache.Specialization);
                         cache.State = PlannerStates.CATEGORY;
                         break;
                     }
-
-                case PlannerStates.GET_PINFL:
-                    {
-                        if (await DbManipulations.CheckUserPINFL(msg) && msg != lang[cache.Lang]["back"])
-                        {
-                            await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["SERIA"], parseMode: ParseMode.Html);
-                            cache.State = PlannerStates.GET_SERIA;
-                            break;
-                        }
-                        else
-                        {
-                            await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["WRONG_INFO"]);
-                            return;
-                        }
-                    }
-                case PlannerStates.GET_SERIA:
-                    {
-                        if (await DbManipulations.CheckUserPassportSeria(msg) && msg != lang[cache.Lang]["back"])
-                        {
-                            menu = await DbManipulations.SendCategoriesByOrgName(cache.Organization, cache.Lang);
-                            cache.State = PlannerStates.STUFF;
-                            message_for_user = lang[cache.Lang]["CHOOSE_CAT"];
-                            break;
-                        }
-                        else
-                        {
-                            await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["WRONG_INFO"]);
-                            return;
-                        }
-                    }
-
                 case PlannerStates.CATEGORY:
                     {
+                        var check_org = await DbManipulations.CheckOrganization(msg);
+                        if (!check_org && msg != lang[cache.Lang]["back"]) return;
+
                         cache.Organization = msg != lang[cache.Lang]["back"] ? msg : cache.Organization;
-
-                        if (await DbManipulations.CheckGovermentOrg(cache.Specialization) && msg != lang[cache.Lang]["back"])
-                        {
-                            await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["PINFL"], replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang));
-                            cache.State = PlannerStates.GET_PINFL;
-                            break;
-                        }
-
                         menu = await DbManipulations.SendCategoriesByOrgName(cache.Organization, cache.Lang);
-                        cache.State = PlannerStates.STUFF;
+                        cache.State = PlannerStates.STAFF;
                         message_for_user = lang[cache.Lang]["CHOOSE_CAT"];
                         break;
                     }
-                case PlannerStates.STUFF:
+                case PlannerStates.STAFF:
                     {
-                        var check_category = await DbManipulations.CheckCategory(cache.Lang);
-                        if (!check_category.Contains(msg) && msg != lang[cache.Lang]["back"]) return;
+                        var check_category = await DbManipulations.CheckCategory(msg);
+                        if (!check_category && msg != lang[cache.Lang]["back"]) return;
 
                         cache.Category = msg != lang[cache.Lang]["back"] ? msg : cache.Category;
                         menu = await DbManipulations.GetStaffByCategory(cache.Category, cache.Organization);
@@ -452,6 +419,7 @@ namespace waPlanner.TelegramBot.Services
                         message_for_user = await DbManipulations.GetOrgMessage(cache.Organization, cache.Lang);
                         break;
                     }
+
                 case PlannerStates.CHOOSE_DATE:
                     {
                         if (!await DbManipulations.CheckStaffByCategory(cache.Category, msg) && msg != lang[cache.Lang]["back"]) return;
@@ -528,7 +496,12 @@ namespace waPlanner.TelegramBot.Services
             if (menu is not null)
             {
                 var buttons = ReplyKeyboards.SendMenuKeyboards(menu);
+
+                if (await DbManipulations.CheckSpecializationType(cache.Organization) && cache.State == PlannerStates.STAFF) 
+                    buttons.Add(new List<KeyboardButton> { new KeyboardButton(lang[cache.Lang]["analysis"]) });
+
                 if (cache.State > 0) buttons.Add(new List<KeyboardButton> { new KeyboardButton(lang[cache.Lang]["back"]) });
+
                 ReplyKeyboardMarkup markup = new(buttons) { ResizeKeyboard = true };
                 await bot.SendTextMessageAsync(chat_id, message_for_user, replyMarkup: markup);
                 return;
@@ -587,7 +560,7 @@ namespace waPlanner.TelegramBot.Services
                             cache.State = PlannerStates.SPECIALIZATION;
                             break;
                         }
-                    case PlannerStates.STUFF:
+                    case PlannerStates.STAFF:
                         {
                             cache.State = PlannerStates.ORGANIZATION;
                             break;
@@ -704,6 +677,20 @@ namespace waPlanner.TelegramBot.Services
                 }
                 cache.State = PlannerStates.PREPARE_CHECK_PHONE;
                 await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["ON_CHANGE_PHONE"], replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang), parseMode: ParseMode.Html);
+            }
+            else if (command == lang[cache.Lang]["analysis"])
+            {
+                var result = await Utils.Utils.SendAnalysisResult(chat_id, cache, db, lang);
+
+                if (result is null || result.FileUrl is null)
+                {
+                    await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["EMTY_RESULT"]);
+                    return;
+                }
+
+                await using Stream stream = System.IO.File.OpenRead($"{AppDomain.CurrentDomain.BaseDirectory}wwwroot/{result.FileUrl}");
+                var file = new InputOnlineFile(stream) { FileName = chat_id.ToString() + ".pdf" };
+                await bot.SendDocumentAsync(chat_id, file, caption: result.AdInfo, parseMode: ParseMode.Html);
             }
         }
     }

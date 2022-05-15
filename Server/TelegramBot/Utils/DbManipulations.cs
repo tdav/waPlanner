@@ -8,6 +8,7 @@ using waPlanner.Database;
 using waPlanner.Database.Models;
 using waPlanner.Interfaces;
 using waPlanner.ModelViews;
+using waPlanner.ModelViews.TelegramViews;
 using waPlanner.Utils;
 
 namespace waPlanner.TelegramBot.Utils
@@ -30,7 +31,9 @@ namespace waPlanner.TelegramBot.Utils
         Task<viStaffInfo> GetStaffInfo(string name);
         Task<List<IdValue>> GetStaffByCategory(string category, string org_name);
         Task<bool> CheckStaffByCategory(string category, string value);
-        Task<List<string>> CheckCategory(string lg);
+        Task<bool> CheckCategory(string category);
+        Task<bool> CheckOrganization(string organization);
+        Task<bool> CheckSpecialization(string specialization);
         Task<List<DateTime>> GetStaffBusyTime(TelegramBotValuesModel value);
         Task<int[]> CheckStaffAvailability(string staff_name);
         Task AddToFavorites(TelegramBotValuesModel value, long user_chat, long staff_chat = 0);
@@ -44,9 +47,6 @@ namespace waPlanner.TelegramBot.Utils
         Task<viOrgTimes> GetOrgWorkTime(string org_name);
         Task<viTelegramCommonStatistic> GetCommonStatistic();
         Task<List<viTelegramOrgsStatistic>> GetOrgsStatistics();
-        Task<bool> CheckGovermentOrg(string spec);
-        Task<bool> CheckUserPINFL(string pinfl);
-        Task<bool> CheckUserPassportSeria(string seria);
         Task<string> GetOrgMessage(string organization, string lg);
         Task AddNewUserChat(long chat_id);
         Task<bool> CheckNumber(string number);
@@ -58,6 +58,8 @@ namespace waPlanner.TelegramBot.Utils
         Task<bool> CheckOrgFavorites(long user_chat, int org_id);
         Task<List<IdValue>> SendOrgFavorites(long chat_id);
         Task<string> GetSpecializationByOrganization(string organization);
+        Task<bool> CheckSpecializationType(string org_name);
+        Task<viAnalysisResult> GetUserAnalysis(long chat_id, string organization);
     }
 
     public class DbManipulations : IDbManipulations, IAutoRegistrationScopedLifetimeService
@@ -360,32 +362,25 @@ namespace waPlanner.TelegramBot.Utils
             return list.Any(x => x.Name == value);
         }
 
-        public async Task<List<string>> CheckCategory(string lg)
+        public async Task<bool> CheckCategory(string category)
         {
-            switch (lg)
-            {
-                case "ru":
-                    {
-                        return await db.spCategories
+            return await db.spCategories
                             .AsNoTracking()
-                            .Select(x => x.NameRu)
-                            .ToListAsync();
-                    }
-                case "uz":
-                    {
-                        return await db.spCategories
-                            .AsNoTracking()
-                            .Select(x => x.NameUz)
-                            .ToListAsync();
-                    }
-                default:
-                    {
-                        return await db.spCategories
-                            .AsNoTracking()
-                            .Select(x => x.NameLt)
-                            .ToListAsync();
-                    }
-            }
+                            .AnyAsync(x => x.NameRu == category || x.NameLt == category || x.NameUz == category);
+        }
+
+        public async Task<bool> CheckOrganization(string organization)
+        {
+            return await db.spOrganizations
+                .AsNoTracking()
+                .AnyAsync(x => x.Name == organization);
+        }
+
+        public async Task<bool> CheckSpecialization(string specialization)
+        {
+            return await db.spSpecializations
+                .AsNoTracking()
+                .AnyAsync(x => x.NameLt == specialization || x.NameRu == specialization || x.NameUz == specialization);
         }
 
         public async Task<List<DateTime>> GetStaffBusyTime(TelegramBotValuesModel value)
@@ -579,39 +574,6 @@ namespace waPlanner.TelegramBot.Utils
                 .ToListAsync();
         }
 
-        public async Task<bool> CheckGovermentOrg(string spec)
-        {
-            int spec_id = await GetSpecializationIdByName(spec);
-            var check = await db.spSpecializations
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == spec_id && (x.NameUz == "Davlat xizmatlari" || x.NameRu == "Госуслуги" || x.NameLt == "Госуслуги"));
-
-            if (check is not null)
-                return true;
-            return false;
-        }
-
-        public async Task<bool> CheckUserPINFL(string pinfl)
-        {
-            var check = await db.tbUsers
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.PINFL == pinfl);
-
-            if (check is not null)
-                return true;
-            return false;
-        }
-
-        public async Task<bool> CheckUserPassportSeria(string seria)
-        {
-            var check = await db.tbUsers
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.PassportSeria == seria);
-            if (check is not null)
-                return true;
-            return false;
-        }
-
         public async Task<string> GetOrgMessage(string organization, string lg)
         {
             var get_org = await db.spOrganizations
@@ -665,7 +627,7 @@ namespace waPlanner.TelegramBot.Utils
         {
             var get_staff = await db.tbStaffs
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Password == waPlanner.Utils.CHash.EncryptMD5(password) && x.PhoneNum == phone);
+                .FirstOrDefaultAsync(x => x.Password == CHash.EncryptMD5(password) && x.PhoneNum == phone);
             if (get_staff is not null)
             {
                 var staff = await db.tbStaffs.FindAsync(get_staff.Id);
@@ -762,6 +724,34 @@ namespace waPlanner.TelegramBot.Utils
             if (spec is not null)
                 return spec.Specialization.NameUz;
             return null;
+        }
+
+        public async Task<bool> CheckSpecializationType(string org_name)
+        {
+            return await db.spOrganizations
+                .Include(x => x.Specialization)
+                .AsNoTracking()
+                .Where(x => x.Name == org_name && (x.Specialization.NameRu == "Медицинские услуги" || x.Specialization.NameLt == "Tibbiy xizmatlar" || 
+                x.Specialization.NameUz == "Тиббий хизматлар"))
+                .AnyAsync();
+        }
+
+        public async Task<viAnalysisResult> GetUserAnalysis(long chat_id, string organization)
+        {
+            int user_id = await GetUserId(chat_id);
+            int org_id = await GetOrganizationId(organization);
+            return await db.tbAnalizeResults
+                .Include(x => x.User)
+                .AsNoTracking()
+                .Where(x => x.UserId == user_id && x.OrganizationId == org_id && x.Status == 1)
+                .OrderBy(x => x.Id)
+                .Select(x => new viAnalysisResult
+                {
+                    FileUrl = x.Url,
+                    User = $"{x.User.Surname} {x.User.Name} {x.User.Patronymic}",
+                    AdInfo = x.AdInfo
+                })
+                .LastOrDefaultAsync();
         }
     }
 }

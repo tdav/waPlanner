@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using waPlanner.ModelViews;
-using IronBarCode;
+using waPlanner.ModelViews.TelegramViews;
 
 namespace waPlanner.TelegramBot.Utils
 {
@@ -59,18 +59,26 @@ namespace waPlanner.TelegramBot.Utils
 
         public static bool CheckUserCommand(string msg, TelegramBotValuesModel cache, LangsModel lang)
         {
-            if (cache.Lang is not null && (msg == lang[cache.Lang]["back"] || cache.State == PlannerStates.MAIN_MENU || 
-                cache.State == PlannerStates.SETTINGS || cache.State == PlannerStates.FAVORITES))
+            if (cache.Lang is not null && (msg == lang[cache.Lang]["back"] || cache.State == PlannerStates.MAIN_MENU ||
+                cache.State == PlannerStates.SETTINGS || cache.State == PlannerStates.FAVORITES || cache.State == PlannerStates.STAFF))
                 return true;
             return false;
         }
 
-        public static byte[] Run(string url)
+        public static async Task<viAnalysisResult> SendAnalysisResult(long chat_id, TelegramBotValuesModel cache, IDbManipulations db, LangsModel lang)
         {
-            return QRCodeWriter.CreateQrCode(url, 500, QRCodeWriter.QrErrorCorrectionLevel.Medium).ToPngBinaryData();
-        }
+            var results = await db.GetUserAnalysis(chat_id, cache.Organization);
 
-       
+            if (results is null) return null;
+
+            string userAnalys = $"{lang[cache.Lang]["ANALYS_RESULT"]}\n\n";
+            var analys = new viAnalysisResult
+            {
+                AdInfo = userAnalys + results.AdInfo,
+                FileUrl = results.FileUrl
+            };
+            return analys;
+        }
     }
 }
 
