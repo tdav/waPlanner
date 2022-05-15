@@ -687,7 +687,7 @@ namespace waPlanner.TelegramBot.Services
                     await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["EMTY_RESULT"]);
                     return;
                 }
-
+                //TODO async openRead method
                 await using Stream stream = System.IO.File.OpenRead($"{AppDomain.CurrentDomain.BaseDirectory}wwwroot/{result.FileUrl}");
                 var file = new InputOnlineFile(stream) { FileName = chat_id.ToString() + ".pdf" };
                 await bot.SendDocumentAsync(chat_id, file, caption: result.AdInfo, parseMode: ParseMode.Html);
