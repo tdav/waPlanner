@@ -67,7 +67,7 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpGet("search/{name}")]
-        public Task<Answer<viStaff[]>> SearchStaff(string name)
+        public ValueTask<Answer<viStaff[]>> SearchStaff(string name)
         {
             return service.SearchStaffAsync(name);
         }
@@ -95,6 +95,12 @@ namespace waPlanner.Controllers.v1
         public ValueTask<Answer<IdValue>> ForgotPassword(string PhoneNum)
         {
             return service.OnForgotPassword(PhoneNum);
+        }
+
+        [HttpPost("set_photo")]
+        public async ValueTask<Answer<string>> SetPhotoAsync(viSetPhoto photo)
+        {
+            return await service.SetPhotoAsync(photo);
         }
     }
     

@@ -41,7 +41,7 @@ namespace waPlanner.TelegramBot.keyboards
             foreach (var item in dates)
             {
                 var buttons = new List<InlineKeyboardButton>();
-                buttons.Add(InlineKeyboardButton.WithCallbackData(item, item));
+                buttons.Add(InlineKeyboardButton.WithCallbackData(item.ToShortDateString(), item.ToShortDateString()));
                 keyboards.Add(buttons);
             }
             return new InlineKeyboardMarkup(keyboards);

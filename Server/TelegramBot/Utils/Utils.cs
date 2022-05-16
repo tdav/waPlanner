@@ -1,9 +1,11 @@
 ﻿using System;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InputFiles;
 using waPlanner.ModelViews;
-using waPlanner.ModelViews.TelegramViews;
 
 namespace waPlanner.TelegramBot.Utils
 {
@@ -65,19 +67,66 @@ namespace waPlanner.TelegramBot.Utils
             return false;
         }
 
-        public static async Task<viAnalysisResult> SendAnalysisResult(long chat_id, TelegramBotValuesModel cache, IDbManipulations db, LangsModel lang)
+        //public static Document MergePDFs(IEnumerable<string> fileNames, string targetPdf)
+        //{
+        //    using (FileStream stream = new FileStream(targetPdf, FileMode.Create))
+        //    {
+        //        Document document = new Document();
+        //        PdfCopy pdf = new PdfCopy(document, stream);
+        //        PdfReader reader = null;
+        //        try
+        //        {
+        //            document.Open();
+        //            foreach (string file in fileNames)
+        //            {
+        //                reader = new PdfReader($"{AppDomain.CurrentDomain.BaseDirectory}wwwroot{ Path.DirectorySeparatorChar}"
+        //                + file);
+        //                pdf.AddDocument(reader);
+        //                reader.Close();
+        //            }
+        //            return document;
+        //        }
+        //        catch (Exception)
+        //        {
+        //            if (reader != null)
+        //            {
+        //                reader.Close();
+        //            }
+        //            return null;
+        //        }
+        //        finally
+        //        {
+        //            if (document != null)
+        //            {
+        //                document.Close();
+        //            }
+        //        }
+        //    }
+        //}
+
+        public static async Task SendAnalysisResult(long chat_id, TelegramBotValuesModel cache, IDbManipulations db, LangsModel lang, DateTime date, ITelegramBotClient bot)
         {
-            var results = await db.GetUserAnalysis(chat_id, cache.Organization);
+            var results = await db.GetUserAnalysis(chat_id, cache.Organization, date);
 
-            if (results is null) return null;
+            //MergePDFs(results, "C:/Users/Elina/dotnet/waPlanner/Server/bin/Debug/net6.0/wwwroot/store/analysis/new1.pdf");
 
-            string userAnalys = $"{lang[cache.Lang]["ANALYS_RESULT"]}\n\n";
-            var analys = new viAnalysisResult
+            if (results is null) 
             {
-                AdInfo = userAnalys + results.AdInfo,
-                FileUrl = results.FileUrl
-            };
-            return analys;
+                await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["EMTY_RESULT"]);
+                return;
+            }
+
+            foreach (var result in results)
+            {
+                var ba = await File.ReadAllBytesAsync($"{AppDomain.CurrentDomain.BaseDirectory}wwwroot/{result.FileUrl}");
+                {
+                    using (var ms = new MemoryStream(ba))
+                    {
+                        var file = new InputOnlineFile(ms) { FileName = result.User + ".pdf" };
+                        await bot.SendDocumentAsync(chat_id, file, caption: result.AdInfo, parseMode: ParseMode.Html);
+                    }
+                }
+            }
         }
     }
 }

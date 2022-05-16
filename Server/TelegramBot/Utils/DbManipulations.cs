@@ -59,8 +59,8 @@ namespace waPlanner.TelegramBot.Utils
         Task<List<IdValue>> SendOrgFavorites(long chat_id);
         Task<string> GetSpecializationByOrganization(string organization);
         Task<bool> CheckSpecializationType(string org_name);
-        Task<viAnalysisResult> GetUserAnalysis(long chat_id, string organization);
-        Task<string[]> GetUserAnalysisDates(long chat_id, string organization);
+        Task<DateTime[]> GetUserAnalysisDates(long chat_id, string organization);
+        Task<viAnalysisResult[]> GetUserAnalysis(long chat_id, string organization, DateTime date);
     }
 
     public class DbManipulations : IDbManipulations, IAutoRegistrationScopedLifetimeService
@@ -85,7 +85,7 @@ namespace waPlanner.TelegramBot.Utils
                 .Where(f => f.UserId == user_id && f.StaffId != null)
                 .Select(f => new IdValue
                 {
-                    Id = f.StaffId != null ? f.StaffId.Value : 0  ,
+                    Id = f.StaffId != null ? f.StaffId.Value : 0,
                     Name = $"({f.Organization.Name}) {f.Staff.Surname} {f.Staff.Name} {f.Staff.Patronymic}"
                 })
                 .ToListAsync();
@@ -732,32 +732,34 @@ namespace waPlanner.TelegramBot.Utils
             return await db.spOrganizations
                 .Include(x => x.Specialization)
                 .AsNoTracking()
-                .Where(x => x.Name == org_name && (x.Specialization.NameRu == "Медицинские услуги" || x.Specialization.NameLt == "Tibbiy xizmatlar" || 
+                .Where(x => x.Name == org_name && (x.Specialization.NameRu == "Медицинские услуги" || x.Specialization.NameLt == "Tibbiy xizmatlar" ||
                 x.Specialization.NameUz == "Тиббий хизматлар"))
                 .AnyAsync();
         }
 
-        public async Task<string[]> GetUserAnalysisDates(long chat_id, string organization)
+        public async Task<DateTime[]> GetUserAnalysisDates(long chat_id, string organization)
         {
             int user_id = await GetUserId(chat_id);
             int org_id = await GetOrganizationId(organization);
 
-            return await db.tbAnalizeResults
+            var list = await db.tbAnalizeResults
                 .AsNoTracking()
-                .Distinct()
                 .Where(x => x.UserId == user_id && x.OrganizationId == org_id && x.Status == 1)
-                .Select(x =>  x.CreateDate.ToShortDateString())
-                .ToArrayAsync();
+                .Select(x =>  x.CreateDate.Date)
+                .Distinct()
+                .ToListAsync();
+
+            return list.ToArray();
         }
 
-        public async Task<viAnalysisResult> GetUserAnalysis(long chat_id, string organization)
+        public async Task<viAnalysisResult[]> GetUserAnalysis(long chat_id, string organization, DateTime date)
         {
             int user_id = await GetUserId(chat_id);
             int org_id = await GetOrganizationId(organization);
             return await db.tbAnalizeResults
                 .Include(x => x.User)
                 .AsNoTracking()
-                .Where(x => x.UserId == user_id && x.OrganizationId == org_id && x.Status == 1)
+                .Where(x => x.UserId == user_id && x.OrganizationId == org_id && x.Status == 1 && x.CreateDate.Date == date.Date)
                 .OrderBy(x => x.Id)
                 .Select(x => new viAnalysisResult
                 {
@@ -765,7 +767,7 @@ namespace waPlanner.TelegramBot.Utils
                     User = $"{x.User.Surname} {x.User.Name} {x.User.Patronymic}",
                     AdInfo = x.AdInfo
                 })
-                .LastOrDefaultAsync();
+                .ToArrayAsync();
         }
     }
 }

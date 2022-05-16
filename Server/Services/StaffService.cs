@@ -28,7 +28,8 @@ namespace waPlanner.Services
         Task<AnswerBasic> SetStatusAsync(int staff_id, int status);
         Task<Answer<viStaff>> UpdateStaff(viStaff staff);
         Task<Answer<viStaff>> GetStaffById(int staff_id);
-        Task<Answer<viStaff[]>> SearchStaffAsync(string name);
+        ValueTask<Answer<viStaff[]>> SearchStaffAsync(string name);
+        ValueTask<Answer<string>> SetPhotoAsync(viSetPhoto staff);
         Task<AnswerBasic> SetActivity(int staff_id, bool online);
         //Task<viStaffAvailability> GetStaffAvailabilityAsync(int staff_id);
         ValueTask<Answer<TokenModel>> TokenAsync(LoginModel value);
@@ -328,7 +329,7 @@ namespace waPlanner.Services
 
         }
 
-        public async Task<Answer<viStaff[]>> SearchStaffAsync(string name)
+        public async ValueTask<Answer<viStaff[]>> SearchStaffAsync(string name)
         {
             try
             {
@@ -369,7 +370,28 @@ namespace waPlanner.Services
                 logger.LogError($"StaffService.SearchStaffAsync Error:{e.Message}");
                 return new Answer<viStaff[]>(false, "Ошибка программы", null);
             }
+        }
 
+        public async ValueTask<Answer<string>> SetPhotoAsync(viSetPhoto staff)
+        {
+            try
+            {
+                var updateStaff = await db.tbStaffs.FindAsync(staff.StaffId);
+                int user_id = GetAccessor().GetId();
+
+                updateStaff.PhotoUrl = staff.PhotoUrl;
+                updateStaff.UpdateDate = DateTime.Now;
+                updateStaff.UpdateUser = user_id;
+
+                await db.SaveChangesAsync();
+
+                return new Answer<string>(true, "", updateStaff.PhotoUrl);
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"StaffService.SearchStaffAsync Error:{e.Message}");
+                return new Answer<string>(false, "Ошибка программы", null);
+            }
         }
 
         //public async Task<viStaffAvailability> GetStaffAvailabilityAsync(int staff_id)
