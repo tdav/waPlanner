@@ -17,7 +17,7 @@ namespace waPlanner.Controllers.v1
         ValueTask<Answer<string>> SaveFile(IFormFile fileForm, int seller);
         ValueTask<Answer<string>> SaveAnalizeResultFile(viAnalizeResultFile fileForm, int uid);
     }
-        
+
     public class FileService : IFileService, IAutoRegistrationScopedLifetimeService
     {
         private readonly IHttpContextAccessorExtensions accessor;
@@ -37,40 +37,32 @@ namespace waPlanner.Controllers.v1
             {
                 int org_id = accessor.GetOrgId();
                 int user_id = accessor.GetId();
+
                 var path = $"{AppDomain.CurrentDomain.BaseDirectory}wwwroot{Path.DirectorySeparatorChar}store{Path.DirectorySeparatorChar}analysis{Path.DirectorySeparatorChar}{org_id}";
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
-                //  "/store/2022-05-13/10/fileName
-
-                //Kun buych popka ochish
-                //UserId papka ochish
-
-                path += $"{Path.DirectorySeparatorChar}{DateTime.Now.Date:yyyy-MM-dd}";
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
+                if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
                 path += $"{Path.DirectorySeparatorChar}{fileForm.UserId}{Path.DirectorySeparatorChar}";
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
+                if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
+                path += $"{Path.DirectorySeparatorChar}{DateTime.Now.Date:yyyy-MM-dd}";
+                if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
                 var fileName = $"{fileForm.UserId}_{fileForm.StaffId}_{Guid.NewGuid()}.pdf";
                 using (var ms = new MemoryStream())
                 {
-                    var fileUrl = $"/store/analysis/{org_id}/{DateTime.Now.Date:yyyy-MM-dd}/{fileForm.UserId}/{fileName}";
+                    var fileUrl = $"/store/analysis/{org_id}/{fileForm.UserId}/{DateTime.Now.Date:yyyy-MM-dd}/{fileName}";
 
                     var analysisResult = new tbAnalizeResult
                     {
                         UserId = fileForm.UserId,
                         StaffId = fileForm.StaffId,
                         OrganizationId = org_id,
+                        AdInfo = fileForm.AdInfo,
                         Url = fileUrl,
                         CreateDate = DateTime.Now,
                         CreateUser = user_id,
-                        Status = 1
+                        Status = 1,
                     };
-                    if (fileForm.AdInfo is not null)
-                        analysisResult.AdInfo = fileForm.AdInfo;
                     
                     await db.AddAsync(analysisResult);
                     await db.SaveChangesAsync();
@@ -85,7 +77,6 @@ namespace waPlanner.Controllers.v1
                 logger.LogError($"FileService.SaveAnalizeResultFile Error:{e.Message} Model:{fileForm.ToJson()}");
                 return new Answer<string>(false, "Ошибка программы", null);
             }
-            
         }
 
         public async ValueTask<Answer<string>> SaveFile(IFormFile fileForm, int seller)
@@ -100,11 +91,11 @@ namespace waPlanner.Controllers.v1
 
             using (var ms = new MemoryStream())
             {
-                await fileForm.CopyToAsync(ms);                
-               // var ba = CImage.ResizeAndSave(ms.ToArray(), 750, 1334, 70);                
+                await fileForm.CopyToAsync(ms);
+                // var ba = CImage.ResizeAndSave(ms.ToArray(), 750, 1334, 70);                
 
-                await File.WriteAllBytesAsync(path+fileName, ms.ToArray());    
-                
+                await File.WriteAllBytesAsync(path + fileName, ms.ToArray());
+
                 var fileUrl = $"/store/{fileName}";
                 return new Answer<string>(true, "Downloaded", fileUrl);
             }
