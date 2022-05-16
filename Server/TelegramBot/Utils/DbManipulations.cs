@@ -60,6 +60,7 @@ namespace waPlanner.TelegramBot.Utils
         Task<string> GetSpecializationByOrganization(string organization);
         Task<bool> CheckSpecializationType(string org_name);
         Task<viAnalysisResult> GetUserAnalysis(long chat_id, string organization);
+        Task<string[]> GetUserAnalysisDates(long chat_id, string organization);
     }
 
     public class DbManipulations : IDbManipulations, IAutoRegistrationScopedLifetimeService
@@ -734,6 +735,19 @@ namespace waPlanner.TelegramBot.Utils
                 .Where(x => x.Name == org_name && (x.Specialization.NameRu == "Медицинские услуги" || x.Specialization.NameLt == "Tibbiy xizmatlar" || 
                 x.Specialization.NameUz == "Тиббий хизматлар"))
                 .AnyAsync();
+        }
+
+        public async Task<string[]> GetUserAnalysisDates(long chat_id, string organization)
+        {
+            int user_id = await GetUserId(chat_id);
+            int org_id = await GetOrganizationId(organization);
+
+            return await db.tbAnalizeResults
+                .AsNoTracking()
+                .Distinct()
+                .Where(x => x.UserId == user_id && x.OrganizationId == org_id && x.Status == 1)
+                .Select(x =>  x.CreateDate.ToShortDateString())
+                .ToArrayAsync();
         }
 
         public async Task<viAnalysisResult> GetUserAnalysis(long chat_id, string organization)

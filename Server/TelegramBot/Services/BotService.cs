@@ -689,15 +689,15 @@ namespace waPlanner.TelegramBot.Services
                     return;
                 }
 
-
-                var ba = await System.IO.File.ReadAllBytesAsync($"{AppDomain.CurrentDomain.BaseDirectory}wwwroot/{result.FileUrl}");
-                {
-                    using (var ms = new MemoryStream(ba))
-                    { 
-                        var file = new InputOnlineFile(ms) { FileName = chat_id.ToString() + ".pdf" };
-                        await bot.SendDocumentAsync(chat_id, file, caption: result.AdInfo, parseMode: ParseMode.Html);
-                    }
-                }
+                await bot.SendTextMessageAsync(chat_id, "Date", replyMarkup: await InlineKeyboards.SendUserAnalysisDates(chat_id, cache.Organization, db));
+                //var ba = await System.IO.File.ReadAllBytesAsync($"{AppDomain.CurrentDomain.BaseDirectory}wwwroot/{result.FileUrl}");
+                //{
+                //    using (var ms = new MemoryStream(ba))
+                //    { 
+                //        var file = new InputOnlineFile(ms) { FileName = chat_id.ToString() + ".pdf" };
+                //        await bot.SendDocumentAsync(chat_id, file, caption: result.AdInfo, parseMode: ParseMode.Html);
+                //    }
+                //}
             }
         }
     }
