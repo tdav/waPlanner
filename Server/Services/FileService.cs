@@ -41,10 +41,10 @@ namespace waPlanner.Controllers.v1
                 var path = $"{AppDomain.CurrentDomain.BaseDirectory}wwwroot{Path.DirectorySeparatorChar}store{Path.DirectorySeparatorChar}analysis{Path.DirectorySeparatorChar}{org_id}";
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
-                path += $"{Path.DirectorySeparatorChar}{fileForm.UserId}{Path.DirectorySeparatorChar}";
+                path += $"{Path.DirectorySeparatorChar}{fileForm.UserId}";
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
-                path += $"{Path.DirectorySeparatorChar}{DateTime.Now.Date:yyyy-MM-dd}";
+                path += $"{Path.DirectorySeparatorChar}{DateTime.Now.Date:yyyy-MM-dd}{Path.DirectorySeparatorChar}";
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
                 var fileName = $"{fileForm.UserId}_{fileForm.StaffId}_{Guid.NewGuid()}.pdf";

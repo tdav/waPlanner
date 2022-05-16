@@ -19,10 +19,10 @@ namespace waPlanner.Services
         Task<Answer<viScheduler>> GetSchedulerByIdAsync(int id);
         Task<Answer<viEvents[]>> GetAllSchedulersByOrgAsync();
         Task<Answer<TimeSpan[]>> GetStaffBusyTime(int staff_id, DateTime date);
-
+        Task<Answer<viEvents[]>> SearchScheduler(string staff_name);
 
     }
-    public class SchedulerService: ISchedulerService, IAutoRegistrationScopedLifetimeService
+    public class SchedulerService : ISchedulerService, IAutoRegistrationScopedLifetimeService
     {
         private readonly MyDbContext db;
         private readonly IHttpContextAccessorExtensions accessor;
@@ -72,7 +72,7 @@ namespace waPlanner.Services
                 logger.LogError($"SchedulerService.AddSchedulerAsync Error:{e.Message}");
                 return new Answer<int>(false, "Ошибка программы", 0);
             }
-            
+
         }
         public async Task<Answer<viScheduler>> UpdateSchedulerAsync(viScheduler scheduler)
         {
@@ -111,7 +111,7 @@ namespace waPlanner.Services
                 logger.LogError($"SchedulerService.UpdateSchedulerAsync Error:{e.Message} Model: {scheduler}");
                 return new Answer<viScheduler>(false, "Ошибка программы", null);
             }
-            
+
         }
         public async Task<AnswerBasic> UpdateSchedulerStatus(int scheduler_id, int status)
         {
@@ -130,9 +130,9 @@ namespace waPlanner.Services
                 logger.LogError($"SchedulerService.UpdateSchedulerStatus Error:{e.Message}");
                 return new AnswerBasic(false, "Ошибка программы");
             }
-            
+
         }
-     
+
         public async Task<Answer<viScheduler>> GetSchedulerByIdAsync(int id)
         {
             try
@@ -163,7 +163,7 @@ namespace waPlanner.Services
                 logger.LogError($"SchedulerService.GetSchedulerByIdAsync Error:{e.Message}");
                 return new Answer<viScheduler>(false, "Ошибка программы", null);
             }
-            
+
         }
 
         public async Task<Answer<viEvents[]>> GetAllSchedulersByOrgAsync()
@@ -195,7 +195,7 @@ namespace waPlanner.Services
                 logger.LogError($"SchedulerService.GetAllSchedulersByOrgAsync Error:{e.Message}");
                 return new Answer<viEvents[]>(false, "Ошибка программы", null);
             }
-            
+
         }
 
         public async Task<Answer<TimeSpan[]>> GetStaffBusyTime(int staff_id, DateTime date)
@@ -213,9 +213,43 @@ namespace waPlanner.Services
             catch (Exception e)
             {
                 logger.LogError($"SchedulerService.GetStaffBusyTime Error:{e.Message}");
-                return new Answer<TimeSpan[]> (false, "Ошибка программы", null);
+                return new Answer<TimeSpan[]>(false, "Ошибка программы", null);
             }
-            
+        }
+
+        public async Task<Answer<viEvents[]>> SearchScheduler(string staff_name)
+        {
+            try
+            {
+                int org_id = accessor.GetOrgId();
+
+                var search = await (from s in db.tbSchedulers
+                                    where EF.Functions.ILike(s.Staff.Surname, $"%{staff_name}%")
+                                    || EF.Functions.ILike(s.Staff.Name, $"%{staff_name}%")
+                                    || EF.Functions.ILike(s.Staff.Patronymic, $"%{staff_name}%")
+                                    select s)
+                                    .AsNoTracking()
+                                    .Where(x => x.Status == 1 && x.Staff.Status == 1 && x.OrganizationId == org_id)
+                                    .Select(x => new viEvents
+                                    {
+                                        Id = x.Id,
+                                        StaffId = x.StaffId,
+                                        Staff = $"{x.Staff.Surname} {x.Staff.Name} {x.Staff.Patronymic}",
+                                        UserId = x.UserId,
+                                        User = $"{x.User.Name} {x.User.Surname} {x.User.Patronymic}",
+                                        UserPhoneNum = x.User.PhoneNum,
+                                        Start = x.AppointmentDateTime,
+                                        End = x.AppointmentDateTime.AddMinutes(30),
+                                        AdInfo = x.AdInfo
+                                    })
+                                    .ToArrayAsync();
+                return new Answer<viEvents[]>(true, "", search);
+            }
+            catch (Exception e) 
+            {
+                logger.LogError($"SchedulerService.SearchScheduler Error:{e.Message}");
+                return new Answer<viEvents[]>(false, "Ошибка программы", null);
+            }
         }
     }
 }

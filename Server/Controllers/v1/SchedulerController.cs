@@ -56,5 +56,11 @@ namespace waPlanner.Controllers.v1
         {
             return await service.GetStaffBusyTime(staff_id, date);
         }
+
+        [HttpPost("search/{name}")]
+        public async Task<Answer<viEvents[]>> SearchAsync(string name)
+        {
+            return await service.SearchScheduler(name);
+        }
     }
 }
