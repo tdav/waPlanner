@@ -91,6 +91,7 @@ namespace waPlanner.TelegramBot.Services
                             {
                                 case UpdateType.Message:
                                     {
+                                        Console.WriteLine(update.Message.Chat.Id);
                                         if (update.Message.Chat.Type == ChatType.Private)
                                         {
                                             if (update.Message.Type != MessageType.Contact && update.Message.Text.Length > 6 && update.Message.Text[0..6] == "/start")
@@ -497,7 +498,7 @@ namespace waPlanner.TelegramBot.Services
             {
                 var buttons = ReplyKeyboards.SendMenuKeyboards(menu);
 
-                if (await DbManipulations.CheckSpecializationType(cache.Organization) && cache.State == PlannerStates.STAFF) 
+                if (await DbManipulations.CheckSpecializationType(cache.Organization) && cache.State == PlannerStates.STAFF)
                     buttons.Add(new List<KeyboardButton> { new KeyboardButton(lang[cache.Lang]["analysis"]) });
 
                 if (cache.State > 0) buttons.Add(new List<KeyboardButton> { new KeyboardButton(lang[cache.Lang]["back"]) });
@@ -687,10 +688,16 @@ namespace waPlanner.TelegramBot.Services
                     await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["EMTY_RESULT"]);
                     return;
                 }
-                //TODO async openRead method
-                await using Stream stream = System.IO.File.OpenRead($"{AppDomain.CurrentDomain.BaseDirectory}wwwroot/{result.FileUrl}");
-                var file = new InputOnlineFile(stream) { FileName = chat_id.ToString() + ".pdf" };
-                await bot.SendDocumentAsync(chat_id, file, caption: result.AdInfo, parseMode: ParseMode.Html);
+
+
+                var ba = await System.IO.File.ReadAllBytesAsync($"{AppDomain.CurrentDomain.BaseDirectory}wwwroot/{result.FileUrl}");
+                {
+                    using (var ms = new MemoryStream(ba))
+                    { 
+                        var file = new InputOnlineFile(ms) { FileName = chat_id.ToString() + ".pdf" };
+                        await bot.SendDocumentAsync(chat_id, file, caption: result.AdInfo, parseMode: ParseMode.Html);
+                    }
+                }
             }
         }
     }
