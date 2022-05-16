@@ -48,8 +48,7 @@ namespace waPlanner.Controllers.v1
 
             var uid = accessor.GetId();
 
-            var info = await service.SaveAnalizeResultFile(fileForm, uid);
-            fileForm.FileData.
+            var info = await service.SaveAnalizeResultFile(fileForm, uid);            
             return info;
         }
     }
