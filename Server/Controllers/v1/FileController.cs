@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Threading.Tasks;
+using waPlanner.Database.Models;
 using waPlanner.Extensions;
 using waPlanner.ModelViews;
 
@@ -41,14 +42,12 @@ namespace waPlanner.Controllers.v1
 
         [HttpPost("send-analize-result")]
         [Consumes("multipart/form-data")]
-        public async ValueTask<Answer<string>> PostAnalizeResultFile([FromForm]viAnalizeResultFile fileForm)
+        public async ValueTask<Answer<tbAnalizeResult>> PostAnalizeResultFile([FromForm]viAnalizeResultFile fileForm)
         {
             //var roles = accessor.GetRoles();
             //if (!roles.Contains("2")) return new Answer<string>(false, "Role Продавец булиши керак", null);
 
-            var uid = accessor.GetId();
-
-            var info = await service.SaveAnalizeResultFile(fileForm, uid);
+            var info = await service.SaveAnalizeResultFile(fileForm);
             
             return info;
         }
