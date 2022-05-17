@@ -13,7 +13,7 @@ namespace waPlanner.Services
 {
     public interface IAnalysisService
     {
-        ValueTask<Answer<viFullAnalysis[]>> GetAllAnalysis();
+        ValueTask<Answer<viFullAnalysis[]>> GetStaffAllAnalysis(int staff_id);
     }
 
     public class AnalysisService: IAnalysisService, IAutoRegistrationScopedLifetimeService
@@ -29,14 +29,14 @@ namespace waPlanner.Services
             this.logger = logger;
         }
 
-        public async ValueTask<Answer<viFullAnalysis[]>> GetAllAnalysis()
+        public async ValueTask<Answer<viFullAnalysis[]>> GetStaffAllAnalysis(int staff_id)
         {
             try
             {
                 int org_id = accessor.GetOrgId();
                 var analysis = await db.tbAnalizeResults
                     .AsNoTracking()
-                    .Where(x => x.OrganizationId == org_id && x.Status == 1)
+                    .Where(x => x.OrganizationId == org_id && x.Status == 1 && x.StaffId == staff_id)
                     .Select(x => new viFullAnalysis
                     {
                         UserId = x.UserId,
@@ -51,7 +51,7 @@ namespace waPlanner.Services
             }
             catch (Exception ex)
             {
-                logger.LogError($"FileService.SaveAnalizeResultFile Error:{ex.Message}");
+                logger.LogError($"AnalysisService.GetAllAnalysis Error:{ex.Message}");
                 return new Answer<viFullAnalysis[]>(false, "Ошибка программы", null);
             }
         }
