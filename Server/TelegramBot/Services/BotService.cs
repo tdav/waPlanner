@@ -177,9 +177,10 @@ namespace waPlanner.TelegramBot.Services
                         break;
                     }
                 case PlannerStates.CHOOSE_DATE:
-                    await CalendarKeyboards.OnCalendarProcess(call, db, bot, lang, cache);
-                    break;
-
+                    {
+                        await CalendarKeyboards.OnCalendarProcess(call, db, bot, lang, cache);
+                        break;
+                    }
                 default:
                     break;
             }

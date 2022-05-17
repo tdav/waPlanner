@@ -61,10 +61,20 @@ namespace waPlanner.TelegramBot.Utils
 
         public static bool CheckUserCommand(string msg, TelegramBotValuesModel cache, LangsModel lang)
         {
-            if (cache.Lang is not null && (msg == lang[cache.Lang]["back"] || cache.State == PlannerStates.MAIN_MENU ||
-                cache.State == PlannerStates.SETTINGS || cache.State == PlannerStates.FAVORITES || cache.State == PlannerStates.STAFF))
-                return true;
-            return false;
+            switch (cache.State)
+            {
+                case PlannerStates.SETTINGS:
+                case PlannerStates.FAVORITES:
+                case PlannerStates.STAFF:
+                case PlannerStates.MAIN_MENU:
+                    {
+                        return true;
+                    }
+                default:
+                    if (cache.Lang is not null && (msg == lang[cache.Lang]["back"]))
+                        return true;
+                    return false;
+            }
         }
 
         //public static Document MergePDFs(IEnumerable<string> fileNames, string targetPdf)
