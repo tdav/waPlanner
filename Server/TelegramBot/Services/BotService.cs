@@ -163,6 +163,7 @@ namespace waPlanner.TelegramBot.Services
 
         private async Task BotOnCallbackQueryReceivedAsync(CallbackQuery call, IDbManipulations db, TelegramBotValuesModel cache)
         {
+            long chat_id = call.Message.Chat.Id;
             switch (cache.State)
             {
                 case PlannerStates.CHOOSE_TIME:
@@ -172,8 +173,12 @@ namespace waPlanner.TelegramBot.Services
                     }
                 case PlannerStates.ANALYSIS:
                     {
+                        await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["SEARCHING_FILE"]);
                         DateTime date = DateTime.Parse(call.Data);
-                        await Utils.Utils.SendAnalysisResult(call.Message.Chat.Id, cache, db, lang, date, bot);
+                        ////await Utils.Utils.SendAnalysisResult(chat_id, cache, db, lang, date, bot);
+                        //Thread thread = new(async () => await Utils.Utils.SendAnalysisResult(chat_id, cache, db, lang, date, bot));
+                        //thread.Start();
+                        await Utils.Utils.SendAnalysisResult(chat_id, cache, db, lang, date, bot);
                         break;
                     }
                 case PlannerStates.CHOOSE_DATE:

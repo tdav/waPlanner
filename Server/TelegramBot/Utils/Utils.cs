@@ -128,23 +128,42 @@ namespace waPlanner.TelegramBot.Utils
 
             //MergePDFs(results, "C:/Users/Elina/dotnet/waPlanner/Server/bin/Debug/net6.0/wwwroot/store/analysis/new1.pdf");
 
-            if (results is null) 
+            if (results is null)
             {
                 await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["EMTY_RESULT"]);
                 return;
             }
 
+            //await Parallel.ForEachAsync(results, async (item, token) =>
+            //   {
+            //       var ba = await File.ReadAllBytesAsync($"{AppDomain.CurrentDomain.BaseDirectory}wwwroot/{item.FileUrl}");
+            //       {
+            //           using (var ms = new MemoryStream(ba))
+            //           {
+            //               var file = new InputOnlineFile(ms) { FileName = item.User + ".pdf" };
+            //               await bot.SendDocumentAsync(chat_id, file, caption: item.AdInfo, parseMode: ParseMode.Html);
+            //           }
+            //       }
+            //   });
+
+            //await Parallel.ForEachAsync(results, async (item, token) =>
+            //{
+            //    var file = new InputOnlineFile($"http://localhost:5000{item.FileUrl}") { FileName = item.User + ".pdf" };
+            //    await bot.SendDocumentAsync(chat_id, file, caption: item.AdInfo, parseMode: ParseMode.Html, cancellationToken: token);
+            //});
+
             foreach (var result in results)
             {
                 var ba = await File.ReadAllBytesAsync($"{AppDomain.CurrentDomain.BaseDirectory}wwwroot/{result.FileUrl}");
+                
+                using (var ms = new MemoryStream(ba))
                 {
-                    using (var ms = new MemoryStream(ba))
-                    {
-                        var file = new InputOnlineFile(ms) { FileName = result.User + ".pdf" };
-                        await bot.SendDocumentAsync(chat_id, file, caption: result.AdInfo, parseMode: ParseMode.Html);
-                    }
+                    var file = new InputOnlineFile(ms, result.User + ".pdf");
+                    
+                    await bot.SendDocumentAsync(chat_id, file, caption: result.AdInfo, parseMode: ParseMode.Html);
                 }
             }
+            await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["COMPLETED_ANALYS"]);
         }
     }
 }

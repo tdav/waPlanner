@@ -41,6 +41,8 @@
       "CHOOSE_FAVORITES_TYPE": "Выберите тип",
       "ANALYS_RESULT": "<b>Дополнительная информация:</b>",
       "EMTY_RESULT": "У вас нет результатов анализов!",
+      "SEARCHING_FILE": "Пожалуйста подождите, идет поиск ваших анализов...",
+      "COMPLETED_ANALYS": "Анализы отправлены",
 
       "back": "⬅️Назад",
       "book": "📄Сделать бронь",
@@ -100,6 +102,8 @@
       "CHOOSE_FAVORITES_TYPE": "Tipini tanlang",
       "ANALYS_RESULT": "<b>Qo'shimcha ma'lumot:</b>",
       "EMTY_RESULT": "Sizda test natijalari yo'q!",
+      "SEARCHING_FILE": "Iltimos, kuting, tahlillaringiz qidirilmoqda...",
+      "COMPLETED_ANALYS": "Tahlillar yuborildi",
 
       "back": "⬅️Ortga",
       "book": "📄Band qilish",

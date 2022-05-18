@@ -48,5 +48,7 @@ namespace waPlanner.Database.Models
         public virtual spSpecialization Specialization { get; set; }
 
         public virtual List< spCategory> Categories{ get; set; }
+
+        public int? Rating { get; set; }
     }
 }

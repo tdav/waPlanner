@@ -22,7 +22,7 @@ namespace waPlanner.Controllers.v1
             this.service = service;
         }
 
-        [HttpPost]
+        [HttpPost("{staff_id}")]
         public ValueTask<Answer<viFullAnalysis[]>> GetAllAsync(int staff_id)
         {
             return service.GetStaffAllAnalysis(staff_id);

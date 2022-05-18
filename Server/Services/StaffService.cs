@@ -140,6 +140,7 @@ namespace waPlanner.Services
                 newStaff.Password = CHash.EncryptMD5(staff.Password);
                 newStaff.Status = 1;
                 newStaff.Online = true;
+                newStaff.PeriodTime = 30;
 
                 await db.tbStaffs.AddAsync(newStaff);
                 await db.SaveChangesAsync();
@@ -270,6 +271,7 @@ namespace waPlanner.Services
                     org_id = staff.OrganizationId.Value;
                 }
 
+                updateStaff.PeriodTime = staff.PeriodTime;
                 updateStaff.PhotoUrl = staff.PhotoUrl;
                 updateStaff.Availability = staff.Availability;
                 updateStaff.OrganizationId = org_id;

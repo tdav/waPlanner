@@ -16,7 +16,7 @@ namespace waPlanner.Services
         Task<Answer<int>> AddSchedulerAsync(viScheduler scheduler);
         Task<Answer<viScheduler>> UpdateSchedulerAsync(viScheduler scheduler);
         Task<AnswerBasic> UpdateSchedulerStatus(int scheduler_id, int status);
-        Task<Answer<viScheduler>> GetSchedulerByIdAsync(int id);
+        Task<Answer<viScheduler[]>> GetSchedulerByUserIdAsync(int user_id);
         Task<Answer<viEvents[]>> GetAllSchedulersByOrgAsync();
         Task<Answer<TimeSpan[]>> GetStaffBusyTime(int staff_id, DateTime date);
         Task<Answer<viEvents[]>> SearchScheduler(string staff_name);
@@ -133,13 +133,13 @@ namespace waPlanner.Services
 
         }
 
-        public async Task<Answer<viScheduler>> GetSchedulerByIdAsync(int id)
+        public async Task<Answer<viScheduler[]>> GetSchedulerByUserIdAsync(int user_id)
         {
             try
             {
                 var scheduler = await db.tbSchedulers
                                 .AsNoTracking()
-                                .Where(x => x.Id == id && x.Status == 1)
+                                .Where(x => x.UserId == user_id && x.Status == 1)
                                 .Select(x => new viScheduler
                                 {
                                     SchedulerId = x.Id,
@@ -155,13 +155,13 @@ namespace waPlanner.Services
                                     AdInfo = x.AdInfo,
                                     Status = x.Status
                                 })
-                                .FirstAsync();
-                return new Answer<viScheduler>(true, "", scheduler);
+                                .ToArrayAsync();
+                return new Answer<viScheduler[]>(true, "", scheduler);
             }
             catch (Exception e)
             {
                 logger.LogError($"SchedulerService.GetSchedulerByIdAsync Error:{e.Message}");
-                return new Answer<viScheduler>(false, "Ошибка программы", null);
+                return new Answer<viScheduler[]>(false, "Ошибка программы", null);
             }
 
         }

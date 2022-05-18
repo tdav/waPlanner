@@ -18,6 +18,7 @@ namespace waPlanner.TelegramBot.keyboards
             int[] staff_avail = await db.CheckStaffAvailability(value.Staff);
             viOrgTimes breakTime = await db.GetOrganizationBreak(value.Organization);
             viOrgTimes workTime = await db.GetOrgWorkTime(value.Organization);
+            int periodTime = await db.GetStaffPeriodTime(value);
 
             var workTime_start = workTime.Start.Value;
             var workTime_end = workTime.End.Value;
@@ -27,7 +28,7 @@ namespace waPlanner.TelegramBot.keyboards
             decimal to_decimal = Math.Abs(res.Hours) + 1;
 
             TimeSpan time = new(workTime.Start.Value.Hour, workTime.Start.Value.Minute, 0);
-            TimeSpan offset = new(0, 30, 0);
+            TimeSpan offset = new(0, periodTime, 0);
             TimeSpan endWorkTime = new(1, workTime_end.Hour, workTime_end.Minute, 0);
 
             if (workTime.Start.Value.Hour  < workTime.End.Value.Hour)

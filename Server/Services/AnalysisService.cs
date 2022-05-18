@@ -39,7 +39,7 @@ namespace waPlanner.Services
                     .Where(x => x.OrganizationId == org_id && x.Status == 1 && x.StaffId == staff_id)
                     .Select(x => new viFullAnalysis
                     {
-                        UserId = x.UserId,
+                        User = x.User,
                         StaffId = x.StaffId.Value,
                         OrganizationId = org_id,
                         AdInfo = x.AdInfo,

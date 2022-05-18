@@ -35,6 +35,7 @@ namespace waPlanner.TelegramBot.Utils
         Task<bool> CheckOrganization(string organization);
         Task<bool> CheckSpecialization(string specialization);
         Task<List<DateTime>> GetStaffBusyTime(TelegramBotValuesModel value);
+        Task<int> GetStaffPeriodTime(TelegramBotValuesModel value);
         Task<int[]> CheckStaffAvailability(string staff_name);
         Task AddToFavorites(TelegramBotValuesModel value, long user_chat, long staff_chat = 0);
         Task<bool> CheckFavorites(string value, long user_chat, long staff_chat = 0);
@@ -387,11 +388,23 @@ namespace waPlanner.TelegramBot.Utils
         public async Task<List<DateTime>> GetStaffBusyTime(TelegramBotValuesModel value)
         {
             var staff = await GetStaffInfo(value.Staff);
+            var org_id = await GetOrganizationId(value.Organization);
             return await db.tbSchedulers
                 .AsNoTracking()
-                .Where(x => x.StaffId == staff.StaffId && x.AppointmentDateTime.Date == value.Calendar.Date)
+                .Where(x => x.StaffId == staff.StaffId && x.AppointmentDateTime.Date == value.Calendar.Date && x.OrganizationId == org_id)
                 .Select(x => x.AppointmentDateTime)
                 .ToListAsync();
+        }
+
+        public async Task<int> GetStaffPeriodTime(TelegramBotValuesModel value)
+        {
+            var staff = await GetStaffInfo(value.Staff);
+            var org_id = await GetOrganizationId(value.Organization);
+            return await db.tbStaffs
+                .AsNoTracking()
+                .Where(x => x.Id == staff.StaffId && x.OrganizationId == org_id)
+                .Select(x => x.PeriodTime)
+                .FirstAsync();
         }
 
         public async Task<int[]> CheckStaffAvailability(string staff_name)

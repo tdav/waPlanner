@@ -39,10 +39,10 @@ namespace waPlanner.Controllers.v1
             return await service.UpdateSchedulerStatus(scheduler_id, status);
         }
 
-        [HttpGet("{scheduler_id}")]
-        public async Task<Answer<viScheduler>> GetSchedulerById(int scheduler_id)
+        [HttpGet("{user_id}")]
+        public async Task<Answer<viScheduler[]>> GetSchedulerByUserId(int user_id)
         {
-            return await service.GetSchedulerByIdAsync(scheduler_id);
+            return await service.GetSchedulerByUserIdAsync(user_id);
         }
 
         [HttpGet("get_by_organization")]
