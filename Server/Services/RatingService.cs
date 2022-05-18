@@ -19,7 +19,7 @@ namespace waPlanner.Services
         ValueTask<Answer<viRating[]>> GetStaffRating(int staff_id);
         ValueTask<Answer<viRating[]>> GetOrganizationRating(int organization_id);
     }
-    public class RatingService: IRatingService, IAutoRegistrationScopedLifetimeService
+    public class RatingService : IRatingService, IAutoRegistrationScopedLifetimeService
     {
         private readonly MyDbContext db;
         private readonly IHttpContextAccessorExtensions accessor;
@@ -59,25 +59,15 @@ namespace waPlanner.Services
                 await db.AddRangeAsync(addRate);
                 await db.SaveChangesAsync();
 
-                var rates = await db.tbRatings
-                    .AsNoTracking()
-                    .Where(x => x.StaffId == addRate.StaffId && x.OrganizationId == addRate.OrganizationId)
-                    .Select(x => x.Rating)
-                    .ToArrayAsync();
+                var query = db.tbRatings.AsNoTracking().Where(x => x.StaffId == addRate.StaffId && x.OrganizationId == addRate.OrganizationId);
 
-                if (rates.Length < 1) return new AnswerBasic(false, "Пользователь не найден");
+                var cnt = query.Count();
 
-                int average = 0;
-
-                foreach (int rate in rates)
-                {
-                    average += rate;
-                }
-                average /= rates.Length;
-
+                if (cnt == 0) return new AnswerBasic(false, "Пользователь не найден");
+                var sum =await query.SumAsync(x => x.Rating);
+                
                 var staff = await db.tbStaffs.FindAsync(addRate.StaffId);
-                staff.Rating = average;
-                db.Update(staff);
+                staff.Rating = sum/cnt;
                 await db.SaveChangesAsync();
 
                 return new AnswerBasic(true, "");
@@ -85,7 +75,7 @@ namespace waPlanner.Services
             catch (Exception ex)
             {
                 logger.LogError($"RatingService.AddStaffRatingAsync Error:{ex.Message} Model: {rating}");
-                return new AnswerBasic (false, "Ошибка программы");
+                return new AnswerBasic(false, "Ошибка программы");
             }
         }
 
@@ -115,23 +105,15 @@ namespace waPlanner.Services
                 await db.AddRangeAsync(addRate);
                 await db.SaveChangesAsync();
 
-                var rates = await db.tbRatings
-                    .AsNoTracking()
-                    .Where(x => x.OrganizationId == addRate.OrganizationId && x.StaffId == null)
-                    .Select(x => x.Rating)
-                    .ToArrayAsync();
+                var query = db.tbRatings.AsNoTracking().Where(x => x.StaffId == null && x.OrganizationId == addRate.OrganizationId);
 
-                int average = 0;
+                var cnt = query.Count();
 
-                foreach (int rate in rates)
-                {
-                    average += rate;
-                }
-                average /= rates.Length;
+                if (cnt == 0) return new AnswerBasic(false, "Пользователь не найден");
+                var sum = await query.SumAsync(x => x.Rating);
 
                 var organization = await db.spOrganizations.FindAsync(addRate.OrganizationId);
-                organization.Rating = average;
-                db.Update(organization);
+                organization.Rating = sum / cnt;
                 await db.SaveChangesAsync();
 
                 return new AnswerBasic(true, "");
