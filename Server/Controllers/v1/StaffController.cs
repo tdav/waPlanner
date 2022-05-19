@@ -48,7 +48,7 @@ namespace waPlanner.Controllers.v1
             return await service.AddStaffAsync(staff);
         }
 
-        [HttpPost("change/{staff_id}/{status}")]
+        [HttpGet("change/{staff_id}/{status}")]
         public async Task<AnswerBasic> ChagneStaffStatus(int staff_id, int status)
         {
             return await service.SetStatusAsync(staff_id, status);
@@ -67,12 +67,12 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpGet("search/{name}")]
-        public Task<Answer<viStaff[]>> SearchStaff(string name)
+        public ValueTask<Answer<viStaff[]>> SearchStaff(string name)
         {
             return service.SearchStaffAsync(name);
         }
 
-        [HttpPost("set/{staff_id}/{activity}")]
+        [HttpGet("set/{staff_id}/{activity}")]
         public async Task<AnswerBasic> SetActivity(int staff_id, bool activity)
         {
             return await service.SetActivity(staff_id, activity);
@@ -91,10 +91,16 @@ namespace waPlanner.Controllers.v1
         }
 
         [AllowAnonymous]
-        [HttpPost("forgot_password/{PhoneNum}")]
-        public ValueTask<Answer<IdValue>> ForgotPassword(string PhoneNum)
+        [HttpPost("forgot_password")]
+        public ValueTask<Answer<IdValue>> ForgotPassword( string PhoneNum)
         {
             return service.OnForgotPassword(PhoneNum);
+        }
+
+        [HttpPost("set_photo")]
+        public async ValueTask<Answer<string>> SetPhotoAsync(viSetPhoto photo)
+        {
+            return await service.SetPhotoAsync(photo);
         }
     }
     

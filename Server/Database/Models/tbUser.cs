@@ -36,11 +36,5 @@ namespace waPlanner.Database.Models
 
         [StringLength(256)]
         public string PhotoUrl { get; set; }
-
-        [StringLength(20)]
-        public string PINFL { get; set; }
-
-        [StringLength(15)]
-        public string PassportSeria { get; set; }
     }
 }

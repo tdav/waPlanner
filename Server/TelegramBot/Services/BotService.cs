@@ -91,7 +91,6 @@ namespace waPlanner.TelegramBot.Services
                             {
                                 case UpdateType.Message:
                                     {
-                                        Console.WriteLine(update.Message.Chat.Id);
                                         if (update.Message.Chat.Type == ChatType.Private)
                                         {
                                             if (update.Message.Type != MessageType.Contact && update.Message.Text.Length > 6 && update.Message.Text[0..6] == "/start")
@@ -164,10 +163,33 @@ namespace waPlanner.TelegramBot.Services
 
         private async Task BotOnCallbackQueryReceivedAsync(CallbackQuery call, IDbManipulations db, TelegramBotValuesModel cache)
         {
-            if (cache.State == PlannerStates.CHOOSE_TIME)
-                await TimeKeyboards.OnTimeProcess(call, bot, db, lang, cache);
-            else
-                await CalendarKeyboards.OnCalendarProcess(call, db, bot, lang, cache);
+            long chat_id = call.Message.Chat.Id;
+            switch (cache.State)
+            {
+                case PlannerStates.CHOOSE_TIME:
+                    {
+                        await TimeKeyboards.OnTimeProcess(call, bot, db, lang, cache);
+                        break;
+                    }
+                case PlannerStates.ANALYSIS:
+                    {
+                        await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["SEARCHING_FILE"]);
+                        DateTime date = DateTime.Parse(call.Data);
+                        ////await Utils.Utils.SendAnalysisResult(chat_id, cache, db, lang, date, bot);
+                        //Thread thread = new(async () => await Utils.Utils.SendAnalysisResult(chat_id, cache, db, lang, date, bot));
+                        //thread.Start();
+                        await Utils.Utils.SendAnalysisResult(chat_id, cache, db, lang, date, bot);
+                        await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["COMPLETED_ANALYS"]);
+                        break;
+                    }
+                case PlannerStates.CHOOSE_DATE:
+                    {
+                        await CalendarKeyboards.OnCalendarProcess(call, db, bot, lang, cache);
+                        break;
+                    }
+                default:
+                    break;
+            }
         }
 
         private async Task BotOnMessageReceivedAsync(Message message, IDbManipulations db, TelegramBotValuesModel cache)
@@ -545,17 +567,6 @@ namespace waPlanner.TelegramBot.Services
                             break;
                         }
 
-                    case PlannerStates.GET_PINFL:
-                        {
-                            cache.State = PlannerStates.ORGANIZATION;
-                            break;
-                        }
-                    case PlannerStates.GET_SERIA:
-                        {
-                            cache.State = PlannerStates.CATEGORY;
-                            break;
-                        }
-
                     case PlannerStates.CATEGORY:
                         {
                             cache.State = PlannerStates.SPECIALIZATION;
@@ -566,6 +577,7 @@ namespace waPlanner.TelegramBot.Services
                             cache.State = PlannerStates.ORGANIZATION;
                             break;
                         }
+                    case PlannerStates.ANALYSIS:
                     case PlannerStates.CHOOSE_DATE:
                         {
 
@@ -681,23 +693,9 @@ namespace waPlanner.TelegramBot.Services
             }
             else if (command == lang[cache.Lang]["analysis"])
             {
-                var result = await Utils.Utils.SendAnalysisResult(chat_id, cache, db, lang);
-
-                if (result is null || result.FileUrl is null)
-                {
-                    await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["EMTY_RESULT"]);
-                    return;
-                }
-
-
-                var ba = await System.IO.File.ReadAllBytesAsync($"{AppDomain.CurrentDomain.BaseDirectory}wwwroot/{result.FileUrl}");
-                {
-                    using (var ms = new MemoryStream(ba))
-                    { 
-                        var file = new InputOnlineFile(ms) { FileName = chat_id.ToString() + ".pdf" };
-                        await bot.SendDocumentAsync(chat_id, file, caption: result.AdInfo, parseMode: ParseMode.Html);
-                    }
-                }
+                await bot.SendTextMessageAsync(chat_id, command, replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang));
+                await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["CUZY_DATE"], replyMarkup: await InlineKeyboards.SendUserAnalysisDates(chat_id, cache.Organization, db));
+                cache.State = PlannerStates.ANALYSIS;
             }
         }
     }

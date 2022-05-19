@@ -1,9 +1,11 @@
 ﻿using System;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InputFiles;
 using waPlanner.ModelViews;
-using waPlanner.ModelViews.TelegramViews;
 
 namespace waPlanner.TelegramBot.Utils
 {
@@ -59,26 +61,106 @@ namespace waPlanner.TelegramBot.Utils
 
         public static bool CheckUserCommand(string msg, TelegramBotValuesModel cache, LangsModel lang)
         {
-            if (cache.Lang is not null && (msg == lang[cache.Lang]["back"] || cache.State == PlannerStates.MAIN_MENU ||
-                cache.State == PlannerStates.SETTINGS || cache.State == PlannerStates.FAVORITES || cache.State == PlannerStates.STAFF))
-                return true;
-            return false;
-        }
-
-        public static async Task<viAnalysisResult> SendAnalysisResult(long chat_id, TelegramBotValuesModel cache, IDbManipulations db, LangsModel lang)
-        {
-            var results = await db.GetUserAnalysis(chat_id, cache.Organization);
-
-            if (results is null) return null;
-
-            string userAnalys = $"{lang[cache.Lang]["ANALYS_RESULT"]}\n\n";
-            var analys = new viAnalysisResult
+            if (cache.Lang is not null)
             {
-                AdInfo = userAnalys + results.AdInfo,
-                FileUrl = results.FileUrl
-            };
-            return analys;
+                if (msg == lang[cache.Lang]["back"])
+                    return true;
+
+                switch (cache.State)
+                {
+                    case PlannerStates.SETTINGS:
+                    case PlannerStates.FAVORITES:
+                    case PlannerStates.STAFF:
+                    case PlannerStates.MAIN_MENU:
+                        {
+                            return true;
+                        }
+                }
+                return false;
+            }
+            return false;
+            //if (cache.Lang is not null &&( msg == lang[cache.Lang]["back"] || cache.State == PlannerStates.SETTINGS || cache.State == PlannerStates.FAVORITES
+            //    || cache.State == PlannerStates.STAFF || cache.State == PlannerStates.MAIN_MENU))
+            //    return true;
+            //return false;
         }
+
+        //public static Document MergePDFs(IEnumerable<string> fileNames, string targetPdf)
+        //{
+        //    using (FileStream stream = new FileStream(targetPdf, FileMode.Create))
+        //    {
+        //        Document document = new Document();
+        //        PdfCopy pdf = new PdfCopy(document, stream);
+        //        PdfReader reader = null;
+        //        try
+        //        {
+        //            document.Open();
+        //            foreach (string file in fileNames)
+        //            {
+        //                reader = new PdfReader($"{AppDomain.CurrentDomain.BaseDirectory}wwwroot{ Path.DirectorySeparatorChar}"
+        //                + file);
+        //                pdf.AddDocument(reader);
+        //                reader.Close();
+        //            }
+        //            return document;
+        //        }
+        //        catch (Exception)
+        //        {
+        //            if (reader != null)
+        //            {
+        //                reader.Close();
+        //            }
+        //            return null;
+        //        }
+        //        finally
+        //        {
+        //            if (document != null)
+        //            {
+        //                document.Close();
+        //            }
+        //        }
+        //    }
+        //}
+
+        public static async Task SendAnalysisResult(long chat_id, TelegramBotValuesModel cache, IDbManipulations db, LangsModel lang, DateTime date, ITelegramBotClient bot)
+        {
+            var results = await db.GetUserAnalysis(chat_id, cache.Organization, date);
+
+            //MergePDFs(results, "C:/Users/Elina/dotnet/waPlanner/Server/bin/Debug/net6.0/wwwroot/store/analysis/new1.pdf");
+
+            if (results is null)
+            {
+                await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["EMTY_RESULT"]);
+                return;
+            }
+
+            //await Parallel.ForEachAsync(results, async (item, token) =>
+            //   {
+            //       var ba = await File.ReadAllBytesAsync($"{AppDomain.CurrentDomain.BaseDirectory}wwwroot/{item.FileUrl}");
+            //       {
+            //           using (var ms = new MemoryStream(ba))
+            //           {
+            //               var file = new InputOnlineFile(ms) { FileName = item.User + ".pdf" };
+            //               await bot.SendDocumentAsync(chat_id, file, caption: item.AdInfo, parseMode: ParseMode.Html);
+            //           }
+            //       }
+            //   });
+
+            //await Parallel.ForEachAsync(results, async (item, token) =>
+            //{
+            //    var file = new InputOnlineFile($"http://localhost:5000{item.FileUrl}") { FileName = item.User + ".pdf" };
+            //    await bot.SendDocumentAsync(chat_id, file, caption: item.AdInfo, parseMode: ParseMode.Html, cancellationToken: token);
+            //});
+            foreach (var result in results)
+            {
+                var ba = await File.ReadAllBytesAsync($"{AppDomain.CurrentDomain.BaseDirectory}wwwroot/{result.FileUrl}");
+                await using (var ms = new MemoryStream(ba))
+                {
+                    var file = new InputOnlineFile(ms, result.User + ".pdf");;
+                    await Task.Factory.StartNew(async () => await bot.SendDocumentAsync(chat_id, file, caption: result.AdInfo, parseMode: ParseMode.Html));
+                }
+            }
+        }    
     }
 }
 

@@ -5,7 +5,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using waPlanner.ModelViews;
-
+using waPlanner.TelegramBot.Utils;
 
 namespace waPlanner.TelegramBot.keyboards
 {
@@ -30,6 +30,21 @@ namespace waPlanner.TelegramBot.keyboards
             if (keyboards.Count != 0 || keyboards.Count % 2 == 0)
                 keyboards.Add(buttons);
             return keyboards;
+        }
+
+        public static async Task<InlineKeyboardMarkup> SendUserAnalysisDates(long chat_id, string organization, IDbManipulations db)
+        {
+            var keyboards = new List<List<InlineKeyboardButton>>();
+            
+            var dates = await db.GetUserAnalysisDates(chat_id, organization);
+
+            foreach (var item in dates)
+            {
+                var buttons = new List<InlineKeyboardButton>();
+                buttons.Add(InlineKeyboardButton.WithCallbackData(item.ToShortDateString(), item.ToShortDateString()));
+                keyboards.Add(buttons);
+            }
+            return new InlineKeyboardMarkup(keyboards);
         }
     }
 }

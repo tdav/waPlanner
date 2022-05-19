@@ -41,13 +41,13 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpGet("all")]
-        public async Task<Answer<viPatient[]>> GetPateintsAsync()
+        public async Task<Answer<List<viPatient>>> GetAll()
         {
             return await service.GetAllAsync();
         }
 
         [HttpGet("{user_id}")]
-        public async Task<Answer<viPatient>> GetAll(int user_id)
+        public async Task<Answer<viPatient>> GetPateintsAsync(int user_id)
         {
             return await service.GetAsync(user_id);
         }

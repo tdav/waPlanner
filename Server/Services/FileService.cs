@@ -15,7 +15,7 @@ namespace waPlanner.Controllers.v1
     public interface IFileService
     {
         ValueTask<Answer<string>> SaveFile(IFormFile fileForm, int seller);
-        ValueTask<Answer<string>> SaveAnalizeResultFile(viAnalizeResultFile fileForm, int uid);
+        ValueTask<Answer<tbAnalizeResult>> SaveAnalizeResultFile(viAnalizeResultFile fileForm);
     }
 
     public class FileService : IFileService, IAutoRegistrationScopedLifetimeService
@@ -31,7 +31,7 @@ namespace waPlanner.Controllers.v1
             this.db = db;
         }
 
-        public async ValueTask<Answer<string>> SaveAnalizeResultFile(viAnalizeResultFile fileForm, int uid)
+        public async ValueTask<Answer<tbAnalizeResult>> SaveAnalizeResultFile(viAnalizeResultFile fileForm)
         {
             try
             {
@@ -41,10 +41,10 @@ namespace waPlanner.Controllers.v1
                 var path = $"{AppDomain.CurrentDomain.BaseDirectory}wwwroot{Path.DirectorySeparatorChar}store{Path.DirectorySeparatorChar}analysis{Path.DirectorySeparatorChar}{org_id}";
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
-                path += $"{Path.DirectorySeparatorChar}{fileForm.UserId}{Path.DirectorySeparatorChar}";
+                path += $"{Path.DirectorySeparatorChar}{fileForm.UserId}";
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
-                path += $"{Path.DirectorySeparatorChar}{DateTime.Now.Date:yyyy-MM-dd}";
+                path += $"{Path.DirectorySeparatorChar}{DateTime.Now.Date:yyyy-MM-dd}{Path.DirectorySeparatorChar}";
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
                 var fileName = $"{fileForm.UserId}_{fileForm.StaffId}_{Guid.NewGuid()}.pdf";
@@ -69,13 +69,13 @@ namespace waPlanner.Controllers.v1
 
                     await fileForm.FileData.CopyToAsync(ms);
                     await File.WriteAllBytesAsync(path + fileName, ms.ToArray());
-                    return new Answer<string>(true, "Downloaded", fileUrl);
+                    return new Answer<tbAnalizeResult>(true, "Downloaded", analysisResult);
                 }
             }
             catch (Exception e)
             {
                 logger.LogError($"FileService.SaveAnalizeResultFile Error:{e.Message} Model:{fileForm.ToJson()}");
-                return new Answer<string>(false, "Ошибка программы", null);
+                return new Answer<tbAnalizeResult>(false, "Ошибка программы", null);
             }
         }
 

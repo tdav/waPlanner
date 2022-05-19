@@ -150,6 +150,10 @@ namespace waPlanner.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("order_index");
 
+                    b.Property<int?>("Rating")
+                        .HasColumnType("integer")
+                        .HasColumnName("rating");
+
                     b.Property<int?>("SpecializationId")
                         .HasColumnType("integer")
                         .HasColumnName("specialization_id");
@@ -466,6 +470,70 @@ namespace waPlanner.Migrations
                     b.ToTable("tb_favorites", (string)null);
                 });
 
+            modelBuilder.Entity("waPlanner.Database.Models.tbRating", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("text")
+                        .HasColumnName("comment");
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("create_date");
+
+                    b.Property<int>("CreateUser")
+                        .HasColumnType("integer")
+                        .HasColumnName("create_user");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("integer")
+                        .HasColumnName("organization_id");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("integer")
+                        .HasColumnName("rating");
+
+                    b.Property<int?>("StaffId")
+                        .HasColumnType("integer")
+                        .HasColumnName("staff_id");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("update_date");
+
+                    b.Property<int?>("UpdateUser")
+                        .HasColumnType("integer")
+                        .HasColumnName("update_user");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tb_ratings");
+
+                    b.HasIndex("OrganizationId")
+                        .HasDatabaseName("ix_tb_ratings_organization_id");
+
+                    b.HasIndex("StaffId")
+                        .HasDatabaseName("ix_tb_ratings_staff_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_tb_ratings_user_id");
+
+                    b.ToTable("tb_ratings", (string)null);
+                });
+
             modelBuilder.Entity("waPlanner.Database.Models.tbScheduler", b =>
                 {
                     b.Property<int>("Id")
@@ -606,6 +674,10 @@ namespace waPlanner.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("patronymic");
 
+                    b.Property<int>("PeriodTime")
+                        .HasColumnType("integer")
+                        .HasColumnName("period_time");
+
                     b.Property<string>("PhoneNum")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
@@ -615,6 +687,10 @@ namespace waPlanner.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)")
                         .HasColumnName("photo_url");
+
+                    b.Property<int?>("Rating")
+                        .HasColumnType("integer")
+                        .HasColumnName("rating");
 
                     b.Property<int>("RoleId")
                         .HasColumnType("integer")
@@ -694,16 +770,6 @@ namespace waPlanner.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("name");
-
-                    b.Property<string>("PINFL")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("pinfl");
-
-                    b.Property<string>("PassportSeria")
-                        .HasMaxLength(15)
-                        .HasColumnType("character varying(15)")
-                        .HasColumnName("passport_seria");
 
                     b.Property<string>("Patronymic")
                         .HasMaxLength(100)
@@ -841,6 +907,34 @@ namespace waPlanner.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_tb_favorites_tb_users_user_id");
+
+                    b.Navigation("Organization");
+
+                    b.Navigation("Staff");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("waPlanner.Database.Models.tbRating", b =>
+                {
+                    b.HasOne("waPlanner.Database.Models.spOrganization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_tb_ratings_sp_organizations_organization_id");
+
+                    b.HasOne("waPlanner.Database.Models.tbStaff", "Staff")
+                        .WithMany()
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_tb_ratings_tb_staffs_staff_id");
+
+                    b.HasOne("waPlanner.Database.Models.tbUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_tb_ratings_tb_users_user_id");
 
                     b.Navigation("Organization");
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using waPlanner.Database;
@@ -17,7 +18,7 @@ namespace waPlanner.Services
         Task<AnswerBasic> UpdateAsync(viPatient patient);
         Task<AnswerBasic> SetStatusAsync(int patient, int status);
         Task<Answer<viPatient>> AddAsync(viPatient patient);
-        Task<Answer<viPatient[]>> GetAllAsync();
+        Task<Answer<List<viPatient>>> GetAllAsync();
         Task<Answer<viPatient>> GetAsync(int user_id);
         Task<Answer<viPatient[]>> SearchUserAsync(string name);
     }
@@ -135,7 +136,7 @@ namespace waPlanner.Services
             }
         }
 
-        public async Task<Answer<viPatient[]>> GetAllAsync()
+        public async Task<Answer<List<viPatient>>> GetAllAsync()
         {
             try
             {
@@ -150,19 +151,18 @@ namespace waPlanner.Services
                         Name = x.User.Name,
                         Surname = x.User.Surname,
                         Patronymic = x.User.Patronymic,
-                        AdInfo = x.AdInfo,
                         Phone = x.User.PhoneNum,
                         BirthDay = x.User.BirthDay,
                         Gender = x.User.Gender
                     })
                     .Distinct()
-                    .ToArrayAsync();
-                return new Answer<viPatient[]>(true, "", patients);
+                    .ToListAsync();
+                return new Answer<List<viPatient>>(true, "", patients);
             }
             catch (Exception e)
             {
                 logger.LogError($"UserService.GetAllAsync Error:{e.Message}");
-                return new Answer<viPatient[]>(false, "Ошибка программы", null);
+                return new Answer<List<viPatient>>(false, "Ошибка программы", null);
             }
         }
 

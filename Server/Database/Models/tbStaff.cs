@@ -63,5 +63,7 @@ namespace waPlanner.Database.Models
 
         [StringLength(150)]
         public string AdInfo { get; set; } 
+        public int PeriodTime { get; set; }
+        public int? Rating { get; set; }
     }
 }
