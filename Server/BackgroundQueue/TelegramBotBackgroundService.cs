@@ -9,23 +9,20 @@ using Telegram.Bot.Requests;
 using waPlanner.TelegramBot;
 using waPlanner.TelegramBot.Services;
 
-namespace waPlanner.Extensions
+namespace waPlanner.BackgroundQueue
 {
     public class TelegramBotBackgroundService : BackgroundService
     {
         private int messageOffset = 0;
-        private readonly TelegramBotClient bot;
-        private readonly IServiceProvider provider;
+        private readonly ITelegramBotClient bot;        
         private readonly IBotService service;
         private readonly ILogger<TelegramBotBackgroundService> logger;
 
-        public TelegramBotBackgroundService(ILogger<TelegramBotBackgroundService> logger, IServiceProvider provider)
+        public TelegramBotBackgroundService(ILogger<TelegramBotBackgroundService> logger, IServiceProvider provider, ITelegramBotClient bot)
         {
             this.logger = logger;
-            this.provider = provider;
-
-            this.bot = new TelegramBotClient(Config.TOKEN);
-            this.service = provider.GetRequiredService<IBotService>();
+            this.bot = bot;
+            service = provider.GetRequiredService<IBotService>();
         }
 
         protected override async Task ExecuteAsync(CancellationToken token)

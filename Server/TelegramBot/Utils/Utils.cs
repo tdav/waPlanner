@@ -151,14 +151,13 @@ namespace waPlanner.TelegramBot.Utils
             //    var file = new InputOnlineFile($"http://localhost:5000{item.FileUrl}") { FileName = item.User + ".pdf" };
             //    await bot.SendDocumentAsync(chat_id, file, caption: item.AdInfo, parseMode: ParseMode.Html, cancellationToken: token);
             //});
+
+
+
+            
             foreach (var result in results)
             {
-                var ba = await File.ReadAllBytesAsync($"{AppDomain.CurrentDomain.BaseDirectory}wwwroot/{result.FileUrl}");
-                await using (var ms = new MemoryStream(ba))
-                {
-                    var file = new InputOnlineFile(ms, result.User + ".pdf");;
-                    await Task.Factory.StartNew(async () => await bot.SendDocumentAsync(chat_id, file, caption: result.AdInfo, parseMode: ParseMode.Html));
-                }
+                Startup.queue.Enqueue(new SendDocumentsModel() { FilePath = $"{AppDomain.CurrentDomain.BaseDirectory}wwwroot/{result.FileUrl}", ChatId = chat_id, User = result.User, Caption = result.AdInfo });
             }
         }    
     }

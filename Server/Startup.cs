@@ -13,9 +13,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using Telegram.Bot;
 using waPlanner.BackgroundQueue;
 using waPlanner.Extensions;
 using waPlanner.ModelViews;
+using waPlanner.TelegramBot;
 using waPlanner.TelegramBot.Services;
 using ZNetCS.AspNetCore.Compression;
 using ZNetCS.AspNetCore.Compression.Compressors;
@@ -36,10 +38,13 @@ namespace waPlanner
             services.AddOptions();
             services.Configure<Vars>(conf.GetSection("SystemVars"));
             services.Configure<LangsModel>(conf.GetSection("SystemLangs"));
-
-
+                        
+            services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(Config.TOKEN));
             services.AddSingleton<IBotService, BotService>();
             services.AddHostedService<TelegramBotBackgroundService>();
+
+            services.AddSingleton<ISendDocumentsQueue<SendDocumentsModel>>(queue);
+            services.AddHostedService<MyBackgroundWorker>();
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IHttpContextAccessorExtensions, HttpContextAccessorExtensions>();
@@ -63,9 +68,6 @@ namespace waPlanner
             services.AddControllers()
                     .AddNewtonsoftJson(opt => opt.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
 
-            services.AddSingleton<ISendDocumentsQueue<SendDocumentsModel>>(queue);
-            services.AddHostedService<MyBackgroundWorker>();
-
             services.AddMemoryCache();
             services.AddMyAuthentication(conf);
             services.AddMySwagger();
@@ -75,9 +77,9 @@ namespace waPlanner
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
         {
-            if (env.IsDevelopment()) 
+            if (env.IsDevelopment())
             {
-                
+
             }
             else
             {

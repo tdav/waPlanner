@@ -4,7 +4,6 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Exceptions;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace waPlanner

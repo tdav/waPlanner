@@ -1,8 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InputFiles;
 using waPlanner.ModelViews;
 
 namespace waPlanner.BackgroundQueue
@@ -31,36 +35,23 @@ namespace waPlanner.BackgroundQueue
 
         private async Task BackgroundProcessing(CancellationToken stoppingToken)
         {
+            var bot = scopeFactory.CreateScope().ServiceProvider.GetService<ITelegramBotClient>();
 
-            //while (!stoppingToken.IsCancellationRequested)
-            //{
-            //    //int cd = 0; int cm = 0; int cu = 0; int ch = 0;
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                foreach (var item in queue.GetAll())
+                {
 
-            //    var ctx = Program.ctx;
-            //    ctx.BeginTrans();
+                    var ba = await File.ReadAllBytesAsync(item.FilePath);
+                    using (var ms = new MemoryStream(ba))
+                    {
+                        var file = new InputOnlineFile(ms, item.User + ".pdf"); ;
+                        await bot.SendDocumentAsync(item.ChatId, file, caption: item.Caption, parseMode: ParseMode.Html);
+                    }
+                }
 
-            //    var cold = ctx.GetCollection<tbDocument>();
-            //    cold.InsertBulk(queueDoc.GetAll());
-
-            //    var colm = ctx.GetCollection<tbMessage>();
-            //    colm.InsertBulk(queueMes.GetAll());
-
-            //    var colu = ctx.GetCollection<tbUser>();
-            //    colu.InsertBulk(queueUser.GetAll());
-
-            //    var colc = ctx.GetCollection<tbChat>();
-            //    colc.InsertBulk(queueChat.GetAll());
-
-            //    ctx.Commit();
-            //}
-
-
-            
-
-            Console.WriteLine(DateTime.Now);
-
-            await Task.Delay(1000, stoppingToken);
-
+                await Task.Delay(3000, stoppingToken);
+            }
         }
     }
 }
