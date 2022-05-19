@@ -49,7 +49,6 @@ namespace waPlanner.BackgroundQueue
                         await bot.SendDocumentAsync(item.ChatId, file, caption: item.Caption, parseMode: ParseMode.Html);
                     }
                 }
-
                 await Task.Delay(3000, stoppingToken);
             }
         }

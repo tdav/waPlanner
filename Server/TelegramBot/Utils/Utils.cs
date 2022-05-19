@@ -134,31 +134,17 @@ namespace waPlanner.TelegramBot.Utils
                 return;
             }
 
-            //await Parallel.ForEachAsync(results, async (item, token) =>
-            //   {
-            //       var ba = await File.ReadAllBytesAsync($"{AppDomain.CurrentDomain.BaseDirectory}wwwroot/{item.FileUrl}");
-            //       {
-            //           using (var ms = new MemoryStream(ba))
-            //           {
-            //               var file = new InputOnlineFile(ms) { FileName = item.User + ".pdf" };
-            //               await bot.SendDocumentAsync(chat_id, file, caption: item.AdInfo, parseMode: ParseMode.Html);
-            //           }
-            //       }
-            //   });
-
-            //await Parallel.ForEachAsync(results, async (item, token) =>
-            //{
-            //    var file = new InputOnlineFile($"http://localhost:5000{item.FileUrl}") { FileName = item.User + ".pdf" };
-            //    await bot.SendDocumentAsync(chat_id, file, caption: item.AdInfo, parseMode: ParseMode.Html, cancellationToken: token);
-            //});
-
-
-
-            
             foreach (var result in results)
             {
-                Startup.queue.Enqueue(new SendDocumentsModel() { FilePath = $"{AppDomain.CurrentDomain.BaseDirectory}wwwroot/{result.FileUrl}", ChatId = chat_id, User = result.User, Caption = result.AdInfo });
+                Startup.queue.Enqueue(new SendDocumentsModel() 
+                { 
+                    FilePath = $"{AppDomain.CurrentDomain.BaseDirectory}wwwroot/{result.FileUrl}", 
+                    ChatId = chat_id, 
+                    User = result.User,
+                    Caption = result.AdInfo 
+                });
             }
+            
         }    
     }
 }

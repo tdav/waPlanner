@@ -9,7 +9,6 @@ namespace waPlanner.ModelViews
         public string Surname { get; set; }
         public string Patronymic { get; set; }
         public string Gender { get; set; }
-        public string AdInfo { get; set; }
         public string Phone { get; set; }
         public DateTime? BirthDay { get; set; }
         public int? Status { get; set; }
