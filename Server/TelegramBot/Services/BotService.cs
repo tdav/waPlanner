@@ -178,7 +178,8 @@ namespace waPlanner.TelegramBot.Services
                         ////await Utils.Utils.SendAnalysisResult(chat_id, cache, db, lang, date, bot);
                         //Thread thread = new(async () => await Utils.Utils.SendAnalysisResult(chat_id, cache, db, lang, date, bot));
                         //thread.Start();
-                        await Task.Factory.StartNew(() => Utils.Utils.SendAnalysisResult(chat_id, cache, db, lang, date, bot));
+                        await Utils.Utils.SendAnalysisResult(chat_id, cache, db, lang, date, bot);
+                        await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["COMPLETED_ANALYS"]);
                         break;
                     }
                 case PlannerStates.CHOOSE_DATE:

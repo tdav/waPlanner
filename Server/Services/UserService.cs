@@ -151,7 +151,6 @@ namespace waPlanner.Services
                         Name = x.User.Name,
                         Surname = x.User.Surname,
                         Patronymic = x.User.Patronymic,
-                        AdInfo = x.AdInfo,
                         Phone = x.User.PhoneNum,
                         BirthDay = x.User.BirthDay,
                         Gender = x.User.Gender

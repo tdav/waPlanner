@@ -157,11 +157,10 @@ namespace waPlanner.TelegramBot.Utils
                 await using (var ms = new MemoryStream(ba))
                 {
                     var file = new InputOnlineFile(ms, result.User + ".pdf");;
-                    await bot.SendDocumentAsync(chat_id, file, caption: result.AdInfo, parseMode: ParseMode.Html);
+                    await Task.Factory.StartNew(async () => await bot.SendDocumentAsync(chat_id, file, caption: result.AdInfo, parseMode: ParseMode.Html));
                 }
             }
-            await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["COMPLETED_ANALYS"]);
-        }
+        }    
     }
 }
 
