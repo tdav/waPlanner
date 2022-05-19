@@ -1,11 +1,13 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using waPlanner.ModelViews;
 
 namespace waPlanner.Database.Models
 {
     public class tbScheduler : BaseModel
     {
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         public int UserId { get; set; }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Toolbelt.ComponentModel.DataAnnotations.Schema.V5;
 using waPlanner.ModelViews;
 
@@ -10,6 +11,7 @@ namespace waPlanner.Database.Models
     /// </summary>
     public class tbStaff : BaseModel
     {
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Required]

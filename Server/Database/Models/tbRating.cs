@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using waPlanner.ModelViews;
 
 
@@ -6,6 +7,7 @@ namespace waPlanner.Database.Models
 {
     public class tbRating: BaseModel
     {
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Required]

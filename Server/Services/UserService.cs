@@ -144,7 +144,7 @@ namespace waPlanner.Services
                 var patients = await db.tbSchedulers
                     .Include(x => x.User)
                     .AsNoTracking()
-                    .Where(x => x.OrganizationId == org_id && x.Status == 1)
+                    .Where(x => x.OrganizationId == org_id && x.User.Status == 1)
                     .Select(x => new viPatient
                     {
                         Id = x.User.Id,
@@ -153,7 +153,8 @@ namespace waPlanner.Services
                         Patronymic = x.User.Patronymic,
                         Phone = x.User.PhoneNum,
                         BirthDay = x.User.BirthDay,
-                        Gender = x.User.Gender
+                        Gender = x.User.Gender,
+                        Status = x.User.Status
                     })
                     .Distinct()
                     .ToListAsync();
@@ -182,6 +183,7 @@ namespace waPlanner.Services
                     Gender = x.Gender,
                     Phone = x.PhoneNum,
                     BirthDay = x.BirthDay,
+                    Status = x.Status
                 })
                 .FirstOrDefaultAsync();
                 return new Answer<viPatient>(true, "Ошибка программы", user);

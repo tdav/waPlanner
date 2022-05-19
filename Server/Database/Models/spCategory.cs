@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Toolbelt.ComponentModel.DataAnnotations.Schema.V5;
 using waPlanner.ModelViews;
 
@@ -6,6 +7,7 @@ namespace waPlanner.Database.Models
 {
     public class spCategory : NameBaseModel
     {
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [StringLength(200)]
