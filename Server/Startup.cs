@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using waPlanner.BackgroundQueue;
 using waPlanner.Extensions;
 using waPlanner.ModelViews;
 using waPlanner.TelegramBot.Services;
@@ -23,6 +24,9 @@ namespace waPlanner
 {
     public class Startup
     {
+
+        public static ISendDocumentsQueue<SendDocumentsModel> queue = new SendDocumentsQueue<SendDocumentsModel>();
+
         public IConfiguration conf { get; }
         public Startup(IConfiguration configuration) => conf = configuration;
 
@@ -58,6 +62,9 @@ namespace waPlanner
 
             services.AddControllers()
                     .AddNewtonsoftJson(opt => opt.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
+
+            services.AddSingleton<ISendDocumentsQueue<SendDocumentsModel>>(queue);
+            services.AddHostedService<MyBackgroundWorker>();
 
             services.AddMemoryCache();
             services.AddMyAuthentication(conf);
