@@ -60,7 +60,7 @@ namespace waPlanner.TelegramBot.Utils
         Task<List<IdValue>> SendOrgFavorites(long chat_id);
         Task<string> GetSpecializationByOrganization(string organization);
         Task<bool> CheckSpecializationType(string org_name);
-        Task<DateTime[]> GetUserAnalysisDates(long chat_id, string organization);
+        Task<List<DateTime>> GetUserAnalysisDates(long chat_id, string organization);
         Task<viAnalysisResult[]> GetUserAnalysis(long chat_id, string organization, DateTime date);
     }
 
@@ -750,19 +750,17 @@ namespace waPlanner.TelegramBot.Utils
                 .AnyAsync();
         }
 
-        public async Task<DateTime[]> GetUserAnalysisDates(long chat_id, string organization)
+        public async Task<List<DateTime>> GetUserAnalysisDates(long chat_id, string organization)
         {
             int user_id = await GetUserId(chat_id);
             int org_id = await GetOrganizationId(organization);
 
-            var list = await db.tbAnalizeResults
-                .AsNoTracking()
-                .Where(x => x.UserId == user_id && x.OrganizationId == org_id && x.Status == 1)
-                .Select(x =>  x.CreateDate.Date)
-                .Distinct()
-                .ToListAsync();
-
-            return list.ToArray();
+            return await db.tbAnalizeResults
+                 .AsNoTracking()
+                 .Where(x => x.UserId == user_id && x.OrganizationId == org_id && x.Status == 1)
+                 .Select(x => x.CreateDate.Date)
+                 .Distinct()
+                 .ToListAsync();
         }
 
         public async Task<viAnalysisResult[]> GetUserAnalysis(long chat_id, string organization, DateTime date)

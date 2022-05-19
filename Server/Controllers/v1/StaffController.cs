@@ -48,7 +48,7 @@ namespace waPlanner.Controllers.v1
             return await service.AddStaffAsync(staff);
         }
 
-        [HttpPost("change/{staff_id}/{status}")]
+        [HttpGet("change/{staff_id}/{status}")]
         public async Task<AnswerBasic> ChagneStaffStatus(int staff_id, int status)
         {
             return await service.SetStatusAsync(staff_id, status);
@@ -72,7 +72,7 @@ namespace waPlanner.Controllers.v1
             return service.SearchStaffAsync(name);
         }
 
-        [HttpPost("set/{staff_id}/{activity}")]
+        [HttpGet("set/{staff_id}/{activity}")]
         public async Task<AnswerBasic> SetActivity(int staff_id, bool activity)
         {
             return await service.SetActivity(staff_id, activity);
@@ -91,8 +91,8 @@ namespace waPlanner.Controllers.v1
         }
 
         [AllowAnonymous]
-        [HttpPost("forgot_password/{PhoneNum}")]
-        public ValueTask<Answer<IdValue>> ForgotPassword(string PhoneNum)
+        [HttpPost("forgot_password")]
+        public ValueTask<Answer<IdValue>> ForgotPassword( string PhoneNum)
         {
             return service.OnForgotPassword(PhoneNum);
         }

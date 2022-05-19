@@ -41,7 +41,7 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpGet("all")]
-        public async Task<Answer<viPatient[]>> GetPateintsAsync()
+        public async Task<Answer<List<viPatient>>> GetPateintsAsync()
         {
             return await service.GetAllAsync();
         }
