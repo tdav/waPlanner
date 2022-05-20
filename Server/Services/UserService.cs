@@ -42,27 +42,13 @@ namespace waPlanner.Services
                 int user_id = accessor.GetId();
                 var patient = await db.tbUsers.FindAsync(vipatient.Id);
 
-                if (vipatient.Phone is not null)
-                    patient.PhoneNum = vipatient.Phone;
-
-                if (vipatient.Name is not null)
-                    patient.Name = vipatient.Name;
-
-                if (vipatient.Surname is not null)
-                    patient.Surname = vipatient.Surname;
-
-                if (vipatient.Patronymic is not null)
-                    patient.Patronymic = vipatient.Patronymic;
-
-                if (vipatient is not null)
-                    patient.Gender = vipatient.Gender;
-
-                if (vipatient.BirthDay.HasValue)
-                    patient.BirthDay = vipatient.BirthDay.Value;
-
-                if (vipatient.Status.HasValue)
-                    patient.Status = vipatient.Status.Value;
-
+                patient.PhoneNum = vipatient.Phone;
+                patient.Name = vipatient.Name;
+                patient.Surname = vipatient.Surname;
+                patient.Patronymic = vipatient.Patronymic;
+                patient.Gender = vipatient.Gender;
+                patient.BirthDay = vipatient.BirthDay.Value;
+                patient.Status = vipatient.Status.Value;
                 patient.UpdateDate = DateTime.Now;
                 patient.UpdateUser = user_id;
                 await db.SaveChangesAsync();
@@ -226,7 +212,7 @@ namespace waPlanner.Services
                 logger.LogError($"UserService.SearchUserAsync Error:{e.Message}");
                 return new Answer<viPatient[]>(false, "Ошибка программы", null);
             }
-            
+
         }
     }
 }

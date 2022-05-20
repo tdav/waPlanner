@@ -108,7 +108,7 @@ namespace waPlanner.Services
                 category.NameLt = value.NameLt;
                 category.CreateDate = DateTime.Now;
                 category.CreateUser = user_id;
-                db.spCategories.Add(category);
+                await db.spCategories.AddAsync(category);
                 await db.SaveChangesAsync();
 
                 return new Answer<int>(true, "", category.Id);
@@ -130,17 +130,11 @@ namespace waPlanner.Services
 
                 category.OrganizationId = org_id;
 
-                if (value.Status.HasValue)
-                    category.Status = value.Status.Value;
+                category.Status = value.Status.Value;
 
-                if (value.NameRu is not null)
-                    category.NameRu = value.NameRu;
-
-                if (value.NameUz is not null)
-                    category.NameUz = value.NameUz;
-
-                if (value.NameLt is not null)
-                    category.NameLt = value.NameLt;
+                category.NameRu = value.NameRu;
+                category.NameUz = value.NameUz;
+                category.NameLt = value.NameLt;
 
                 category.UpdateDate = DateTime.Now;
                 category.UpdateUser = user_id;

@@ -40,9 +40,6 @@ namespace waPlanner.Services
         private bool _authNeeded;
         private bool _passwordNeeded;
 
-        public Guid Id = Guid.NewGuid();
-
-
         public TelegramGroupCreatorService(IConfiguration conf, ILogger<TelegramGroupCreatorService> logger, IServiceProvider provider)
         {
             this.conf = conf;
@@ -127,7 +124,7 @@ namespace waPlanner.Services
                 var group_id = new_group.Id;
                 var group = new_group.Type as TdApi.ChatType.ChatTypeSupergroup;
                 var getGroupInfo = await client.GetSupergroupFullInfoAsync(group.SupergroupId);
-                var bot = await client.SearchPublicChatAsync("clinic_test_uzbot");
+                var bot = await client.SearchPublicChatAsync("webapp1_bot");
                 await client.AddChatMemberAsync(group_id, bot.Id);
 
                 var contact = await client.ImportContactsAsync(new TdApi.Contact[]

@@ -79,10 +79,6 @@ namespace waPlanner.TelegramBot.Utils
                 return false;
             }
             return false;
-            //if (cache.Lang is not null &&( msg == lang[cache.Lang]["back"] || cache.State == PlannerStates.SETTINGS || cache.State == PlannerStates.FAVORITES
-            //    || cache.State == PlannerStates.STAFF || cache.State == PlannerStates.MAIN_MENU))
-            //    return true;
-            //return false;
         }
 
         //public static Document MergePDFs(IEnumerable<string> fileNames, string targetPdf)

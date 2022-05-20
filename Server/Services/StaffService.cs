@@ -235,34 +235,21 @@ namespace waPlanner.Services
                 if (staff.BirthDay.HasValue)
                     updateStaff.BirthDay = staff.BirthDay.Value;
 
-                //if (staff.CategoryId.HasValue)
                 updateStaff.CategoryId = staff.CategoryId.Value;
-
-                //if (staff.Experience.HasValue)
                 updateStaff.Experience = staff.Experience.Value;
 
                 if (staff.Status.HasValue)
                     updateStaff.Status = staff.Status.Value;
 
-                //if (staff.Surname is not null)
                 updateStaff.Surname = staff.Surname;
-
-                //if (staff.Name is not null)
                 updateStaff.Name = staff.Name;
-
-                //if (staff.Patronymic is not null)
                 updateStaff.Patronymic = staff.Patronymic;
 
                 if (staff.Password is not null)
                     updateStaff.Password = CHash.EncryptMD5(staff.Password);
 
-                //if (staff.PhoneNum is not null)
                 updateStaff.PhoneNum = staff.PhoneNum;
-
-                //if (staff.Gender is not null)
                 updateStaff.Gender = staff.Gender;
-
-                //if (staff.Online.HasValue)
                 updateStaff.Online = staff.Online;
 
                 if (role_id == (int)UserRoles.SUPER_ADMIN)
@@ -504,7 +491,6 @@ namespace waPlanner.Services
 
                     var staff = await db.tbStaffs.FindAsync(value.Data.Id);     
                     staff.Password = CHash.EncryptMD5(value.Data.Name);
-                    db.Update(staff);
                     await db.SaveChangesAsync();
                     return new Answer<IdValue>(true, "", null);
                 }

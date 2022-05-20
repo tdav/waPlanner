@@ -55,13 +55,13 @@ namespace waPlanner.Services
                 {
                     s = new Database.Models.spSetup();
                     s.Status = 1;
-                    s.CreateDate = System.DateTime.Now;
+                    s.CreateDate = DateTime.Now;
                     s.StaffId = userId;
                 }
                 else
                 {
                     s.UpdateUser = userId;
-                    s.UpdateDate = System.DateTime.Now;
+                    s.UpdateDate = DateTime.Now;
                 }
 
                 s.Text = v.ToString();

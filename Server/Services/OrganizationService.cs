@@ -46,15 +46,13 @@ namespace waPlanner.Services
                 if (organization.Longitude.HasValue)
                     addOrganization.Longitude = organization.Longitude.Value;
 
-                if (organization.SpecializationId.HasValue)
-                    addOrganization.SpecializationId = organization.SpecializationId.Value;
-
                 if (organization.DinnerTimeStart.HasValue)
                     addOrganization.BreakTimeStart = organization.DinnerTimeStart.Value;
 
                 if (organization.DinnerTimeEnd.HasValue)
                     addOrganization.BreakTimeEnd = organization.DinnerTimeEnd.Value;
 
+                addOrganization.SpecializationId = organization.SpecializationId.Value;
                 addOrganization.WorkStart = organization.WorkTimeStart;
                 addOrganization.WorkEnd = organization.WorkTimeEnd;
                 addOrganization.Name = organization.Name;

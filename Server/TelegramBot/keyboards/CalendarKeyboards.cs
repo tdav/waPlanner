@@ -109,30 +109,30 @@ namespace waPlanner.TelegramBot.keyboards
                     }
                 case "DAY":
                     {
-                        if (date >= DateTime.Today)
+                        if (date < DateTime.Today)
                         {
-                            int[] staff_avail = await db.CheckStaffAvailability(cache.Staff);
-                            if (staff_avail[(int)date.DayOfWeek] == 0)
-                            {
-                                await bot.AnswerCallbackQueryAsync(call.Id, lang[cache.Lang]["BUSY_DATE"], true);
-                                return;
-                            }
-
-                            cache.State = PlannerStates.CHOOSE_TIME;
-                            cache.Calendar = date;
-                            try
-                            {
-                                await bot.DeleteMessageAsync(chat_id, messageId);
-                            }
-                            catch { }
-
-                            await bot.SendTextMessageAsync(chat_id, $"{lang[cache.Lang]["CHOOSEN_DATE"]} <b>{date.ToShortDateString()}</b>",
-                                replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang), parseMode: ParseMode.Html);
-                            await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["CUZY_TIME"], replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
+                            await bot.AnswerCallbackQueryAsync(call.Id, lang[cache.Lang]["OLD_DATE"], true);
                             return;
-
                         }
-                        await bot.AnswerCallbackQueryAsync(call.Id, lang[cache.Lang]["OLD_DATE"], true);
+
+                        int[] staff_avail = await db.CheckStaffAvailability(cache.Staff);
+                        if (staff_avail[(int)date.DayOfWeek] == 0)
+                        {
+                            await bot.AnswerCallbackQueryAsync(call.Id, lang[cache.Lang]["BUSY_DATE"], true);
+                            return;
+                        }
+
+                        cache.State = PlannerStates.CHOOSE_TIME;
+                        cache.Calendar = date;
+                        try
+                        {
+                            await bot.DeleteMessageAsync(chat_id, messageId);
+                        }
+                        catch { }
+
+                        await bot.SendTextMessageAsync(chat_id, $"{lang[cache.Lang]["CHOOSEN_DATE"]} <b>{date.ToShortDateString()}</b>",
+                            replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang), parseMode: ParseMode.Html);
+                        await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["CUZY_TIME"], replyMarkup: await TimeKeyboards.SendTimeKeyboards(db, cache));
                         break;
                     }
                 case "i":
