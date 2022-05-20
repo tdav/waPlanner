@@ -8,6 +8,7 @@ using waPlanner.Database.Models;
 using waPlanner.Extensions;
 using waPlanner.Interfaces;
 using waPlanner.ModelViews;
+using waPlanner.Utils;
 
 namespace waPlanner.Services
 {
@@ -61,7 +62,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"SchedulerService.AddSchedulerAsync Error:{e.Message}");
+                logger.LogError($"SchedulerService.AddSchedulerAsync Error:{e.Message} Model: {scheduler.ToJson()}");
                 return new Answer<int>(false, "Ошибка программы", 0);
             }
 
@@ -90,7 +91,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"SchedulerService.UpdateSchedulerAsync Error:{e.Message} Model: {scheduler}");
+                logger.LogError($"SchedulerService.UpdateSchedulerAsync Error:{e.Message} Model: {scheduler.ToJson()}");
                 return new Answer<viScheduler>(false, "Ошибка программы", null);
             }
 

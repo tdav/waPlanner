@@ -8,6 +8,7 @@ using waPlanner.Database.Models;
 using waPlanner.Extensions;
 using waPlanner.Interfaces;
 using waPlanner.ModelViews;
+using waPlanner.Utils;
 
 namespace waPlanner.Services
 {
@@ -52,7 +53,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"SpecializationService.AddSpecializationAsync Error:{e.Message} Model: {spec}");
+                logger.LogError($"SpecializationService.AddSpecializationAsync Error:{e.Message} Model: {spec.ToJson()}");
                 return new Answer<viSpecialization>(false, "Ошибка программы", null);
             }
             
@@ -77,7 +78,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"SpecializationService.UpdateSpecializationAsync Error:{e.Message} Model: {spec}");
+                logger.LogError($"SpecializationService.UpdateSpecializationAsync Error:{e.Message} Model: {spec.ToJson()}");
                 return new Answer<viSpecialization>(false, "Ошибка программы", null);
             }
             

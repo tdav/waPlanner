@@ -9,6 +9,7 @@ using waPlanner.Extensions;
 using waPlanner.Interfaces;
 using waPlanner.ModelViews;
 using waPlanner.TelegramBot;
+using waPlanner.Utils;
 
 namespace waPlanner.Services
 {
@@ -115,7 +116,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message} Model: {value}");
+                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message} Model: {value.ToJson()}");
                 return new Answer<int>(false, "Ошибка программы", 0);
             }
         }
@@ -143,7 +144,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message}");
+                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message} Model: {value.ToJson()}");
                 return new AnswerBasic(false, "Ошибка программы");
             }
         }

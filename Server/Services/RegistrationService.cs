@@ -95,7 +95,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message} Model: {viRegistration}");
+                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message} Model: {viRegistration.ToJson()}");
                 return new Answer<viRegistration>(false, "Ошибка программы", null);
             }
         }

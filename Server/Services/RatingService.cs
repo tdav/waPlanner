@@ -8,7 +8,7 @@ using waPlanner.Database.Models;
 using waPlanner.Extensions;
 using waPlanner.Interfaces;
 using waPlanner.ModelViews;
-
+using waPlanner.Utils;
 
 namespace waPlanner.Services
 {
@@ -64,17 +64,17 @@ namespace waPlanner.Services
                 var cnt = query.Count();
 
                 if (cnt == 0) return new AnswerBasic(false, "Пользователь не найден");
-                var sum =await query.SumAsync(x => x.Rating);
-                
+                var sum = await query.SumAsync(x => x.Rating);
+
                 var staff = await db.tbStaffs.FindAsync(addRate.StaffId);
-                staff.Rating = sum/cnt;
+                staff.Rating = sum / cnt;
                 await db.SaveChangesAsync();
 
                 return new AnswerBasic(true, "");
             }
             catch (Exception ex)
             {
-                logger.LogError($"RatingService.AddStaffRatingAsync Error:{ex.Message} Model: {rating}");
+                logger.LogError($"RatingService.AddStaffRatingAsync Error:{ex.Message} Model: {rating.ToJson()}");
                 return new AnswerBasic(false, "Ошибка программы");
             }
         }
@@ -120,7 +120,7 @@ namespace waPlanner.Services
             }
             catch (Exception ex)
             {
-                logger.LogError($"RatingService.AddOrganizationRatingAsync Error:{ex.Message} Model: {rating}");
+                logger.LogError($"RatingService.AddOrganizationRatingAsync Error:{ex.Message} Model: {rating.ToJson()}");
                 return new AnswerBasic(false, "Ошибка программы");
             }
         }

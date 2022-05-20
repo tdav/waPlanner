@@ -149,7 +149,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"StaffService.AddStaffAsync Error:{e.Message} Model: {staff}");
+                logger.LogError($"StaffService.AddStaffAsync Error:{e.Message} Model: {staff.ToJson()}");
                 return new Answer<viStaff>(false, "Ошибка программы", null);
             }
 
@@ -271,7 +271,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"StaffService.UpdateStaff Error:{e.Message} Model: {staff}");
+                logger.LogError($"StaffService.UpdateStaff Error:{e.Message} Model: {staff.ToJson()}");
                 return new Answer<viStaff>(false, "Ошибка программы", null);
             }
 
@@ -378,7 +378,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"StaffService.SearchStaffAsync Error:{e.Message}");
+                logger.LogError($"StaffService.SearchStaffAsync Error:{e.Message} Model: {staff.ToJson()}");
                 return new Answer<string>(false, "Ошибка программы", null);
             }
         }

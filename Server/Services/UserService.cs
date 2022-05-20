@@ -117,7 +117,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"UserService.AddAsync Error:{e.Message}");
+                logger.LogError($"UserService.AddAsync Error:{e.Message} Model: {patient.ToJson()}");
                 return new Answer<viPatient>(false, "Ошибка программы", null);
             }
         }
