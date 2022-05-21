@@ -22,13 +22,13 @@ namespace waPlanner.Controllers.v1
             this.service = service;
         }
 
-        [HttpPost("{user_id}")]
+        [HttpGet("{user_id}")]
         public ValueTask<Answer<viFullAnalysis[]>> GetAllAsync(int user_id)
         {
             return service.GetStaffAllAnalysis(user_id);
         }
 
-        [HttpPost("delete/{id}")]
+        [HttpGet("delete/{id}")]
         public ValueTask<AnswerBasic> DeleteAsync(int id)
         {
             return service.DeleteAnylysis(id);

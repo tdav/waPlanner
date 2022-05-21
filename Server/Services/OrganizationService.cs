@@ -17,7 +17,7 @@ namespace waPlanner.Services
     {
         Task<Answer<long>> InsertOrganizationAsync(viOrganization organization);
         Task<AnswerBasic> UpdateOrganizationAsync(viOrganization organziation);
-        Task<AnswerBasic> UpdateOrganizationStatus(int org_id, int status);
+        Task<AnswerBasic> UpdateOrganizationStatus(viSetStatus status);
         Task<Answer<spOrganization>> GetOrgByIdAsync(int id);
         Task<Answer<spOrganization[]>> GetAllOrgsAsync();
     }
@@ -123,14 +123,14 @@ namespace waPlanner.Services
             }
         }
 
-        public async Task<AnswerBasic> UpdateOrganizationStatus(int org_id, int status)
+        public async Task<AnswerBasic> UpdateOrganizationStatus(viSetStatus status)
         {
             try
             {
                 int user_id = accessor.GetId();
-                var organiztion = await db.spOrganizations.FindAsync(org_id);
+                var organiztion = await db.spOrganizations.FindAsync(status.Id);
             
-                organiztion.Status = status;
+                organiztion.Status = status.Status;
                 organiztion.UpdateDate = DateTime.Now;
                 organiztion.UpdateUser = user_id;
                 await db.SaveChangesAsync();

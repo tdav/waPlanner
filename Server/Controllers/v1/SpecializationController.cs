@@ -34,10 +34,10 @@ namespace waPlanner.Controllers.v1
             return await service.UpdateSpecializationAsync( spec);
         }
 
-        [HttpPost("change/{spec}/{status}")]
-        public async Task<AnswerBasic> ChangeStatus(int spec, int status)
+        [HttpPost("change_status")]
+        public async Task<AnswerBasic> ChangeStatus(viSetStatus status)
         {
-            return await service.ChangeSpecializationStatus(spec, status);
+            return await service.ChangeSpecializationStatus(status);
         }
 
         [AllowAnonymous]

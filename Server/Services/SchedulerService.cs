@@ -16,7 +16,7 @@ namespace waPlanner.Services
     {
         Task<Answer<int>> AddSchedulerAsync(viScheduler scheduler);
         Task<Answer<viScheduler>> UpdateSchedulerAsync(viScheduler scheduler);
-        Task<AnswerBasic> UpdateSchedulerStatus(int scheduler_id, int status);
+        Task<AnswerBasic> UpdateSchedulerStatus(viSetStatus status);
         Task<Answer<viScheduler[]>> GetSchedulerByUserIdAsync(int user_id);
         Task<Answer<viEvents[]>> GetAllSchedulersByOrgAsync();
         Task<Answer<TimeSpan[]>> GetStaffBusyTime(int staff_id, DateTime date);
@@ -96,13 +96,13 @@ namespace waPlanner.Services
             }
 
         }
-        public async Task<AnswerBasic> UpdateSchedulerStatus(int scheduler_id, int status)
+        public async Task<AnswerBasic> UpdateSchedulerStatus(viSetStatus status)
         {
             try
             {
                 int user_id = accessor.GetId();
-                var sh = await db.tbSchedulers.FindAsync(scheduler_id);
-                sh.Status = status;
+                var sh = await db.tbSchedulers.FindAsync(status.Id);
+                sh.Status = status.Status;
                 sh.UpdateUser = user_id;
                 sh.UpdateDate = DateTime.Now;
                 await db.SaveChangesAsync();

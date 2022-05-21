@@ -25,7 +25,7 @@ namespace waPlanner.Services
         Task<Answer<viStaff[]>> GetStaffsByOrganizationId();
         Task<Answer<viStaff>> AddStaffAsync(viStaff user);
         Task<Answer<List<IdValue>>> GetStuffList(int category_id);
-        Task<AnswerBasic> SetStatusAsync(int staff_id, int status);
+        Task<AnswerBasic> SetStatusAsync(viSetStatus status);
         Task<Answer<viStaff>> UpdateStaff(viStaff staff);
         Task<Answer<viStaff>> GetStaffById(int staff_id);
         ValueTask<Answer<viStaff[]>> SearchStaffAsync(string name);
@@ -180,13 +180,13 @@ namespace waPlanner.Services
 
         }
 
-        public async Task<AnswerBasic> SetStatusAsync(int staff_id, int status)
+        public async Task<AnswerBasic> SetStatusAsync(viSetStatus status)
         {
             try
             {
                 int user_id = GetAccessor().GetId();
-                var st = await db.tbStaffs.FindAsync(staff_id);
-                st.Status = status;
+                var st = await db.tbStaffs.FindAsync(status.Id);
+                st.Status = status.Status;
                 st.UpdateUser = user_id;
                 st.UpdateDate = DateTime.Now;
                 await db.SaveChangesAsync();

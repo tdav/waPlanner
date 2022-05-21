@@ -16,40 +16,26 @@ namespace waPlanner.Controllers.v1
     [SwaggerTag("Файллар билан ишлаш")]
     public class FileController : ControllerBase
     {
-        private readonly IFileService service;        
-        private readonly IHttpContextAccessorExtensions accessor;
+        private readonly IFileService service;
 
-        public FileController(IFileService service, IHttpContextAccessorExtensions accessor)
+        public FileController(IFileService service)
         {
-            this.service = service;            
-            this.accessor = accessor;
+            this.service = service;
         }
 
         [HttpPost("save")]
         [Consumes("multipart/form-data")]
         public async ValueTask<Answer<string>> PostFile(IFormFile fileForm)
         {
-            //var roles = accessor.GetRoles();
-            //if (!roles.Contains("2")) return new Answer<string>(false, "Role Продавец булиши керак", null);
-
-            var uid = accessor.GetId();
-
-            var info = await service.SaveFile(fileForm, uid);
-            
-            return info;
+            return await service.SaveFile(fileForm);
         }
 
 
-        [HttpPost("send-analize-result")]
+        [HttpPost("save-analize-result")]
         [Consumes("multipart/form-data")]
-        public async ValueTask<Answer<tbAnalizeResult>> PostAnalizeResultFile([FromForm]viAnalizeResultFile fileForm)
+        public async ValueTask<Answer<tbAnalizeResult>> PostAnalizeResultFile([FromForm] viAnalizeResultFile fileForm)
         {
-            //var roles = accessor.GetRoles();
-            //if (!roles.Contains("2")) return new Answer<string>(false, "Role Продавец булиши керак", null);
-
-            var info = await service.SaveAnalizeResultFile(fileForm);
-            
-            return info;
+            return await service.SaveAnalizeResultFile(fileForm);
         }
     }
 }

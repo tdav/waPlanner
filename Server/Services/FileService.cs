@@ -14,7 +14,7 @@ namespace waPlanner.Controllers.v1
 {
     public interface IFileService
     {
-        ValueTask<Answer<string>> SaveFile(IFormFile fileForm, int seller);
+        ValueTask<Answer<string>> SaveFile(IFormFile fileForm);
         ValueTask<Answer<tbAnalizeResult>> SaveAnalizeResultFile(viAnalizeResultFile fileForm);
     }
 
@@ -79,17 +79,19 @@ namespace waPlanner.Controllers.v1
             }
         }
 
-        public async ValueTask<Answer<string>> SaveFile(IFormFile fileForm, int seller)
+        public async ValueTask<Answer<string>> SaveFile(IFormFile fileForm)
         {
             try
             {
+                int user_id = accessor.GetId();
+
                 if (fileForm == null || fileForm.FileName == "") return new Answer<string>(false, "Юборилган файл келмади", null);
                 if (fileForm.Length > 5_000_000) return new Answer<string>(false, "Файл хажми 5MB-дан катта булмасин...", null);
 
                 var path = $"{AppDomain.CurrentDomain.BaseDirectory}wwwroot{Path.DirectorySeparatorChar}store{Path.DirectorySeparatorChar}";
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
-                var fileName = $"{seller}_{Guid.NewGuid().ToString("N")}.jpg";
+                var fileName = $"{user_id}_{Guid.NewGuid().ToString("N")}.jpg";
 
                 using (var ms = new MemoryStream())
                 {
