@@ -18,7 +18,7 @@ namespace waPlanner.TelegramBot.keyboards
 
             foreach (var item in items)
             {
-                buttons.Add(InlineKeyboardButton.WithCallbackData(item.Name, item.Name));
+                buttons.Add(InlineKeyboardButton.WithCallbackData(item.Value, item.Value));
 
                 if (buttons.Count % columns == 0)
                 {

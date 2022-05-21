@@ -1,10 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Telegram.Bot;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InputFiles;
 using waPlanner.ModelViews;
 
 namespace waPlanner.TelegramBot.Utils

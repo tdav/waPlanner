@@ -17,7 +17,6 @@ using Telegram.Bot;
 using waPlanner.BackgroundQueue;
 using waPlanner.Extensions;
 using waPlanner.ModelViews;
-using waPlanner.TelegramBot;
 using waPlanner.TelegramBot.Services;
 using ZNetCS.AspNetCore.Compression;
 using ZNetCS.AspNetCore.Compression.Compressors;
@@ -39,11 +38,11 @@ namespace waPlanner
             services.Configure<Vars>(conf.GetSection("SystemVars"));
             services.Configure<LangsModel>(conf.GetSection("SystemLangs"));
                         
-            services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(Config.TOKEN));
+            services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(conf["BOT_TOKEN"]));
             services.AddSingleton<IBotService, BotService>();
             services.AddHostedService<TelegramBotBackgroundService>();
 
-            services.AddSingleton<ISendDocumentsQueue<SendDocumentsModel>>(queue);
+            services.AddSingleton(queue);
             services.AddHostedService<MyBackgroundWorker>();
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();

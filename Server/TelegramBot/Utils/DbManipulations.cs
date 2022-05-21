@@ -87,7 +87,7 @@ namespace waPlanner.TelegramBot.Utils
                 .Select(f => new IdValue
                 {
                     Id = f.StaffId != null ? f.StaffId.Value : 0,
-                    Name = $"({f.Organization.Name}) {f.Staff.Surname} {f.Staff.Name} {f.Staff.Patronymic}"
+                    Value = $"({f.Organization.Name}) {f.Staff.Surname} {f.Staff.Name} {f.Staff.Patronymic}"
                 })
                 .ToListAsync();
                 if (fav is not null && fav[0].Id != 0)
@@ -106,7 +106,7 @@ namespace waPlanner.TelegramBot.Utils
                         return await db.spSpecializations
                             .AsNoTracking()
                             .Where(x => x.Status == 1)
-                            .Select(x => new IdValue { Id = x.Id, Name = x.NameRu })
+                            .Select(x => new IdValue { Id = x.Id, Value = x.NameRu })
                             .ToListAsync();
                     }
                 case "uz":
@@ -115,14 +115,14 @@ namespace waPlanner.TelegramBot.Utils
                         return await db.spSpecializations
                             .AsNoTracking()
                             .Where(x => x.Status == 1)
-                            .Select(x => new IdValue { Id = x.Id, Name = x.NameUz })
+                            .Select(x => new IdValue { Id = x.Id, Value = x.NameUz })
                             .ToListAsync();
                     }
                 default:
                     return await db.spSpecializations
                             .AsNoTracking()
                             .Where(x => x.Status == 1)
-                            .Select(x => new IdValue { Id = x.Id, Name = x.NameLt })
+                            .Select(x => new IdValue { Id = x.Id, Value = x.NameLt })
                             .ToListAsync();
             }
         }
@@ -142,7 +142,7 @@ namespace waPlanner.TelegramBot.Utils
             return await db.spOrganizations
                 .AsNoTracking()
                 .Where(x => x.SpecializationId == spec_id && x.Status == 1)
-                .Select(x => new IdValue { Id = x.Id, Name = x.Name })
+                .Select(x => new IdValue { Id = x.Id, Value = x.Name })
                 .ToListAsync();
         }
 
@@ -164,7 +164,7 @@ namespace waPlanner.TelegramBot.Utils
                         return await db.spCategories
                             .AsNoTracking()
                             .Where(x => x.OrganizationId == organization_id && x.Status == 1)
-                            .Select(x => new IdValue { Id = x.Id, Name = x.NameRu })
+                            .Select(x => new IdValue { Id = x.Id, Value = x.NameRu })
                             .ToListAsync();
                     }
                 case "uz":
@@ -172,7 +172,7 @@ namespace waPlanner.TelegramBot.Utils
                         return await db.spCategories
                                 .AsNoTracking()
                                 .Where(x => x.OrganizationId == organization_id && x.Status == 1)
-                                .Select(x => new IdValue { Id = x.Id, Name = x.NameUz })
+                                .Select(x => new IdValue { Id = x.Id, Value = x.NameUz })
                                 .ToListAsync();
                     }
                 default:
@@ -180,7 +180,7 @@ namespace waPlanner.TelegramBot.Utils
                         return await db.spCategories
                                 .AsNoTracking()
                                 .Where(x => x.OrganizationId == organization_id && x.Status == 1)
-                                .Select(x => new IdValue { Id = x.Id, Name = x.NameLt })
+                                .Select(x => new IdValue { Id = x.Id, Value = x.NameLt })
                                 .ToListAsync();
                     }
             }
@@ -348,7 +348,7 @@ namespace waPlanner.TelegramBot.Utils
                          .Include(i => i.Organization)
                          .Where(x => x.RoleId == (int)UserRoles.STAFF && x.Status == 1 && x.Online == true && x.Organization.Name == org_name &&
                           (x.Category.NameUz == category || x.Category.NameRu == category || x.Category.NameLt == category))
-                         .Select(x => new IdValue { Id = x.Id, Name = $"{x.Surname} {x.Name} {x.Patronymic}" })
+                         .Select(x => new IdValue { Id = x.Id, Value = $"{x.Surname} {x.Name} {x.Patronymic}" })
                          .ToListAsync();
         }
 
@@ -359,9 +359,9 @@ namespace waPlanner.TelegramBot.Utils
                          .Include(i => i.Category)
                          .Where(x => x.RoleId == (int)UserRoles.STAFF &&
                          (x.Category.NameUz == category || x.Category.NameRu == category || x.Category.NameLt == category))
-                         .Select(x => new IdValue { Id = x.Id, Name = $"{x.Surname} {x.Name} {x.Patronymic}" })
+                         .Select(x => new IdValue { Id = x.Id, Value = $"{x.Surname} {x.Name} {x.Patronymic}" })
                          .ToListAsync();
-            return list.Any(x => x.Name == value);
+            return list.Any(x => x.Value == value);
         }
 
         public async Task<bool> CheckCategory(string category)
@@ -722,7 +722,7 @@ namespace waPlanner.TelegramBot.Utils
                     .Select(f => new IdValue
                     {
                         Id = f.OrganizationId,
-                        Name = f.Organization.Name
+                        Value = f.Organization.Name
                     })
                     .ToListAsync();
             }

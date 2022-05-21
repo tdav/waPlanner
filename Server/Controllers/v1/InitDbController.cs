@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
+using waPlanner.TelegramBot;
 using waPlanner.Utils;
 
 namespace waPlanner.Controllers.v1
@@ -44,7 +45,7 @@ namespace waPlanner.Controllers.v1
                 {
                     Id = 1,
                     BirthDay = DateTime.Now,
-                    RoleId = 1,
+                    RoleId =(int)UserRoles.SUPER_ADMIN,
                     Gender = "m",
                     PhoneNum = "+998977764669",
                     Password = CHash.EncryptMD5("string"),

@@ -391,7 +391,8 @@ namespace waPlanner.TelegramBot.Services
                             string link = $"tg://user?id={chat_id}";
                             string value = $"{message.From.FirstName} {message.From.LastName}";
                             var feedback = $"Отзыв от <a href='{link}'>{value}</a> ID:<b>{chat_id}</b>";
-                            await bot.SendTextMessageAsync(Config.DEV_GROUP_ID, $"{feedback}: {msg}", parseMode: ParseMode.Html, disableWebPagePreview: true);
+                            long group_id = -666074803;
+                            await bot.SendTextMessageAsync(group_id, $"{feedback}: {msg}", parseMode: ParseMode.Html, disableWebPagePreview: true);
                             await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["SUCCESS_FEEDBACK"], replyMarkup: ReplyKeyboards.MainMenu(cache.Lang, lang));
                             cache.State = PlannerStates.MAIN_MENU;
                         }

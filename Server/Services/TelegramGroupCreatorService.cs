@@ -152,7 +152,7 @@ namespace waPlanner.Services
             catch (Exception e)
             {
                 logger.LogError($"TelegramGroupCreatorService.CreateGroup Error:{e.Message}");
-                return new Answer<long[]>(false, $"Ошибка при отправке сообщения в телеграм на номер: <b>{PhoneNumber}</b>. Проверьте вашу приватность", null);
+                return new Answer<long[]>(false, $"Ошибка программы", null);
             }
 
         }
@@ -174,12 +174,9 @@ namespace waPlanner.Services
                         return new Answer<IdValue>(false, "", null);
 
                     string generatePassword = Utils.GeneratePassword.CreatePassword();
-                    var text = await client.ParseTextEntitiesAsync($"Ваш новый пароль: <code>{generatePassword}</code>. Никому не передавайте!", new TdApi.TextParseMode.TextParseModeHTML());
-                    var content = new TdApi.InputMessageContent.InputMessageText
-                    {
-                        Text = text
-                    };
-                    
+                    var text = await client.ParseTextEntitiesAsync($"Ваш новый пароль: 👉 <code>{generatePassword}</code>. 👈 Никому не передавайте!", new TdApi.TextParseMode.TextParseModeHTML());
+                    var content = new TdApi.InputMessageContent.InputMessageText { Text = text };
+
                     var contact = await client.ImportContactsAsync(new TdApi.Contact[]
                     {
                         new TdApi.Contact
@@ -189,12 +186,12 @@ namespace waPlanner.Services
                             PhoneNumber = PhoneNum
                         }
                     });
-                    
+
                     var chat = await client.CreatePrivateChatAsync(contact.UserIds[0]);
                     await client.SendMessageAsync(chatId: chat.Id, inputMessageContent: content);
 
-                    return new Answer<IdValue>(true, "", new IdValue { Id = staff.Id, Name = generatePassword});
-                } 
+                    return new Answer<IdValue>(true, "", new IdValue { Id = staff.Id, Value = generatePassword });
+                }
             }
             catch (Exception e)
             {

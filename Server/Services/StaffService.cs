@@ -166,7 +166,7 @@ namespace waPlanner.Services
                                .Select(x => new IdValue
                                {
                                    Id = x.Id,
-                                   Name = $"{x.Surname} {x.Name} {x.Patronymic}"
+                                   Value = $"{x.Surname} {x.Name} {x.Patronymic}"
                                }
                                ).ToListAsync();
                 return new Answer<List<IdValue>>(true, "", staffList);
@@ -490,7 +490,7 @@ namespace waPlanner.Services
                         return new Answer<IdValue>(false, "Такой номер не зарегистрирован!", null);
 
                     var staff = await db.tbStaffs.FindAsync(value.Data.Id);     
-                    staff.Password = CHash.EncryptMD5(value.Data.Name);
+                    staff.Password = CHash.EncryptMD5(value.Data.Value);
                     await db.SaveChangesAsync();
                     return new Answer<IdValue>(true, "", null);
                 }
