@@ -57,7 +57,8 @@
       "change_lang": "Изменить язык🇷🇺",
       "org_favorites": "🏬Организации",
       "staff_favorites": "👤Специалисты",
-      "analysis": "🧬Результаты Анализов"
+      "analysis": "🧬Результаты Анализов",
+      "about_org": "🏢Об организации"
     },
 
     "uz": {
@@ -102,7 +103,7 @@
       "ANALYS_RESULT": "<b>Qo'shimcha ma'lumot:</b>",
       "EMTY_RESULT": "Sizda test natijalari yo'q!",
       "SEARCHING_FILE": "Iltimos, kuting, tahlillaringiz qidirilmoqda...",
-      
+
       "back": "⬅️Ortga",
       "book": "📄Band qilish",
       "favorites": "🌟Sevimlilar",
@@ -117,7 +118,8 @@
       "change_lang": "Tilni o'zgartirish🇺🇿",
       "org_favorites": "🏬Tashkilotlar",
       "staff_favorites": "👤Mutaxasislar",
-      "analysis": "🧬Tahlil natijalari"
+      "analysis": "🧬Tahlil natijalari",
+      "about_org": "🏢Tashkilot haqida"
     }
   }
 }

@@ -517,8 +517,13 @@ namespace waPlanner.TelegramBot.Services
             {
                 var buttons = ReplyKeyboards.SendMenuKeyboards(menu);
 
-                if (await DbManipulations.CheckSpecializationType(cache.Organization) && cache.State == PlannerStates.STAFF)
-                    buttons.Add(new List<KeyboardButton> { new KeyboardButton(lang[cache.Lang]["analysis"]) });
+                if (cache.State == PlannerStates.STAFF)
+                {
+                    if (await DbManipulations.CheckSpecializationType(cache.Organization))
+                        buttons.Add(new List<KeyboardButton> { new KeyboardButton(lang[cache.Lang]["analysis"]) });
+
+                    buttons.Add(new List<KeyboardButton> { new KeyboardButton(lang[cache.Lang]["about_org"]) });
+                }
 
                 if (cache.State > 0) buttons.Add(new List<KeyboardButton> { new KeyboardButton(lang[cache.Lang]["back"]) });
 
@@ -693,6 +698,11 @@ namespace waPlanner.TelegramBot.Services
                 await bot.SendTextMessageAsync(chat_id, command, replyMarkup: ReplyKeyboards.BackButton(cache.Lang, lang));
                 await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["CUZY_DATE"], replyMarkup: await InlineKeyboards.SendUserAnalysisDates(chat_id, cache.Organization, db));
                 cache.State = PlannerStates.ANALYSIS;
+            }
+
+            else if (command ==  lang[cache.Lang]["about_org"])
+            {
+                await Utils.Utils.SendAboutOrganization(cache.Organization, db, bot, chat_id);
             }
         }
     }

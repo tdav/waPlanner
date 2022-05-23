@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
 using waPlanner.ModelViews;
 
 namespace waPlanner.TelegramBot.Utils
@@ -137,8 +138,18 @@ namespace waPlanner.TelegramBot.Utils
                     Caption = result.AdInfo 
                 });
             }
-            
-        }    
+        }
+        
+        public static async Task SendAboutOrganization(string organization, IDbManipulations db, ITelegramBotClient bot, long chat_id)
+        {
+            var org = await db.GetOrgAddress(organization);
+            string link = $"https://yandex.uz/maps/10335/tashkent/?ll={org.Latitude}%2{org.Longitude}&z=0";
+            string about_text = $"<b>{organization}</b>\n\n" +
+                   $"<b><a href='{link}'>{org.Address}</a></b>";
+
+            await bot.SendTextMessageAsync(chat_id, about_text, parseMode: ParseMode.Html);
+            await bot.SendLocationAsync(chat_id, org.Latitude, org.Longitude);
+        }
     }
 }
 

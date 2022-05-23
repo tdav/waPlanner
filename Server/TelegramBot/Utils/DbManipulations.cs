@@ -31,6 +31,7 @@ namespace waPlanner.TelegramBot.Utils
         Task<viStaffInfo> GetStaffInfo(string name);
         Task<List<IdValue>> GetStaffByCategory(string category, string org_name);
         Task<bool> CheckStaffByCategory(string category, string value);
+        Task<viOrgAddress> GetOrgAddress(string organization);
         Task<bool> CheckCategory(string category);
         Task<bool> CheckOrganization(string organization);
         Task<bool> CheckSpecialization(string specialization);
@@ -362,6 +363,20 @@ namespace waPlanner.TelegramBot.Utils
                          .Select(x => new IdValue { Id = x.Id, Value = $"{x.Surname} {x.Name} {x.Patronymic}" })
                          .ToListAsync();
             return list.Any(x => x.Value == value);
+        }
+
+        public async Task<viOrgAddress> GetOrgAddress(string organization)
+        {
+            return await db.spOrganizations
+                .AsNoTracking()
+                .Where(x => x.Name == organization)
+                .Select(x => new viOrgAddress
+                {
+                    Latitude = x.Latitude,
+                    Longitude = x.Longitude,
+                    Address = x.Address
+                })
+                .FirstOrDefaultAsync();
         }
 
         public async Task<bool> CheckCategory(string category)
