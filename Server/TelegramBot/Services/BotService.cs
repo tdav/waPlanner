@@ -490,11 +490,8 @@ namespace waPlanner.TelegramBot.Services
                 case PlannerStates.ADD_FAVORITES:
                     {
 
-                        if (msg == lang[cache.Lang]["NO"])
-                        {
-
-                        }
-
+                        if (msg == lang[cache.Lang]["NO"]) { }
+                        
                         else if (msg == lang[cache.Lang]["YES"])
                         {
                             await DbManipulations.AddToFavorites(cache, chat_id);

@@ -23,6 +23,7 @@ namespace waPlanner.Services
     public interface IStaffService
     {
         Task<Answer<viStaff[]>> GetStaffsByOrganizationId();
+        ValueTask<Answer<viStaff[]>> GetStaffsByCategoryId(int categoryId);
         Task<Answer<viStaff>> AddStaffAsync(viStaff user);
         Task<Answer<List<IdValue>>> GetStuffList(int category_id);
         Task<AnswerBasic> SetStatusAsync(viSetStatus status);
@@ -101,6 +102,45 @@ namespace waPlanner.Services
                 return new Answer<viStaff[]>(false, "Ошибка программы", null);
             }
 
+        }
+
+        public async ValueTask<Answer<viStaff[]>> GetStaffsByCategoryId(int categoryId)
+        {
+            try
+            {
+                int org_id = GetAccessor().GetOrgId();
+                var staffs = await db.tbStaffs
+                    .AsNoTracking()
+                    .Where(x => x.OrganizationId == org_id && x.CategoryId == categoryId && x.Status == 1)
+                    .Select(x => new viStaff
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Surname = x.Surname,
+                        BirthDay = x.BirthDay,
+                        PhoneNum = x.PhoneNum,
+                        Patronymic = x.Patronymic,
+                        TelegramId = x.TelegramId,
+                        Online = x.Online.HasValue,
+                        Availability = x.Availability,
+                        Experience = x.Experience,
+                        OrganizationId = x.OrganizationId,
+                        Organization = x.Organization.Name,
+                        CategoryId = x.CategoryId,
+                        Category = x.Category.NameUz,
+                        RoleId = x.RoleId,
+                        PhotoUrl = x.PhotoUrl,
+                        Gender = x.Gender
+                    })
+                    .ToArrayAsync();
+
+                return new Answer<viStaff[]>(true, "", staffs);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"StaffService.GetStaffByCategoryId Error:{ex.Message}");
+                return new Answer<viStaff[]>(false, "Ошибка программы", null);
+            }
         }
 
         public async Task<Answer<viStaff>> AddStaffAsync(viStaff staff)
