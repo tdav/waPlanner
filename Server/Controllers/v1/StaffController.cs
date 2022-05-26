@@ -37,7 +37,7 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpGet("category/{category_id}")]
-        public async Task<Answer<viStaff[]>> GetStaffByCategory(int category_id)
+        public async ValueTask<Answer<viStaff[]>> GetStaffByCategory(int category_id)
         {
             return await service.GetStaffsByCategoryId(category_id);
         }
