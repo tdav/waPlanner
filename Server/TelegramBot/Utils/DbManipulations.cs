@@ -91,7 +91,7 @@ namespace waPlanner.TelegramBot.Utils
                     Value = $"({f.Organization.Name}) {f.Staff.Surname} {f.Staff.Name} {f.Staff.Patronymic}"
                 })
                 .ToListAsync();
-                if (fav is not null && fav[0].Id != 0)
+                if (fav is not null && fav.Count > 0)
                     return fav;
                 return null;
             }
@@ -722,7 +722,7 @@ namespace waPlanner.TelegramBot.Utils
 
             return await db.tbFavorites
                 .AsNoTracking()
-                .Where(x => x.OrganizationId == org_id && x.UserId == user)
+                .Where(x => x.OrganizationId == org_id && x.UserId == user && x.StaffId == null)
                 .AnyAsync();
         }
 

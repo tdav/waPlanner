@@ -93,30 +93,7 @@ namespace waPlanner.TelegramBot.Services
                                     {
                                         if (update.Message.Chat.Type == ChatType.Private)
                                         {
-                                            if (update.Message.Type != MessageType.Contact && update.Message.Text.Length > 6 && update.Message.Text[0..6] == "/start")
-                                            {
 
-                                                await db.AddNewUserChat(chat_id);
-                                                if (update.Message.Text[7] == 'o')
-                                                {
-                                                    int.TryParse(update.Message.Text[7..].Replace("o", ""), out int org_link);
-                                                    if (!await db.CheckOrgFavorites(chat_id, org_link))
-                                                    {
-                                                        await db.AddOrgFavorites(org_link, chat_id);
-                                                    }
-
-                                                }
-
-                                                else
-                                                {
-                                                    long.TryParse(update.Message.Text[6..].Replace(" ", ""), out long deep_link);
-                                                    if (!await db.CheckFavorites(telg_obj.Staff, chat_id, deep_link))
-                                                    {
-                                                        await db.AddToFavorites(telg_obj, chat_id, deep_link);
-                                                    }
-                                                }
-                                                await bot.SendTextMessageAsync(chat_id, "Добавился в избранное\nSevimlilarga qo'shildi");
-                                            }
                                             await BotOnMessageReceivedAsync(update.Message, db, telg_obj);
                                         }
                                         break;
@@ -126,6 +103,8 @@ namespace waPlanner.TelegramBot.Services
                                         await BotOnCallbackQueryReceivedAsync(update.CallbackQuery, db, telg_obj);
                                         break;
                                     }
+                                default:
+                                    break;
                             }
                         }
                     }
@@ -191,9 +170,36 @@ namespace waPlanner.TelegramBot.Services
         private async Task BotOnMessageReceivedAsync(Message message, IDbManipulations db, TelegramBotValuesModel cache)
         {
             long chat_id = message.Chat.Id;
+            if (message.Type != MessageType.Contact && message.Text.Length > 6 && message.Text[0..6] == "/start")
+            {
+                await db.AddNewUserChat(chat_id);
+                if (message.Text[7] == 'o')
+                {
+                    int.TryParse(message.Text[7..].Replace("o", ""), out int org_link);
+                    if (!await db.CheckOrgFavorites(chat_id, org_link))
+                    {
+                        await db.AddOrgFavorites(org_link, chat_id);
+                    }
+
+                }
+
+                else
+                {
+                    long.TryParse(message.Text[6..].Replace(" ", ""), out long deep_link);
+                    if (!await db.CheckFavorites(cache.Staff, chat_id, deep_link))
+                    {
+                        await db.AddToFavorites(cache, chat_id, deep_link);
+                    }
+                }
+                await bot.SendTextMessageAsync(chat_id, "Добавился в избранное\nSevimlilarga qo'shildi");
+            }
+
             if (Utils.Utils.CheckUserCommand(message.Text, cache, lang))
                 await OnCommands(cache, message.Text, chat_id, db);
             await OnStateChanged(chat_id, message, cache, db);
+
+
+
         }
 
         private async Task OnStateChanged(long chat_id, Message message, TelegramBotValuesModel cache, IDbManipulations DbManipulations)
@@ -491,7 +497,7 @@ namespace waPlanner.TelegramBot.Services
                     {
 
                         if (msg == lang[cache.Lang]["NO"]) { }
-                        
+
                         else if (msg == lang[cache.Lang]["YES"])
                         {
                             await DbManipulations.AddToFavorites(cache, chat_id);
@@ -697,7 +703,7 @@ namespace waPlanner.TelegramBot.Services
                 cache.State = PlannerStates.ANALYSIS;
             }
 
-            else if (command ==  lang[cache.Lang]["about_org"])
+            else if (command == lang[cache.Lang]["about_org"])
             {
                 await Utils.Utils.SendAboutOrganization(cache.Organization, db, bot, chat_id);
             }
