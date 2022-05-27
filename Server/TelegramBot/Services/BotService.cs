@@ -185,10 +185,10 @@ namespace waPlanner.TelegramBot.Services
 
                 else
                 {
-                    long.TryParse(message.Text[6..].Replace(" ", ""), out long deep_link);
-                    if (!await db.CheckFavorites(cache.Staff, chat_id, deep_link))
+                    long.TryParse(message.Text[6..].Replace(" ", ""), out long staff_link);
+                    if (!await db.CheckFavorites(cache.Staff, chat_id, staff_link))
                     {
-                        await db.AddToFavorites(cache, chat_id, deep_link);
+                        await db.AddToFavorites(cache, chat_id, staff_link);
                     }
                 }
                 await bot.SendTextMessageAsync(chat_id, "Добавился в избранное\nSevimlilarga qo'shildi");
