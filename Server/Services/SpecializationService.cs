@@ -8,6 +8,7 @@ using waPlanner.Database.Models;
 using waPlanner.Extensions;
 using waPlanner.Interfaces;
 using waPlanner.ModelViews;
+using waPlanner.Utils;
 
 namespace waPlanner.Services
 {
@@ -17,7 +18,7 @@ namespace waPlanner.Services
         Task<Answer<viSpecialization>> UpdateSpecializationAsync(viSpecialization spec);
         Task<Answer<spSpecialization[]>> GetSpecializationsAsync();
         Task<Answer<spSpecialization>> GetSpecializationByIdAsync(int spec_id);
-        Task<AnswerBasic> ChangeSpecializationStatus(int spec_id, int status);
+        Task<AnswerBasic> ChangeSpecializationStatus(viSetStatus status);
     }
     public class SpecializationService: ISpecializationService, IAutoRegistrationScopedLifetimeService
     {
@@ -52,7 +53,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"SpecializationService.AddSpecializationAsync Error:{e.Message} Model: {spec}");
+                logger.LogError($"SpecializationService.AddSpecializationAsync Error:{e.Message} Model: {spec.ToJson()}");
                 return new Answer<viSpecialization>(false, "Ошибка программы", null);
             }
             
@@ -77,7 +78,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"SpecializationService.UpdateSpecializationAsync Error:{e.Message} Model: {spec}");
+                logger.LogError($"SpecializationService.UpdateSpecializationAsync Error:{e.Message} Model: {spec.ToJson()}");
                 return new Answer<viSpecialization>(false, "Ошибка программы", null);
             }
             
@@ -117,15 +118,15 @@ namespace waPlanner.Services
             
         }
 
-        public async Task<AnswerBasic> ChangeSpecializationStatus(int spec_id, int status)
+        public async Task<AnswerBasic> ChangeSpecializationStatus(viSetStatus status)
         {
             try
             {
                 int user_id = accessor.GetId();
-                var specialization = await db.spSpecializations.FindAsync(spec_id);
+                var specialization = await db.spSpecializations.FindAsync(status.Id);
                 specialization.UpdateDate = DateTime.Now;
                 specialization.UpdateUser = user_id;
-                specialization.Status = status;
+                specialization.Status = status.Status;
                 await db.SaveChangesAsync();
                 return new AnswerBasic(true, "");
             }

@@ -35,13 +35,13 @@ namespace waPlanner.Controllers.v1
             return service.AddOrganizationRatingAsync(rating);
         }
 
-        [HttpPost("get_staff_rating/{staff_id}")]
+        [HttpGet("get_staff_rating/{staff_id}")]
         public async ValueTask<Answer<viRating[]>> GetStaffRating(int staff_id)
         {
             return await service.GetStaffRating(staff_id);
         }
 
-        [HttpPost("get_organization_rating/{organization_id}")]
+        [HttpGet("get_organization_rating/{organization_id}")]
         public async ValueTask<Answer<viRating[]>> GetOrganizationRating(int organization_id)
         {
             return await service.GetOrganizationRating(organization_id);

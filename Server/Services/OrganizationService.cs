@@ -17,7 +17,7 @@ namespace waPlanner.Services
     {
         Task<Answer<long>> InsertOrganizationAsync(viOrganization organization);
         Task<AnswerBasic> UpdateOrganizationAsync(viOrganization organziation);
-        Task<AnswerBasic> UpdateOrganizationStatus(int org_id, int status);
+        Task<AnswerBasic> UpdateOrganizationStatus(viSetStatus status);
         Task<Answer<spOrganization>> GetOrgByIdAsync(int id);
         Task<Answer<spOrganization[]>> GetAllOrgsAsync();
     }
@@ -46,15 +46,13 @@ namespace waPlanner.Services
                 if (organization.Longitude.HasValue)
                     addOrganization.Longitude = organization.Longitude.Value;
 
-                if (organization.SpecializationId.HasValue)
-                    addOrganization.SpecializationId = organization.SpecializationId.Value;
-
                 if (organization.DinnerTimeStart.HasValue)
                     addOrganization.BreakTimeStart = organization.DinnerTimeStart.Value;
 
                 if (organization.DinnerTimeEnd.HasValue)
                     addOrganization.BreakTimeEnd = organization.DinnerTimeEnd.Value;
 
+                addOrganization.SpecializationId = organization.SpecializationId.Value;
                 addOrganization.WorkStart = organization.WorkTimeStart;
                 addOrganization.WorkEnd = organization.WorkTimeEnd;
                 addOrganization.Name = organization.Name;
@@ -125,14 +123,14 @@ namespace waPlanner.Services
             }
         }
 
-        public async Task<AnswerBasic> UpdateOrganizationStatus(int org_id, int status)
+        public async Task<AnswerBasic> UpdateOrganizationStatus(viSetStatus status)
         {
             try
             {
                 int user_id = accessor.GetId();
-                var organiztion = await db.spOrganizations.FindAsync(org_id);
+                var organiztion = await db.spOrganizations.FindAsync(status.Id);
             
-                organiztion.Status = status;
+                organiztion.Status = status.Status;
                 organiztion.UpdateDate = DateTime.Now;
                 organiztion.UpdateUser = user_id;
                 await db.SaveChangesAsync();

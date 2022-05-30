@@ -9,6 +9,7 @@ using waPlanner.Extensions;
 using waPlanner.Interfaces;
 using waPlanner.ModelViews;
 using waPlanner.TelegramBot;
+using waPlanner.Utils;
 
 namespace waPlanner.Services
 {
@@ -17,7 +18,7 @@ namespace waPlanner.Services
         Task<Answer<int>> AddCategoryAsync(viCategory value);
         Task<AnswerBasic> UpdateAsync(viCategory value);
         Task<Answer<viCategory[]>> GetAllCategoriesAsync();
-        Task<AnswerBasic> ChangeCategoryStatus(int category_id, int status);
+        Task<AnswerBasic> ChangeCategoryStatus(viSetStatus status);
         Task<Answer<viCategory>> GetCategoryByIdAsync(int category_id);
         Task<Answer<viCategory[]>> SearchCategory(string name);
     }
@@ -108,14 +109,14 @@ namespace waPlanner.Services
                 category.NameLt = value.NameLt;
                 category.CreateDate = DateTime.Now;
                 category.CreateUser = user_id;
-                db.spCategories.Add(category);
+                await db.spCategories.AddAsync(category);
                 await db.SaveChangesAsync();
 
                 return new Answer<int>(true, "", category.Id);
             }
             catch (Exception e)
             {
-                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message} Model: {value}");
+                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message} Model: {value.ToJson()}");
                 return new Answer<int>(false, "Ошибка программы", 0);
             }
         }
@@ -130,17 +131,11 @@ namespace waPlanner.Services
 
                 category.OrganizationId = org_id;
 
-                if (value.Status.HasValue)
-                    category.Status = value.Status.Value;
+                category.Status = value.Status.Value;
 
-                if (value.NameRu is not null)
-                    category.NameRu = value.NameRu;
-
-                if (value.NameUz is not null)
-                    category.NameUz = value.NameUz;
-
-                if (value.NameLt is not null)
-                    category.NameLt = value.NameLt;
+                category.NameRu = value.NameRu;
+                category.NameUz = value.NameUz;
+                category.NameLt = value.NameLt;
 
                 category.UpdateDate = DateTime.Now;
                 category.UpdateUser = user_id;
@@ -149,20 +144,20 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message}");
+                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message} Model: {value.ToJson()}");
                 return new AnswerBasic(false, "Ошибка программы");
             }
         }
 
-        public async Task<AnswerBasic> ChangeCategoryStatus(int category_id, int status)
+        public async Task<AnswerBasic> ChangeCategoryStatus(viSetStatus status)
         {
             try
             {
                 int user_id = accessor.GetId();
                 int org_id = accessor.GetOrgId();
-                var get_category = await db.spCategories.AsNoTracking().FirstAsync(c => c.Id == category_id && c.OrganizationId == org_id);
+                var get_category = await db.spCategories.AsNoTracking().FirstAsync(c => c.Id == status.Id && c.OrganizationId == org_id);
                 var category = await db.spCategories.FindAsync(get_category.Id);
-                category.Status = status;
+                category.Status = status.Status;
                 category.UpdateDate = DateTime.Now;
                 category.UpdateUser = user_id;
                 await db.SaveChangesAsync();

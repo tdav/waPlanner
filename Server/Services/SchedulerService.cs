@@ -8,6 +8,7 @@ using waPlanner.Database.Models;
 using waPlanner.Extensions;
 using waPlanner.Interfaces;
 using waPlanner.ModelViews;
+using waPlanner.Utils;
 
 namespace waPlanner.Services
 {
@@ -15,7 +16,7 @@ namespace waPlanner.Services
     {
         Task<Answer<int>> AddSchedulerAsync(viScheduler scheduler);
         Task<Answer<viScheduler>> UpdateSchedulerAsync(viScheduler scheduler);
-        Task<AnswerBasic> UpdateSchedulerStatus(int scheduler_id, int status);
+        Task<AnswerBasic> UpdateSchedulerStatus(viSetStatus status);
         Task<Answer<viScheduler[]>> GetSchedulerByUserIdAsync(int user_id);
         Task<Answer<viEvents[]>> GetAllSchedulersByOrgAsync();
         Task<Answer<TimeSpan[]>> GetStaffBusyTime(int staff_id, DateTime date);
@@ -38,28 +39,20 @@ namespace waPlanner.Services
         {
             try
             {
-                var addScheduler = new tbScheduler();
                 int org_id = accessor.GetOrgId();
                 int user_id = accessor.GetId();
-
-                if (scheduler.UserId.HasValue)
-                    addScheduler.UserId = scheduler.UserId.Value;
-
-                if (scheduler.StaffId.HasValue)
-                    addScheduler.StaffId = scheduler.StaffId.Value;
-
-                if (scheduler.AppointmentDateTime.HasValue)
-                    addScheduler.AppointmentDateTime = scheduler.AppointmentDateTime.Value;
-
-                if (scheduler.CategoryId.HasValue)
-                    addScheduler.CategoryId = scheduler.CategoryId.Value;
-
-                addScheduler.OrganizationId = org_id;
-
-                addScheduler.AdInfo = scheduler.AdInfo;
-                addScheduler.Status = 1;
-                addScheduler.CreateUser = user_id;
-                addScheduler.CreateDate = DateTime.Now;
+                var addScheduler = new tbScheduler
+                {
+                    UserId = scheduler.UserId.Value,
+                    StaffId = scheduler.StaffId.Value,
+                    AppointmentDateTime = scheduler.AppointmentDateTime.Value,
+                    CategoryId = scheduler.CategoryId.Value,
+                    OrganizationId = org_id,
+                    AdInfo = scheduler.AdInfo,
+                    Status = 1,
+                    CreateUser = user_id,
+                    CreateDate = DateTime.Now
+                };
                 await db.tbSchedulers.AddAsync(addScheduler);
                 await db.SaveChangesAsync();
 
@@ -69,7 +62,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"SchedulerService.AddSchedulerAsync Error:{e.Message}");
+                logger.LogError($"SchedulerService.AddSchedulerAsync Error:{e.Message} Model: {scheduler.ToJson()}");
                 return new Answer<int>(false, "Ошибка программы", 0);
             }
 
@@ -82,22 +75,12 @@ namespace waPlanner.Services
                 int org_id = accessor.GetOrgId();
                 int user_id = accessor.GetId();
 
-                if (scheduler.UserId.HasValue)
-                    updateScheduler.UserId = scheduler.UserId.Value;
-
-                if (scheduler.StaffId.HasValue)
-                    updateScheduler.StaffId = scheduler.StaffId.Value;
-
-                if (scheduler.CategoryId.HasValue)
-                    updateScheduler.CategoryId = scheduler.CategoryId.Value;
-
+                updateScheduler.UserId = scheduler.UserId.Value;
+                updateScheduler.StaffId = scheduler.StaffId.Value;
+                updateScheduler.CategoryId = scheduler.CategoryId.Value;
                 updateScheduler.OrganizationId = org_id;
-
-                if (scheduler.AppointmentDateTime.HasValue)
-                    updateScheduler.AppointmentDateTime = scheduler.AppointmentDateTime.Value;
-
-                if (scheduler.Status.HasValue)
-                    updateScheduler.Status = scheduler.Status.Value;
+                updateScheduler.AppointmentDateTime = scheduler.AppointmentDateTime.Value;
+                updateScheduler.Status = scheduler.Status.Value;
 
                 updateScheduler.AdInfo = scheduler.AdInfo;
                 updateScheduler.UpdateDate = DateTime.Now;
@@ -108,18 +91,18 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"SchedulerService.UpdateSchedulerAsync Error:{e.Message} Model: {scheduler}");
+                logger.LogError($"SchedulerService.UpdateSchedulerAsync Error:{e.Message} Model: {scheduler.ToJson()}");
                 return new Answer<viScheduler>(false, "Ошибка программы", null);
             }
 
         }
-        public async Task<AnswerBasic> UpdateSchedulerStatus(int scheduler_id, int status)
+        public async Task<AnswerBasic> UpdateSchedulerStatus(viSetStatus status)
         {
             try
             {
                 int user_id = accessor.GetId();
-                var sh = await db.tbSchedulers.FindAsync(scheduler_id);
-                sh.Status = status;
+                var sh = await db.tbSchedulers.FindAsync(status.Id);
+                sh.Status = status.Status;
                 sh.UpdateUser = user_id;
                 sh.UpdateDate = DateTime.Now;
                 await db.SaveChangesAsync();
@@ -245,7 +228,7 @@ namespace waPlanner.Services
                                     .ToArrayAsync();
                 return new Answer<viEvents[]>(true, "", search);
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
                 logger.LogError($"SchedulerService.SearchScheduler Error:{e.Message}");
                 return new Answer<viEvents[]>(false, "Ошибка программы", null);

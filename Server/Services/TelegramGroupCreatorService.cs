@@ -40,9 +40,6 @@ namespace waPlanner.Services
         private bool _authNeeded;
         private bool _passwordNeeded;
 
-        public Guid Id = Guid.NewGuid();
-
-
         public TelegramGroupCreatorService(IConfiguration conf, ILogger<TelegramGroupCreatorService> logger, IServiceProvider provider)
         {
             this.conf = conf;
@@ -127,7 +124,7 @@ namespace waPlanner.Services
                 var group_id = new_group.Id;
                 var group = new_group.Type as TdApi.ChatType.ChatTypeSupergroup;
                 var getGroupInfo = await client.GetSupergroupFullInfoAsync(group.SupergroupId);
-                var bot = await client.SearchPublicChatAsync("clinic_test_uzbot");
+                var bot = await client.SearchPublicChatAsync("webapp1_bot");
                 await client.AddChatMemberAsync(group_id, bot.Id);
 
                 var contact = await client.ImportContactsAsync(new TdApi.Contact[]
@@ -155,7 +152,7 @@ namespace waPlanner.Services
             catch (Exception e)
             {
                 logger.LogError($"TelegramGroupCreatorService.CreateGroup Error:{e.Message}");
-                return new Answer<long[]>(false, $"Ошибка при отправке сообщения в телеграм на номер: <b>{PhoneNumber}</b>. Проверьте вашу приватность", null);
+                return new Answer<long[]>(false, $"Ошибка программы", null);
             }
 
         }
@@ -177,12 +174,9 @@ namespace waPlanner.Services
                         return new Answer<IdValue>(false, "", null);
 
                     string generatePassword = Utils.GeneratePassword.CreatePassword();
-                    var text = await client.ParseTextEntitiesAsync($"Ваш новый пароль: <code>{generatePassword}</code>. Никому не передавайте!", new TdApi.TextParseMode.TextParseModeHTML());
-                    var content = new TdApi.InputMessageContent.InputMessageText
-                    {
-                        Text = text
-                    };
-                    
+                    var text = await client.ParseTextEntitiesAsync($"Ваш новый пароль: 👉 <code>{generatePassword}</code>. 👈 Никому не передавайте!", new TdApi.TextParseMode.TextParseModeHTML());
+                    var content = new TdApi.InputMessageContent.InputMessageText { Text = text };
+
                     var contact = await client.ImportContactsAsync(new TdApi.Contact[]
                     {
                         new TdApi.Contact
@@ -192,12 +186,12 @@ namespace waPlanner.Services
                             PhoneNumber = PhoneNum
                         }
                     });
-                    
+
                     var chat = await client.CreatePrivateChatAsync(contact.UserIds[0]);
                     await client.SendMessageAsync(chatId: chat.Id, inputMessageContent: content);
 
-                    return new Answer<IdValue>(true, "", new IdValue { Id = staff.Id, Name = generatePassword});
-                } 
+                    return new Answer<IdValue>(true, "", new IdValue { Id = staff.Id, Value = generatePassword });
+                }
             }
             catch (Exception e)
             {

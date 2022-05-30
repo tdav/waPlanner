@@ -23,9 +23,10 @@ namespace waPlanner.Services
     public interface IStaffService
     {
         Task<Answer<viStaff[]>> GetStaffsByOrganizationId();
+        ValueTask<Answer<viStaff[]>> GetStaffsByCategoryId(int categoryId);
         Task<Answer<viStaff>> AddStaffAsync(viStaff user);
         Task<Answer<List<IdValue>>> GetStuffList(int category_id);
-        Task<AnswerBasic> SetStatusAsync(int staff_id, int status);
+        Task<AnswerBasic> SetStatusAsync(viSetStatus status);
         Task<Answer<viStaff>> UpdateStaff(viStaff staff);
         Task<Answer<viStaff>> GetStaffById(int staff_id);
         ValueTask<Answer<viStaff[]>> SearchStaffAsync(string name);
@@ -103,6 +104,45 @@ namespace waPlanner.Services
 
         }
 
+        public async ValueTask<Answer<viStaff[]>> GetStaffsByCategoryId(int categoryId)
+        {
+            try
+            {
+                int org_id = GetAccessor().GetOrgId();
+                var staffs = await db.tbStaffs
+                    .AsNoTracking()
+                    .Where(x => x.OrganizationId == org_id && x.CategoryId == categoryId && x.Status == 1)
+                    .Select(x => new viStaff
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Surname = x.Surname,
+                        BirthDay = x.BirthDay,
+                        PhoneNum = x.PhoneNum,
+                        Patronymic = x.Patronymic,
+                        TelegramId = x.TelegramId,
+                        Online = x.Online.HasValue,
+                        Availability = x.Availability,
+                        Experience = x.Experience,
+                        OrganizationId = x.OrganizationId,
+                        Organization = x.Organization.Name,
+                        CategoryId = x.CategoryId,
+                        Category = x.Category.NameUz,
+                        RoleId = x.RoleId,
+                        PhotoUrl = x.PhotoUrl,
+                        Gender = x.Gender
+                    })
+                    .ToArrayAsync();
+
+                return new Answer<viStaff[]>(true, "", staffs);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"StaffService.GetStaffByCategoryId Error:{ex.Message}");
+                return new Answer<viStaff[]>(false, "Ошибка программы", null);
+            }
+        }
+
         public async Task<Answer<viStaff>> AddStaffAsync(viStaff staff)
         {
             try
@@ -149,7 +189,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"StaffService.AddStaffAsync Error:{e.Message} Model: {staff}");
+                logger.LogError($"StaffService.AddStaffAsync Error:{e.Message} Model: {staff.ToJson()}");
                 return new Answer<viStaff>(false, "Ошибка программы", null);
             }
 
@@ -166,7 +206,7 @@ namespace waPlanner.Services
                                .Select(x => new IdValue
                                {
                                    Id = x.Id,
-                                   Name = $"{x.Surname} {x.Name} {x.Patronymic}"
+                                   Value = $"{x.Surname} {x.Name} {x.Patronymic}"
                                }
                                ).ToListAsync();
                 return new Answer<List<IdValue>>(true, "", staffList);
@@ -180,13 +220,13 @@ namespace waPlanner.Services
 
         }
 
-        public async Task<AnswerBasic> SetStatusAsync(int staff_id, int status)
+        public async Task<AnswerBasic> SetStatusAsync(viSetStatus status)
         {
             try
             {
                 int user_id = GetAccessor().GetId();
-                var st = await db.tbStaffs.FindAsync(staff_id);
-                st.Status = status;
+                var st = await db.tbStaffs.FindAsync(status.Id);
+                st.Status = status.Status;
                 st.UpdateUser = user_id;
                 st.UpdateDate = DateTime.Now;
                 await db.SaveChangesAsync();
@@ -235,34 +275,21 @@ namespace waPlanner.Services
                 if (staff.BirthDay.HasValue)
                     updateStaff.BirthDay = staff.BirthDay.Value;
 
-                //if (staff.CategoryId.HasValue)
                 updateStaff.CategoryId = staff.CategoryId.Value;
-
-                //if (staff.Experience.HasValue)
                 updateStaff.Experience = staff.Experience.Value;
 
                 if (staff.Status.HasValue)
                     updateStaff.Status = staff.Status.Value;
 
-                //if (staff.Surname is not null)
                 updateStaff.Surname = staff.Surname;
-
-                //if (staff.Name is not null)
                 updateStaff.Name = staff.Name;
-
-                //if (staff.Patronymic is not null)
                 updateStaff.Patronymic = staff.Patronymic;
 
                 if (staff.Password is not null)
                     updateStaff.Password = CHash.EncryptMD5(staff.Password);
 
-                //if (staff.PhoneNum is not null)
                 updateStaff.PhoneNum = staff.PhoneNum;
-
-                //if (staff.Gender is not null)
                 updateStaff.Gender = staff.Gender;
-
-                //if (staff.Online.HasValue)
                 updateStaff.Online = staff.Online;
 
                 if (role_id == (int)UserRoles.SUPER_ADMIN)
@@ -284,7 +311,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"StaffService.UpdateStaff Error:{e.Message} Model: {staff}");
+                logger.LogError($"StaffService.UpdateStaff Error:{e.Message} Model: {staff.ToJson()}");
                 return new Answer<viStaff>(false, "Ошибка программы", null);
             }
 
@@ -391,7 +418,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"StaffService.SearchStaffAsync Error:{e.Message}");
+                logger.LogError($"StaffService.SearchStaffAsync Error:{e.Message} Model: {staff.ToJson()}");
                 return new Answer<string>(false, "Ошибка программы", null);
             }
         }
@@ -503,8 +530,7 @@ namespace waPlanner.Services
                         return new Answer<IdValue>(false, "Такой номер не зарегистрирован!", null);
 
                     var staff = await db.tbStaffs.FindAsync(value.Data.Id);     
-                    staff.Password = CHash.EncryptMD5(value.Data.Name);
-                    db.Update(staff);
+                    staff.Password = CHash.EncryptMD5(value.Data.Value);
                     await db.SaveChangesAsync();
                     return new Answer<IdValue>(true, "", null);
                 }

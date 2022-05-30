@@ -33,10 +33,10 @@ namespace waPlanner.Controllers.v1
             return await service.UpdateSchedulerAsync(scheduler);
         }
 
-        [HttpPost("change_status/{scheduler_id}/{status}")]
-        public async Task<AnswerBasic> UpdateSchedulerStatus(int scheduler_id, int status)
+        [HttpPost("change_status")]
+        public async Task<AnswerBasic> UpdateSchedulerStatus(viSetStatus status)
         {
-            return await service.UpdateSchedulerStatus(scheduler_id, status);
+            return await service.UpdateSchedulerStatus(status);
         }
 
         [HttpGet("{user_id}")]
@@ -57,7 +57,7 @@ namespace waPlanner.Controllers.v1
             return await service.GetStaffBusyTime(staff_id, date);
         }
 
-        [HttpPost("search/{name}")]
+        [HttpGet("search/{name}")]
         public async Task<Answer<viEvents[]>> SearchAsync(string name)
         {
             return await service.SearchScheduler(name);

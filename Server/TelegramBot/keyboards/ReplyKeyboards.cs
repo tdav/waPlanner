@@ -33,7 +33,7 @@ namespace waPlanner.TelegramBot.keyboards
 
             foreach (var item in items)
             {
-                buttons.Add(new KeyboardButton(item.Name));
+                buttons.Add(new KeyboardButton(item.Value));
 
                 if (buttons.Count % columns == 0)
                 {

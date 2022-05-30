@@ -14,7 +14,7 @@ namespace waPlanner.Controllers.v1
 {
     public interface IFileService
     {
-        ValueTask<Answer<string>> SaveFile(IFormFile fileForm, int seller);
+        ValueTask<Answer<string>> SaveFile(IFormFile fileForm);
         ValueTask<Answer<tbAnalizeResult>> SaveAnalizeResultFile(viAnalizeResultFile fileForm);
     }
 
@@ -79,25 +79,35 @@ namespace waPlanner.Controllers.v1
             }
         }
 
-        public async ValueTask<Answer<string>> SaveFile(IFormFile fileForm, int seller)
+        public async ValueTask<Answer<string>> SaveFile(IFormFile fileForm)
         {
-            if (fileForm == null || fileForm.FileName == "") return new Answer<string>(false, "Юборилган файл келмади", null);
-            if (fileForm.Length > 5_000_000) return new Answer<string>(false, "Файл хажми 5MB-дан катта булмасин...", null);
-
-            var path = $"{AppDomain.CurrentDomain.BaseDirectory}wwwroot{Path.DirectorySeparatorChar}store{Path.DirectorySeparatorChar}";
-            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-
-            var fileName = $"{seller}_{Guid.NewGuid().ToString("N")}.jpg";
-
-            using (var ms = new MemoryStream())
+            try
             {
-                await fileForm.CopyToAsync(ms);
-                // var ba = CImage.ResizeAndSave(ms.ToArray(), 750, 1334, 70);                
+                int user_id = accessor.GetId();
 
-                await File.WriteAllBytesAsync(path + fileName, ms.ToArray());
+                if (fileForm == null || fileForm.FileName == "") return new Answer<string>(false, "Юборилган файл келмади", null);
+                if (fileForm.Length > 5_000_000) return new Answer<string>(false, "Файл хажми 5MB-дан катта булмасин...", null);
 
-                var fileUrl = $"/store/{fileName}";
-                return new Answer<string>(true, "Downloaded", fileUrl);
+                var path = $"{AppDomain.CurrentDomain.BaseDirectory}wwwroot{Path.DirectorySeparatorChar}store{Path.DirectorySeparatorChar}";
+                if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+
+                var fileName = $"{user_id}_{Guid.NewGuid().ToString("N")}.jpg";
+
+                using (var ms = new MemoryStream())
+                {
+                    await fileForm.CopyToAsync(ms);
+                    // var ba = CImage.ResizeAndSave(ms.ToArray(), 750, 1334, 70);                
+
+                    await File.WriteAllBytesAsync(path + fileName, ms.ToArray());
+
+                    var fileUrl = $"/store/{fileName}";
+                    return new Answer<string>(true, "Downloaded", fileUrl);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"FileService.SaveFile Error:{ex.Message} Model:{fileForm.ToJson()}");
+                return new Answer<string>(false, "Ошибка программы", null);
             }
         }
     }

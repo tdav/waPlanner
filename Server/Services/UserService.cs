@@ -16,7 +16,7 @@ namespace waPlanner.Services
     public interface IUserService
     {
         Task<AnswerBasic> UpdateAsync(viPatient patient);
-        Task<AnswerBasic> SetStatusAsync(int patient, int status);
+        Task<AnswerBasic> SetStatusAsync(viSetStatus status);
         Task<Answer<viPatient>> AddAsync(viPatient patient);
         Task<Answer<List<viPatient>>> GetAllAsync();
         Task<Answer<viPatient>> GetAsync(int user_id);
@@ -42,27 +42,13 @@ namespace waPlanner.Services
                 int user_id = accessor.GetId();
                 var patient = await db.tbUsers.FindAsync(vipatient.Id);
 
-                if (vipatient.Phone is not null)
-                    patient.PhoneNum = vipatient.Phone;
-
-                if (vipatient.Name is not null)
-                    patient.Name = vipatient.Name;
-
-                if (vipatient.Surname is not null)
-                    patient.Surname = vipatient.Surname;
-
-                if (vipatient.Patronymic is not null)
-                    patient.Patronymic = vipatient.Patronymic;
-
-                if (vipatient is not null)
-                    patient.Gender = vipatient.Gender;
-
-                if (vipatient.BirthDay.HasValue)
-                    patient.BirthDay = vipatient.BirthDay.Value;
-
-                if (vipatient.Status.HasValue)
-                    patient.Status = vipatient.Status.Value;
-
+                patient.PhoneNum = vipatient.Phone;
+                patient.Name = vipatient.Name;
+                patient.Surname = vipatient.Surname;
+                patient.Patronymic = vipatient.Patronymic;
+                patient.Gender = vipatient.Gender;
+                patient.BirthDay = vipatient.BirthDay.Value;
+                patient.Status = vipatient.Status.Value;
                 patient.UpdateDate = DateTime.Now;
                 patient.UpdateUser = user_id;
                 await db.SaveChangesAsync();
@@ -76,13 +62,13 @@ namespace waPlanner.Services
 
         }
 
-        public async Task<AnswerBasic> SetStatusAsync(int patient_id, int status)
+        public async Task<AnswerBasic> SetStatusAsync(viSetStatus status)
         {
             try
             {
                 int user_id = accessor.GetId();
-                var patient = await db.tbUsers.FindAsync(patient_id);
-                patient.Status = status;
+                var patient = await db.tbUsers.FindAsync(status.Id);
+                patient.Status = status.Status;
                 patient.UpdateDate = DateTime.Now;
                 patient.UpdateUser = user_id;
                 await db.SaveChangesAsync();
@@ -131,7 +117,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"UserService.AddAsync Error:{e.Message}");
+                logger.LogError($"UserService.AddAsync Error:{e.Message} Model: {patient.ToJson()}");
                 return new Answer<viPatient>(false, "Ошибка программы", null);
             }
         }
@@ -226,7 +212,7 @@ namespace waPlanner.Services
                 logger.LogError($"UserService.SearchUserAsync Error:{e.Message}");
                 return new Answer<viPatient[]>(false, "Ошибка программы", null);
             }
-            
+
         }
     }
 }
