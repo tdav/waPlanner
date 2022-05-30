@@ -45,29 +45,29 @@ namespace waPlanner.Controllers.v1
                 {
                     Id = 1,
                     BirthDay = DateTime.Now,
-                    RoleId =(int)UserRoles.SUPER_ADMIN,
+                    RoleId = (int)UserRoles.SUPER_ADMIN,
                     Gender = "m",
                     PhoneNum = "+998977764669",
                     Password = CHash.EncryptMD5("string"),
-                    Name = "admin", 
+                    Name = "admin",
                     Surname = "admin",
                     Patronymic = "admin",
-                    Availability = new int[]{0},
+                    Availability = new int[] { 0 },
                     PhotoUrl = "string",
                     AdInfo = "string",
-                    Status = 1, 
-                    CreateDate = DateTime.Now, 
+                    Status = 1,
+                    CreateDate = DateTime.Now,
                     CreateUser = 1
                 });
                 await db.SaveChangesAsync();
                 #endregion
 
-            await tran.CommitAsync();
-        }
+                await tran.CommitAsync();
+            }
             catch (Exception ee)
             {
                 await tran.RollbackAsync();
-        logger.LogError($"InitDbController.Post Error:{ee.Message}");
+                logger.LogError($"InitDbController.Post Error:{ee.Message}");
                 return "Error";
             }
 

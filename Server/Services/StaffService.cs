@@ -92,12 +92,13 @@ namespace waPlanner.Services
                         RoleId = x.RoleId,
                         PhotoUrl = x.PhotoUrl,
                         Gender = x.Gender
-                    });
+                    })
+                    .Take(20);
 
                 if (org_id == 0)
-                    staff_array = await staffs.Take(20).ToArrayAsync();
+                    staff_array = await staffs.ToArrayAsync();
                 else
-                    staff_array = await staffs.Where(s => s.OrganizationId == org_id).Take(20).ToArrayAsync();
+                    staff_array = await staffs.Where(s => s.OrganizationId == org_id).ToArrayAsync();
 
                 return new Answer<viStaff[]>(true, "", staff_array);
             }
