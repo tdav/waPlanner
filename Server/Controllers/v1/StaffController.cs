@@ -36,6 +36,7 @@ namespace waPlanner.Controllers.v1
             return service.GetStaffsByOrganizationId();
         }
 
+        [AllowAnonymous]
         [HttpGet("category/{category_id}")]
         public async ValueTask<Answer<viStaff[]>> GetStaffByCategory(int category_id)
         {
@@ -65,13 +66,15 @@ namespace waPlanner.Controllers.v1
         {
             return await service.UpdateStaff(staff);
         }
-        
+
+        [AllowAnonymous]
         [HttpGet("{staff_id}")]
         public Task<Answer<viStaff>> GetStaffById(int staff_id)
         {
             return service.GetStaffById(staff_id);
         }
 
+        [AllowAnonymous]
         [HttpGet("search/{name}")]
         public ValueTask<Answer<viStaff[]>> SearchStaff(string name)
         {

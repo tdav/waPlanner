@@ -67,11 +67,12 @@ namespace waPlanner.Services
             try
             {
                 int org_id = GetAccessor().GetOrgId();
-                var staffs = await db.tbStaffs
+                viStaff[] staff_array;
+                var staffs = db.tbStaffs
                     .AsNoTracking()
                     .Include(s => s.Organization)
                     .Include(s => s.Category)
-                    .Where(s => s.OrganizationId == org_id && s.RoleId == (int)UserRoles.STAFF && s.Status == 1)
+                    .Where(s => s.RoleId == (int)UserRoles.STAFF && s.Status == 1)
                     .Select(x => new viStaff
                     {
                         Id = x.Id,
@@ -91,10 +92,14 @@ namespace waPlanner.Services
                         RoleId = x.RoleId,
                         PhotoUrl = x.PhotoUrl,
                         Gender = x.Gender
-                    })
-                    .Take(20)
-                    .ToArrayAsync();
-                return new Answer<viStaff[]>(true, "", staffs);
+                    });
+
+                if (org_id == 0)
+                    staff_array = await staffs.Take(20).ToArrayAsync();
+                else
+                    staff_array = await staffs.Where(s => s.OrganizationId == org_id).Take(20).ToArrayAsync();
+
+                return new Answer<viStaff[]>(true, "", staff_array);
             }
             catch (Exception e)
             {
@@ -109,9 +114,10 @@ namespace waPlanner.Services
             try
             {
                 int org_id = GetAccessor().GetOrgId();
-                var staffs = await db.tbStaffs
+                viStaff[] staff_array;
+                var staffs = db.tbStaffs
                     .AsNoTracking()
-                    .Where(x => x.OrganizationId == org_id && x.CategoryId == categoryId && x.Status == 1)
+                    .Where(x => x.CategoryId == categoryId && x.Status == 1)
                     .Select(x => new viStaff
                     {
                         Id = x.Id,
@@ -131,10 +137,14 @@ namespace waPlanner.Services
                         RoleId = x.RoleId,
                         PhotoUrl = x.PhotoUrl,
                         Gender = x.Gender
-                    })
-                    .ToArrayAsync();
+                    });
 
-                return new Answer<viStaff[]>(true, "", staffs);
+                if (org_id == 0)
+                    staff_array = await staffs.ToArrayAsync();
+                else
+                    staff_array = await staffs.Where(x => x.OrganizationId == org_id).ToArrayAsync();
+
+                return new Answer<viStaff[]>(true, "", staff_array);
             }
             catch (Exception ex)
             {
@@ -320,7 +330,6 @@ namespace waPlanner.Services
         {
             try
             {
-                int org_id = GetAccessor().GetOrgId();
                 var staff = await db.tbStaffs
                     .AsNoTracking()
                     .Include(s => s.Organization)
@@ -338,7 +347,7 @@ namespace waPlanner.Services
                         Online = x.Online.Value,
                         Availability = x.Availability,
                         Experience = x.Experience,
-                        OrganizationId = org_id,
+                        OrganizationId = x.OrganizationId,
                         Organization = x.Organization.Name,
                         CategoryId = x.CategoryId,
                         Category = x.Category.NameUz,
@@ -363,13 +372,14 @@ namespace waPlanner.Services
             try
             {
                 int org_id = GetAccessor().GetOrgId();
-                var search = await (from s in db.tbStaffs
+                viStaff[] staff_array;
+                var search = (from s in db.tbStaffs
                                     where EF.Functions.ILike(s.Surname, $"%{name}%")
                                     || EF.Functions.ILike(s.Name, $"%{name}%")
                                     || EF.Functions.ILike(s.Patronymic, $"%{name}%")
                                     select s)
                             .AsNoTracking()
-                            .Where(x => x.Status == 1 && x.RoleId == (int)UserRoles.STAFF && x.OrganizationId == org_id)
+                            .Where(x => x.Status == 1 && x.RoleId == (int)UserRoles.STAFF)
                             .Select(x => new viStaff
                             {
                                 Id = x.Id,
@@ -389,10 +399,14 @@ namespace waPlanner.Services
                                 RoleId = x.RoleId,
                                 PhotoUrl = x.PhotoUrl,
                                 Gender = x.Gender
-                            })
-                            .ToArrayAsync();
+                            });
 
-                return new Answer<viStaff[]>(false, "", search);
+                if (org_id == 0)
+                    staff_array = await search.ToArrayAsync();
+                else
+                    staff_array = await search.Where(x => x.OrganizationId == org_id).ToArrayAsync();
+
+                return new Answer<viStaff[]>(false, "", staff_array);
             }
             catch (Exception e)
             {
@@ -529,7 +543,7 @@ namespace waPlanner.Services
                     if (value.Data is null)
                         return new Answer<IdValue>(false, "Такой номер не зарегистрирован!", null);
 
-                    var staff = await db.tbStaffs.FindAsync(value.Data.Id);     
+                    var staff = await db.tbStaffs.FindAsync(value.Data.Id);
                     staff.Password = CHash.EncryptMD5(value.Data.Value);
                     await db.SaveChangesAsync();
                     return new Answer<IdValue>(true, "", null);

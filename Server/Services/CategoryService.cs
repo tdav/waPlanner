@@ -41,7 +41,7 @@ namespace waPlanner.Services
             {
                 var category = await db.spCategories
                 .AsNoTracking()
-                .Where(x => x.Id == category_id)
+                .Where(x => x.Id == category_id && x.Status == 1)
                 .Select(x => new viCategory
                 {
                     Id = x.Id,
@@ -67,38 +67,26 @@ namespace waPlanner.Services
             try
             {
                 int org_id = accessor.GetOrgId();
-                viCategory[] categories;
+                var category = db.spCategories
+                    .AsNoTracking()
+                    .Where(x => x.Status == 1)
+                    .Select(x => new viCategory
+                    {
+                        Id = x.Id,
+                        NameLt = x.NameLt,
+                        NameRu = x.NameRu,
+                        NameUz = x.NameUz,
+                        OrganizationId = x.OrganizationId,
+                        Organization = x.Organization.Name,
+                        Status = x.Status,
+                    });
+                viCategory[] categories_array;
                 if (org_id == 0)
-                    categories = await db.spCategories
-                       .AsNoTracking()
-                       .Select(x => new viCategory
-                       {
-                           Id = x.Id,
-                           NameLt = x.NameLt,
-                           NameRu = x.NameRu,
-                           NameUz = x.NameUz,
-                           OrganizationId = org_id,
-                           Organization = x.Organization.Name,
-                           Status = x.Status,
-                       })
-                       .ToArrayAsync();
+                    categories_array = await category.ToArrayAsync();
                 else
-                    categories = await db.spCategories
-                   .AsNoTracking()
-                   .Where(x => x.OrganizationId == org_id)
-                   .Select(x => new viCategory
-                   {
-                       Id = x.Id,
-                       NameLt = x.NameLt,
-                       NameRu = x.NameRu,
-                       NameUz = x.NameUz,
-                       OrganizationId = org_id,
-                       Organization = x.Organization.Name,
-                       Status = x.Status,
-                   })
-                   .ToArrayAsync();
-
-                return new Answer<viCategory[]>(true, "", categories);
+                    categories_array = await category.Where(x => x.OrganizationId == org_id).ToArrayAsync();
+                
+                return new Answer<viCategory[]>(true, "", categories_array);
             }
             catch (Exception e)
             {
@@ -192,13 +180,14 @@ namespace waPlanner.Services
             try
             {
                 int org_id = accessor.GetOrgId();
-                var search = await (from s in db.spCategories
-                                    where EF.Functions.ILike(s.NameUz, $"%{name}%")
-                                    || EF.Functions.ILike(s.NameRu, $"%{name}%")
-                                    || EF.Functions.ILike(s.NameLt, $"%{name}%")
-                                    select s)
+                viCategory[] search_array;
+                var search = (from s in db.spCategories
+                              where EF.Functions.ILike(s.NameUz, $"%{name}%")
+                              || EF.Functions.ILike(s.NameRu, $"%{name}%")
+                              || EF.Functions.ILike(s.NameLt, $"%{name}%")
+                              select s)
                             .AsNoTracking()
-                            .Where(x => x.Status == 1 && x.OrganizationId == org_id)
+                            .Where(x => x.Status == 1)
                             .Select(x => new viCategory
                             {
                                 Id = x.Id,
@@ -208,9 +197,14 @@ namespace waPlanner.Services
                                 OrganizationId = x.OrganizationId,
                                 Organization = x.Organization.Name,
                                 Status = x.Status
-                            })
-                            .ToArrayAsync();
-                return new Answer<viCategory[]>(true, "", search);
+                            });
+
+                if (org_id == 0)
+                    search_array = await search.ToArrayAsync();
+                else
+                    search_array = await search.Where(x => x.OrganizationId == org_id).ToArrayAsync();
+                
+                return new Answer<viCategory[]>(true, "", search_array);
             }
             catch (Exception e)
             {

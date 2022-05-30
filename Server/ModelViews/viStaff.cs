@@ -29,5 +29,6 @@ namespace waPlanner.ModelViews
         public int? Status { get; set; }
         public string Gender { get; set; }
         public int PeriodTime { get; set; }
+        public int? Rating { get; set; }
     }
 }
