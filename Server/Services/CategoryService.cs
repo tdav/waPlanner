@@ -67,20 +67,37 @@ namespace waPlanner.Services
             try
             {
                 int org_id = accessor.GetOrgId();
-                var categories = await db.spCategories
-                    .AsNoTracking()
-                    .Where(x => x.OrganizationId == org_id)
-                    .Select(x => new viCategory
-                    {
-                        Id = x.Id,
-                        NameLt = x.NameLt,
-                        NameRu = x.NameRu,
-                        NameUz = x.NameUz,
-                        OrganizationId = org_id,
-                        Organization = x.Organization.Name,
-                        Status = x.Status,
-                    })
-                    .ToArrayAsync();
+                viCategory[] categories;
+                if (org_id == 0)
+                    categories = await db.spCategories
+                       .AsNoTracking()
+                       .Select(x => new viCategory
+                       {
+                           Id = x.Id,
+                           NameLt = x.NameLt,
+                           NameRu = x.NameRu,
+                           NameUz = x.NameUz,
+                           OrganizationId = org_id,
+                           Organization = x.Organization.Name,
+                           Status = x.Status,
+                       })
+                       .ToArrayAsync();
+                else
+                    categories = await db.spCategories
+                   .AsNoTracking()
+                   .Where(x => x.OrganizationId == org_id)
+                   .Select(x => new viCategory
+                   {
+                       Id = x.Id,
+                       NameLt = x.NameLt,
+                       NameRu = x.NameRu,
+                       NameUz = x.NameUz,
+                       OrganizationId = org_id,
+                       Organization = x.Organization.Name,
+                       Status = x.Status,
+                   })
+                   .ToArrayAsync();
+
                 return new Answer<viCategory[]>(true, "", categories);
             }
             catch (Exception e)
