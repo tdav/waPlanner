@@ -115,7 +115,7 @@ namespace waPlanner.TelegramBot.keyboards
                             return;
                         }
 
-                        int[] staff_avail = await db.CheckStaffAvailability(cache.Staff);
+                        int[] staff_avail = await db.CheckStaffAvailability(cache);
                         if (staff_avail[(int)date.DayOfWeek] == 0)
                         {
                             await bot.AnswerCallbackQueryAsync(call.Id, lang[cache.Lang]["BUSY_DATE"], true);

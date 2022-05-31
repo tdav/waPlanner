@@ -67,7 +67,6 @@ namespace waPlanner.Services
             try
             {
                 int org_id = GetAccessor().GetOrgId();
-                viStaff[] staff_array;
                 var staffs = db.tbStaffs
                     .AsNoTracking()
                     .Include(s => s.Organization)
@@ -95,12 +94,10 @@ namespace waPlanner.Services
                     })
                     .Take(20);
 
-                if (org_id == 0)
-                    staff_array = await staffs.ToArrayAsync();
-                else
-                    staff_array = await staffs.Where(s => s.OrganizationId == org_id).ToArrayAsync();
+                if (org_id != 0)
+                    staffs = staffs.Where(s => s.OrganizationId == org_id);
 
-                return new Answer<viStaff[]>(true, "", staff_array);
+                return new Answer<viStaff[]>(true, "", await staffs.ToArrayAsync());
             }
             catch (Exception e)
             {
@@ -115,7 +112,6 @@ namespace waPlanner.Services
             try
             {
                 int org_id = GetAccessor().GetOrgId();
-                viStaff[] staff_array;
                 var staffs = db.tbStaffs
                     .AsNoTracking()
                     .Where(x => x.CategoryId == categoryId && x.Status == 1)
@@ -140,12 +136,10 @@ namespace waPlanner.Services
                         Gender = x.Gender
                     });
 
-                if (org_id == 0)
-                    staff_array = await staffs.ToArrayAsync();
-                else
-                    staff_array = await staffs.Where(x => x.OrganizationId == org_id).ToArrayAsync();
+                if (org_id != 0)
+                    staffs = staffs.Where(x => x.OrganizationId == org_id);
 
-                return new Answer<viStaff[]>(true, "", staff_array);
+                return new Answer<viStaff[]>(true, "", await staffs.ToArrayAsync());
             }
             catch (Exception ex)
             {
@@ -373,12 +367,11 @@ namespace waPlanner.Services
             try
             {
                 int org_id = GetAccessor().GetOrgId();
-                viStaff[] staff_array;
                 var search = (from s in db.tbStaffs
-                                    where EF.Functions.ILike(s.Surname, $"%{name}%")
-                                    || EF.Functions.ILike(s.Name, $"%{name}%")
-                                    || EF.Functions.ILike(s.Patronymic, $"%{name}%")
-                                    select s)
+                              where EF.Functions.ILike(s.Surname, $"%{name}%")
+                              || EF.Functions.ILike(s.Name, $"%{name}%")
+                              || EF.Functions.ILike(s.Patronymic, $"%{name}%")
+                              select s)
                             .AsNoTracking()
                             .Where(x => x.Status == 1 && x.RoleId == (int)UserRoles.STAFF)
                             .Select(x => new viStaff
@@ -402,12 +395,10 @@ namespace waPlanner.Services
                                 Gender = x.Gender
                             });
 
-                if (org_id == 0)
-                    staff_array = await search.ToArrayAsync();
-                else
-                    staff_array = await search.Where(x => x.OrganizationId == org_id).ToArrayAsync();
+                if (org_id != 0)
+                    search = search.Where(x => x.OrganizationId == org_id);
 
-                return new Answer<viStaff[]>(false, "", staff_array);
+                return new Answer<viStaff[]>(false, "", await search.ToArrayAsync());
             }
             catch (Exception e)
             {
@@ -460,10 +451,7 @@ namespace waPlanner.Services
             var hash_pasw = CHash.EncryptMD5(value.password);
             var user = await db.tbStaffs.FirstOrDefaultAsync(x => x.PhoneNum == value.phoneNum && x.Password == hash_pasw);
             if (user != null)
-            {
-
                 return new Answer<TokenModel>(true, "", GenerateToken(user));
-            }
             else
                 return new Answer<TokenModel>(false, "Маълумот топилмадаи", null);
         }

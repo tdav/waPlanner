@@ -186,7 +186,7 @@ namespace waPlanner.TelegramBot.Services
                 else
                 {
                     long.TryParse(message.Text[6..].Replace(" ", ""), out long staff_link);
-                    if (!await db.CheckFavorites(cache.Staff, chat_id, staff_link))
+                    if (!await db.CheckFavorites(cache, chat_id, staff_link))
                     {
                         await db.AddToFavorites(cache, chat_id, staff_link);
                     }
@@ -292,7 +292,7 @@ namespace waPlanner.TelegramBot.Services
                     {
                         string staff_name = msg.Substring(msg.LastIndexOf(')') + 2);
                         cache.Staff = msg != lang[cache.Lang]["back"] ? staff_name : cache.Staff;
-                        viStaffInfo staffInfo = await DbManipulations.GetStaffInfo(cache.Staff);
+                        viStaffInfo staffInfo = await DbManipulations.GetStaffInfo(cache);
                         if (staffInfo is not null)
                         {
                             cache.Specialization = staffInfo.Specialization;
@@ -483,7 +483,7 @@ namespace waPlanner.TelegramBot.Services
                         await DbManipulations.RegistrateUserPlanner(chat_id, cache);
                         await Utils.Utils.SendOrder(cache, bot, DbManipulations, chat_id);
 
-                        if (!await DbManipulations.CheckFavorites(cache.Staff, chat_id))
+                        if (!await DbManipulations.CheckFavorites(cache, chat_id))
                         {
                             cache.State = PlannerStates.ADD_FAVORITES;
                             await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["ADD_FAVORITES"], replyMarkup: ReplyKeyboards.SendConfirmKeyboards(cache.Lang, lang));

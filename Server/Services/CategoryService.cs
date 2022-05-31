@@ -80,13 +80,11 @@ namespace waPlanner.Services
                         Organization = x.Organization.Name,
                         Status = x.Status,
                     });
-                viCategory[] categories_array;
-                if (org_id == 0)
-                    categories_array = await category.ToArrayAsync();
-                else
-                    categories_array = await category.Where(x => x.OrganizationId == org_id).ToArrayAsync();
-                
-                return new Answer<viCategory[]>(true, "", categories_array);
+
+                if (org_id != 0)
+                    category = category.Where(x => x.OrganizationId == org_id);
+
+                return new Answer<viCategory[]>(true, "", await category.ToArrayAsync());
             }
             catch (Exception e)
             {
@@ -180,7 +178,6 @@ namespace waPlanner.Services
             try
             {
                 int org_id = accessor.GetOrgId();
-                viCategory[] search_array;
                 var search = (from s in db.spCategories
                               where EF.Functions.ILike(s.NameUz, $"%{name}%")
                               || EF.Functions.ILike(s.NameRu, $"%{name}%")
@@ -199,12 +196,10 @@ namespace waPlanner.Services
                                 Status = x.Status
                             });
 
-                if (org_id == 0)
-                    search_array = await search.ToArrayAsync();
-                else
-                    search_array = await search.Where(x => x.OrganizationId == org_id).ToArrayAsync();
-                
-                return new Answer<viCategory[]>(true, "", search_array);
+                if (org_id != 0)
+                    search = search.Where(x => x.OrganizationId == org_id);
+
+                return new Answer<viCategory[]>(true, "", await search.ToArrayAsync());
             }
             catch (Exception e)
             {

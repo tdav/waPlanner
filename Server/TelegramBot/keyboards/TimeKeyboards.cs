@@ -15,7 +15,7 @@ namespace waPlanner.TelegramBot.keyboards
         public static async Task<InlineKeyboardMarkup> SendTimeKeyboards(IDbManipulations db, TelegramBotValuesModel value)
         {
             var doctorsDate = await db.GetStaffBusyTime(value);
-            int[] staff_avail = await db.CheckStaffAvailability(value.Staff);
+            int[] staff_avail = await db.CheckStaffAvailability(value);
             viOrgTimes breakTime = await db.GetOrganizationBreak(value.Organization);
             viOrgTimes workTime = await db.GetOrgWorkTime(value.Organization);
             int periodTime = await db.GetStaffPeriodTime(value);
@@ -94,7 +94,7 @@ namespace waPlanner.TelegramBot.keyboards
                             await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["BID"]);
                             await db.RegistrateUserPlanner(chat_id, cache);
                             await Utils.Utils.SendOrder(cache, bot, db, chat_id);
-                            if (!await db.CheckFavorites(cache.Staff, chat_id))
+                            if (!await db.CheckFavorites(cache, chat_id))
                             {
                                 await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["ADD_FAVORITES"], replyMarkup: ReplyKeyboards.SendConfirmKeyboards(cache.Lang, lang));
                                 cache.State = PlannerStates.ADD_FAVORITES;

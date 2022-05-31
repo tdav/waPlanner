@@ -19,7 +19,7 @@ namespace waPlanner.Controllers.v1
             this.service = service;
         }
 
-        [HttpGet("organizations/{spec_id}")]
+        [HttpGet("organizations/s{spec_id}")]
         public ValueTask<Answer<viOrganization[]>> GetOrganizationsAsync(int spec_id)
         {
             return service.GetOrganizationsBySpecId(spec_id);

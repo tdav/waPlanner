@@ -28,7 +28,7 @@ namespace waPlanner.TelegramBot.Utils
         Task FinishProcessAsync(long chat_id, TelegramBotValuesModel value);
         Task<bool> CheckUser(long chat_id);
         Task<bool> CheckUserChat(long chat_id);
-        Task<viStaffInfo> GetStaffInfo(string name);
+        Task<viStaffInfo> GetStaffInfo(TelegramBotValuesModel value);
         Task<List<IdValue>> GetStaffByCategory(string category, string org_name);
         Task<bool> CheckStaffByCategory(string category, string value);
         Task<viOrgAddress> GetOrgAddress(string organization);
@@ -37,9 +37,9 @@ namespace waPlanner.TelegramBot.Utils
         Task<bool> CheckSpecialization(string specialization);
         Task<List<DateTime>> GetStaffBusyTime(TelegramBotValuesModel value);
         Task<int> GetStaffPeriodTime(TelegramBotValuesModel value);
-        Task<int[]> CheckStaffAvailability(string staff_name);
+        Task<int[]> CheckStaffAvailability(TelegramBotValuesModel value);
         Task AddToFavorites(TelegramBotValuesModel value, long user_chat, long staff_chat = 0);
-        Task<bool> CheckFavorites(string value, long user_chat, long staff_chat = 0);
+        Task<bool> CheckFavorites(TelegramBotValuesModel value, long user_chat, long staff_chat = 0);
         Task UpdateUserName(long chat_id, string name);
         Task UpdateUserPhone(long chat_id, string phone);
         Task UpdateUserLang(long chat_id, string lg);
@@ -188,7 +188,7 @@ namespace waPlanner.TelegramBot.Utils
         }
         public async Task RegistrateUserPlanner(long chat_id, TelegramBotValuesModel value)
         {
-            viStaffInfo staff = await GetStaffInfo(value.Staff);
+            viStaffInfo staff = await GetStaffInfo(value);
             int userId = await GetUserId(chat_id);
             string[] userSelectedTime = value.Time.Split(":");
             DateTime plannerDate = value.Calendar
@@ -321,12 +321,22 @@ namespace waPlanner.TelegramBot.Utils
             return false;
         }
 
-        public async Task<viStaffInfo> GetStaffInfo(string name)
+        public async Task<int> GetCategoryId(string category, int org_id)
         {
-            var snp = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var cat = await db.spCategories
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => (x.NameLt == category || x.NameRu == category || x.NameUz == category) && x.OrganizationId == org_id);
+            return cat.Id;
+        }
+
+        public async Task<viStaffInfo> GetStaffInfo(TelegramBotValuesModel value)
+        {
+            int org_id = await GetOrganizationId(value.Organization);
+            int category_id = await GetCategoryId(value.Category, org_id);
+            var snp = value.Staff.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             var stuff = await db.tbStaffs
                 .AsNoTracking()
-                .Where(x => x.Surname == snp[0] && x.Name == snp[1] && x.Patronymic == snp[2])
+                .Where(x => x.Surname == snp[0] && x.Name == snp[1] && x.Patronymic == snp[2] && x.OrganizationId == org_id && x.CategoryId == category_id)
                 .Select(x => new viStaffInfo
                 {
                     Staff = $"{x.Surname} {x.Name} {x.Patronymic}",
@@ -402,7 +412,7 @@ namespace waPlanner.TelegramBot.Utils
 
         public async Task<List<DateTime>> GetStaffBusyTime(TelegramBotValuesModel value)
         {
-            var staff = await GetStaffInfo(value.Staff);
+            var staff = await GetStaffInfo(value);
             var org_id = await GetOrganizationId(value.Organization);
             return await db.tbSchedulers
                 .AsNoTracking()
@@ -413,7 +423,7 @@ namespace waPlanner.TelegramBot.Utils
 
         public async Task<int> GetStaffPeriodTime(TelegramBotValuesModel value)
         {
-            var staff = await GetStaffInfo(value.Staff);
+            var staff = await GetStaffInfo(value);
             var org_id = await GetOrganizationId(value.Organization);
             return await db.tbStaffs
                 .AsNoTracking()
@@ -422,9 +432,9 @@ namespace waPlanner.TelegramBot.Utils
                 .FirstAsync();
         }
 
-        public async Task<int[]> CheckStaffAvailability(string staff_name)
+        public async Task<int[]> CheckStaffAvailability(TelegramBotValuesModel value)
         {
-            var staff = await GetStaffInfo(staff_name);
+            var staff = await GetStaffInfo(value);
             return await db.tbStaffs
                 .AsNoTracking()
                 .Where(x => x.Id == staff.StaffId && x.Status == 1)
@@ -455,7 +465,7 @@ namespace waPlanner.TelegramBot.Utils
         {
             var staff = await GetStaffInfo(staff_chat);
             if (value.Staff is not null)
-                staff = await GetStaffInfo(value.Staff);
+                staff = await GetStaffInfo(value);
             var user = await GetUserId(user_chat);
             var addFavorite = new tbFavorites();
             addFavorite.StaffId = staff.StaffId.Value;
@@ -470,11 +480,11 @@ namespace waPlanner.TelegramBot.Utils
 
         }
 
-        public async Task<bool> CheckFavorites(string staffInfo, long user_chat, long staff_chat = 0)
+        public async Task<bool> CheckFavorites(TelegramBotValuesModel value, long user_chat, long staff_chat = 0)
         {
             var staff = await GetStaffInfo(staff_chat);
-            if (staffInfo is not null)
-                staff = await GetStaffInfo(staffInfo);
+            if (value.Staff is not null)
+                staff = await GetStaffInfo(value);
             var user = await GetUserId(user_chat);
             var result = await db.tbFavorites
                 .AsNoTracking()
