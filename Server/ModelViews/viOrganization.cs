@@ -23,5 +23,6 @@ namespace waPlanner.ModelViews
         public string MessageRu { get; set; }
         public string MessageUz { get; set; }
         public string MessageLt { get; set; }
+        public string PhotoPath { get; set; }
     }
 }

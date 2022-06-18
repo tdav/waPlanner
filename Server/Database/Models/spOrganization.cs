@@ -50,5 +50,6 @@ namespace waPlanner.Database.Models
         public virtual List< spCategory> Categories{ get; set; }
 
         public int? Rating { get; set; }
+        public string PhotoPath { get; set; }
     }
 }

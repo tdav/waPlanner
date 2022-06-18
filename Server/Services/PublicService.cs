@@ -41,7 +41,9 @@ namespace waPlanner.Services
                         Address = x.Address,
                         Latitude = x.Latitude,
                         Longitude = x.Longitude,
-                        SpecializationId = x.SpecializationId
+                        SpecializationId = x.SpecializationId,
+                        Specialization = x.Specialization.NameRu,
+                        PhotoPath = x.PhotoPath,
                     })
                     .ToArrayAsync();
 
@@ -74,7 +76,8 @@ namespace waPlanner.Services
                         PhotoUrl = x.PhotoUrl,
                         Rating = x.Rating,
                         PeriodTime = x.PeriodTime,
-                        CategoryId = x.CategoryId, 
+                        CategoryId = x.CategoryId,
+                        Category = x.Category.NameRu,
                         Experience = x.Experience,
                         TelegramId = x.TelegramId,
                         OrganizationId = x.OrganizationId,

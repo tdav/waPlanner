@@ -150,6 +150,10 @@ namespace waPlanner.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("order_index");
 
+                    b.Property<string>("PhotoPath")
+                        .HasColumnType("text")
+                        .HasColumnName("photo_path");
+
                     b.Property<int?>("Rating")
                         .HasColumnType("integer")
                         .HasColumnName("rating");

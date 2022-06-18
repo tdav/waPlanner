@@ -105,6 +105,9 @@ namespace waPlanner.Services
                 if (organization.Name is not null)
                     updatedOrganization.Name = organization.Name;
 
+                if (organization.PhotoPath is not null)
+                    updatedOrganization.PhotoPath = organization.PhotoPath;
+
                 updatedOrganization.WorkStart = organization.WorkTimeStart;
                 updatedOrganization.WorkEnd = organization.WorkTimeEnd;
                 updatedOrganization.MessageRu = organization.MessageRu;
@@ -161,7 +164,7 @@ namespace waPlanner.Services
         {
             try
             {
-                var organizations = await db.spOrganizations.Where(x => x.Status == 1).AsNoTracking().ToArrayAsync();
+                var organizations = await db.spOrganizations.AsNoTracking().Where(x => x.Status == 1).ToArrayAsync();
                 return new Answer<spOrganization[]>(true, "", organizations);
             }
             catch (Exception e)
