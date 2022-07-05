@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,7 +38,7 @@ namespace waPlanner
             services.AddOptions();
             services.Configure<Vars>(conf.GetSection("SystemVars"));
             services.Configure<LangsModel>(conf.GetSection("SystemLangs"));
-                        
+
             services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(conf["BOT_TOKEN"]));
             services.AddSingleton<IBotService, BotService>();
             services.AddHostedService<TelegramBotBackgroundService>();
@@ -107,6 +108,12 @@ namespace waPlanner
             app.UseRouting();
 
             app.UseCors("AllowAllHeaders");
+
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
+
             app.UseAuthentication();
             app.UseAuthorization();
 

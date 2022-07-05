@@ -5,9 +5,9 @@
 		<ImplicitUsings>disable</ImplicitUsings>
 		<AssemblyVersion>1.0.*</AssemblyVersion>
 		<FileVersion>1.0.0.0</FileVersion>
-		<AssemblyName>planner_server</AssemblyName>
+		<AssemblyName>tplanner</AssemblyName>
 		<ServerGarbageCollection>true</ServerGarbageCollection>
-		<UserSecretsId>f176cda6-bb56-44fd-b0de-b45900c7df4d</UserSecretsId>
+		<UserSecretsId>f176cda6-bb56-44fd-b0de-b45900c7df4d</UserSecretsId>		
 	</PropertyGroup>
 	
 	<ItemGroup>
