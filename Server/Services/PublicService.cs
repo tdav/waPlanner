@@ -15,8 +15,9 @@ namespace waPlanner.Services
         ValueTask<Answer<viOrganization[]>> GetOrganizationsBySpecId(int specId);
         ValueTask<Answer<viStaff[]>> GetStaffsByOrgId(int orgId);
         ValueTask<Answer<viCategory[]>> GetCategoriesByOrgId(int orgId);
+        ValueTask<Answer<viOrganization[]>> GetOrganizations();
     }
-    public class PublicService: IPublicService, IAutoRegistrationScopedLifetimeService
+    public class PublicService : IPublicService, IAutoRegistrationScopedLifetimeService
     {
         private readonly MyDbContext db;
         private readonly ILogger<CategoryService> logger;
@@ -118,6 +119,35 @@ namespace waPlanner.Services
             {
                 logger.LogError($"PublicService.GetCategoriesByOrgId Error:{ex.Message}");
                 return new Answer<viCategory[]>(false, "Ошибка программы", null);
+            }
+        }
+
+        public async ValueTask<Answer<viOrganization[]>> GetOrganizations()
+        {
+            try
+            {
+                var orgs = await db.spOrganizations
+                    .AsNoTracking()
+                    .Where(x => x.Status == 1)
+                    .Select(x => new viOrganization
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Address = x.Address,
+                        Latitude = x.Latitude,
+                        Longitude = x.Longitude,
+                        SpecializationId = x.SpecializationId,
+                        Specialization = x.Specialization.NameRu,
+                        PhotoPath = x.PhotoPath,
+                    })
+                    .ToArrayAsync();
+
+                return new Answer<viOrganization[]>(true, "", orgs);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"PublicService.GetOrganizations Error:{ex.Message}");
+                return new Answer<viOrganization[]>(false, "Ошибка программы", null);
             }
         }
     }

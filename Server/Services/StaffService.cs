@@ -424,7 +424,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"StaffService.SearchStaffAsync Error:{e.Message} Model: {staff.ToJson()}");
+                logger.LogError($"StaffService.SetPhotoAsync Error:{e.Message} Model: {staff.ToJson()}");
                 return new Answer<string>(false, "Ошибка программы", null);
             }
         }

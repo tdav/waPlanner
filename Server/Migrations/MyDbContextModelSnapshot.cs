@@ -317,6 +317,10 @@ namespace waPlanner.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("name_uz");
 
+                    b.Property<string>("PhotoPath")
+                        .HasColumnType("text")
+                        .HasColumnName("photo_path");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer")
                         .HasColumnName("status");

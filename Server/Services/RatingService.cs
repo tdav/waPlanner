@@ -173,7 +173,7 @@ namespace waPlanner.Services
             }
             catch (Exception ex)
             {
-                logger.LogError($"RatingService.GetStaffRating Error:{ex.Message}");
+                logger.LogError($"RatingService.GetOrganizationRating Error:{ex.Message}");
                 return new Answer<viRating[]>(false, "Ошибка программы", null);
             }
         }

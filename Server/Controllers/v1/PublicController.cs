@@ -19,8 +19,8 @@ namespace waPlanner.Controllers.v1
             this.service = service;
         }
 
-        [HttpGet("organizations/s{spec_id}")]
-        public ValueTask<Answer<viOrganization[]>> GetOrganizationsAsync(int spec_id)
+        [HttpGet("organizations/{spec_id}")]
+        public ValueTask<Answer<viOrganization[]>> GetOrganizationsBySpecAsync(int spec_id)
         {
             return service.GetOrganizationsBySpecId(spec_id);
         }
@@ -35,6 +35,12 @@ namespace waPlanner.Controllers.v1
         public ValueTask<Answer<viCategory[]>> GetCategoriesAsync(int organization_id)
         {
             return service.GetCategoriesByOrgId(organization_id);
+        }
+
+        [HttpGet("all_organizations")]
+        public ValueTask<Answer<viOrganization[]>> GetOrganizations()
+        {
+            return service.GetOrganizations();
         }
     }
 }

@@ -24,7 +24,7 @@ namespace waPlanner.Controllers.v1
         }
 
 
-#if DEBUG
+
         [HttpPost]
         public async ValueTask<string> Post([FromServices] MyDbContext db)
         {
@@ -48,7 +48,7 @@ namespace waPlanner.Controllers.v1
                     RoleId = (int)UserRoles.SUPER_ADMIN,
                     Gender = "m",
                     PhoneNum = "+998977764669",
-                    Password = CHash.EncryptMD5("string"),
+                    Password = CHash.EncryptMD5("kozim8386838"),
                     Name = "admin",
                     Surname = "admin",
                     Patronymic = "admin",
@@ -73,7 +73,7 @@ namespace waPlanner.Controllers.v1
 
             return "OK";
         }
-#endif
+
 
     }
 }

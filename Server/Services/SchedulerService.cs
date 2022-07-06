@@ -143,7 +143,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"SchedulerService.GetSchedulerByIdAsync Error:{e.Message}");
+                logger.LogError($"SchedulerService.GetSchedulerByUserIdAsync Error:{e.Message}");
                 return new Answer<viScheduler[]>(false, "Ошибка программы", null);
             }
 

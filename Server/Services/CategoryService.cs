@@ -57,7 +57,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message}");
+                logger.LogError($"InfoService.GetCategoryByIdAsync Error:{e.Message}");
                 return new Answer<viCategory>(false, "Ошибка программы", null);
             }
         }
@@ -88,7 +88,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message}");
+                logger.LogError($"InfoService.GetAllCategoriesAsync Error:{e.Message}");
                 return new Answer<viCategory[]>(false, "Ошибка программы", null);
             }
         }
@@ -119,7 +119,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message} Model: {value.ToJson()}");
+                logger.LogError($"InfoService.AddCategoryAsync Error:{e.Message} Model: {value.ToJson()}");
                 return new Answer<int>(false, "Ошибка программы", 0);
             }
         }
@@ -147,7 +147,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message} Model: {value.ToJson()}");
+                logger.LogError($"InfoService.UpdateAsync Error:{e.Message} Model: {value.ToJson()}");
                 return new AnswerBasic(false, "Ошибка программы");
             }
         }
@@ -168,7 +168,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message}");
+                logger.LogError($"InfoService.ChangeCategoryStatus Error:{e.Message}");
                 return new AnswerBasic(false, "Ошибка программы");
             }
         }
@@ -203,7 +203,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"InfoService.GetTotalTodayAppointments Error:{e.Message}");
+                logger.LogError($"InfoService.SearchCategory Error:{e.Message}");
                 return new Answer<viCategory[]>(false, "Ошибка программы", null);
             }
         }

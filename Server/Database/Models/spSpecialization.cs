@@ -23,5 +23,6 @@ namespace waPlanner.Database.Models
         [StringLength(200)]
         public new string NameRu { get; set; }
         public virtual List<spOrganization> Organizations { get; set; }
+        public string PhotoPath { get; set; }
     }
 }

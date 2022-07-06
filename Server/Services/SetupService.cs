@@ -38,7 +38,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"StaffService.GetStaffByOrganizationId Error:{e.Message}");
+                logger.LogError($"SetupService.Get Error:{e.Message}");
                 return new Answer<viSetup>(false, "Ошибка программы", null);
             }
            
@@ -71,7 +71,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"StaffService.GetStaffByOrganizationId Error:{e.Message}");
+                logger.LogError($"SetupService.Set Error:{e.Message}");
                 return new AnswerBasic(false, "Ошибка программы");
             }
             

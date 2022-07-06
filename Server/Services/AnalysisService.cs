@@ -53,7 +53,7 @@ namespace waPlanner.Services
             }
             catch (Exception ex)
             {
-                logger.LogError($"AnalysisService.GetAllAnalysis Error:{ex.Message}");
+                logger.LogError($"AnalysisService.GetStaffAllAnalysis Error:{ex.Message}");
                 return new Answer<viFullAnalysis[]>(false, "Ошибка программы", null);
             }
         }
@@ -73,7 +73,7 @@ namespace waPlanner.Services
             }
             catch (Exception ex)
             {
-                logger.LogError($"AnalysisService.ChangeAnylysis Error:{ex.Message}");
+                logger.LogError($"AnalysisService.DeleteAnylysis Error:{ex.Message}");
                 return new AnswerBasic(false, "Ошибка программы");
 
             }

@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
@@ -95,7 +94,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"SpecializationService.UpdateSpecializationAsync Error:{e.Message}");
+                logger.LogError($"SpecializationService.GetSpecializationsAsync Error:{e.Message}");
                 return new Answer<spSpecialization[]>(false, "Ошибка программы", null);
             }
             
@@ -112,7 +111,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"SpecializationService.UpdateSpecializationAsync Error:{e.Message}");
+                logger.LogError($"SpecializationService.GetSpecializationByIdAsync Error:{e.Message}");
                 return new Answer<spSpecialization>(false, "Ошибка программы", null);
             }
             
@@ -132,7 +131,7 @@ namespace waPlanner.Services
             }
             catch (Exception e)
             {
-                logger.LogError($"SpecializationService.UpdateSpecializationAsync Error:{e.Message}");
+                logger.LogError($"SpecializationService.ChangeSpecializationStatus Error:{e.Message}");
                 return new AnswerBasic(false, "Ошибка программы");
             }
             
