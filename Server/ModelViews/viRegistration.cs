@@ -12,5 +12,6 @@ namespace waPlanner.ModelViews
 
         public string OrganizationName { get; set; }
         public int SpecializationId { get; set; }
+        public string OrganizationInfo { get; set; }
     }
 }

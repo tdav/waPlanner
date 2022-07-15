@@ -45,6 +45,7 @@ namespace waPlanner.Services
                         SpecializationId = x.SpecializationId,
                         Specialization = x.Specialization.NameRu,
                         PhotoPath = x.PhotoPath,
+                        OrganizationInfo = x.Info
                     })
                     .ToArrayAsync();
 
@@ -139,6 +140,7 @@ namespace waPlanner.Services
                         SpecializationId = x.SpecializationId,
                         Specialization = x.Specialization.NameRu,
                         PhotoPath = x.PhotoPath,
+                        OrganizationInfo = x.Info
                     })
                     .ToArrayAsync();
 

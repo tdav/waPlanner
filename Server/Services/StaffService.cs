@@ -506,7 +506,6 @@ namespace waPlanner.Services
                 if (staff.Password == CHash.EncryptMD5(value.oldPassword) && staff.Id == user_id)
                 {
                     staff.Password = CHash.EncryptMD5(value.newPassword);
-                    db.Update(staff);
                     await db.SaveChangesAsync();
                     return new AnswerBasic(true, "");
                 }

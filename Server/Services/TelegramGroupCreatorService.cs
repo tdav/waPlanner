@@ -6,7 +6,8 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using TdLib;
+using TdLib
+    ;
 using TDLib.Bindings;
 using waPlanner.Database;
 using waPlanner.Extensions;
@@ -124,7 +125,7 @@ namespace waPlanner.Services
                 var group_id = new_group.Id;
                 var group = new_group.Type as TdApi.ChatType.ChatTypeSupergroup;
                 var getGroupInfo = await client.GetSupergroupFullInfoAsync(group.SupergroupId);
-                var bot = await client.SearchPublicChatAsync("webapp1_bot");
+                var bot = await client.SearchPublicChatAsync("tplanner_bot");
                 await client.AddChatMemberAsync(group_id, bot.Id);
 
                 var contact = await client.ImportContactsAsync(new TdApi.Contact[]

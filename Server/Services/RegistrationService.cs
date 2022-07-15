@@ -81,6 +81,7 @@ namespace waPlanner.Services
                     organization.CreateUser = staff.Id;
                     organization.Status = 1;
                     organization.OrderIndex = 1;
+                    organization.Info = viRegistration.OrganizationInfo;
 
                     await db.spOrganizations.AddAsync(organization);
                     await db.SaveChangesAsync();

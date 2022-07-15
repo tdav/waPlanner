@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
@@ -291,6 +292,7 @@ namespace waPlanner.TelegramBot.Services
                 case PlannerStates.SELECT_STAFF_FAVORITES:
                     {
                         string staff_name = msg.Substring(msg.LastIndexOf(')') + 2);
+                        
                         cache.Staff = msg != lang[cache.Lang]["back"] ? staff_name : cache.Staff;
                         viStaffInfo staffInfo = await DbManipulations.GetStaffInfo(cache);
                         if (staffInfo is not null)
@@ -397,7 +399,7 @@ namespace waPlanner.TelegramBot.Services
                             string link = $"tg://user?id={chat_id}";
                             string value = $"{message.From.FirstName} {message.From.LastName}";
                             var feedback = $"Отзыв от <a href='{link}'>{value}</a> ID:<b>{chat_id}</b>";
-                            long group_id = -666074803;
+                            long group_id = -1001712134669;
                             await bot.SendTextMessageAsync(group_id, $"{feedback}: {msg}", parseMode: ParseMode.Html, disableWebPagePreview: true);
                             await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["SUCCESS_FEEDBACK"], replyMarkup: ReplyKeyboards.MainMenu(cache.Lang, lang));
                             cache.State = PlannerStates.MAIN_MENU;

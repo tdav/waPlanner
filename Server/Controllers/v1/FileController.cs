@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Threading.Tasks;
 using waPlanner.Database.Models;
-using waPlanner.Extensions;
 using waPlanner.ModelViews;
 
 namespace waPlanner.Controllers.v1
