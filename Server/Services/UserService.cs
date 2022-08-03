@@ -20,7 +20,7 @@ namespace waPlanner.Services
         Task<Answer<viPatient>> AddAsync(viPatient patient);
         Task<Answer<List<viPatient>>> GetAllAsync();
         Task<Answer<viPatient>> GetAsync(int user_id);
-        Task<Answer<viPatient[]>> SearchUserAsync(string name);
+        Task<Answer<List<viPatient>>> SearchUserAsync(string name);
     }
 
     public class UserService : IUserService, IAutoRegistrationScopedLifetimeService
@@ -181,7 +181,7 @@ namespace waPlanner.Services
             }
         }
 
-        public async Task<Answer<viPatient[]>> SearchUserAsync(string name)
+        public async Task<Answer<List<viPatient>>> SearchUserAsync(string name)
         {
             try
             {
@@ -204,13 +204,13 @@ namespace waPlanner.Services
                                 Gender = x.User.Gender
                             })
                             .Distinct()
-                            .ToArrayAsync();
-                return new Answer<viPatient[]>(true, "Ошибка программы", search);
+                            .ToListAsync();
+                return new Answer<List<viPatient>>(true, "Ошибка программы", search);
             }
             catch (Exception e)
             {
                 logger.LogError($"UserService.SearchUserAsync Error:{e.Message}");
-                return new Answer<viPatient[]>(false, "Ошибка программы", null);
+                return new Answer<List<viPatient>>(false, "Ошибка программы", null);
             }
 
         }

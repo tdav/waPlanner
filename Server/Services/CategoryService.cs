@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using waPlanner.Database;
@@ -17,10 +18,10 @@ namespace waPlanner.Services
     {
         Task<Answer<int>> AddCategoryAsync(viCategory value);
         Task<AnswerBasic> UpdateAsync(viCategory value);
-        Task<Answer<viCategory[]>> GetAllCategoriesAsync();
+        Task<Answer<List<viCategory>>> GetAllCategoriesAsync();
         Task<AnswerBasic> ChangeCategoryStatus(viSetStatus status);
         Task<Answer<viCategory>> GetCategoryByIdAsync(int category_id);
-        Task<Answer<viCategory[]>> SearchCategory(string name);
+        Task<Answer<List<viCategory>>> SearchCategory(string name);
     }
 
     public class CategoryService : ICategoryService, IAutoRegistrationScopedLifetimeService
@@ -62,7 +63,7 @@ namespace waPlanner.Services
             }
         }
 
-        public async Task<Answer<viCategory[]>> GetAllCategoriesAsync()
+        public async Task<Answer<List<viCategory>>> GetAllCategoriesAsync()
         {
             try
             {
@@ -84,12 +85,12 @@ namespace waPlanner.Services
                 if (org_id != 0)
                     category = category.Where(x => x.OrganizationId == org_id);
 
-                return new Answer<viCategory[]>(true, "", await category.ToArrayAsync());
+                return new Answer<List<viCategory>>(true, "", await category.ToListAsync());
             }
             catch (Exception e)
             {
                 logger.LogError($"InfoService.GetAllCategoriesAsync Error:{e.Message}");
-                return new Answer<viCategory[]>(false, "Ошибка программы", null);
+                return new Answer<List<viCategory>>(false, "Ошибка программы", null);
             }
         }
 
@@ -173,7 +174,7 @@ namespace waPlanner.Services
             }
         }
 
-        public async Task<Answer<viCategory[]>> SearchCategory(string name)
+        public async Task<Answer<List<viCategory>>> SearchCategory(string name)
         {
             try
             {
@@ -199,12 +200,12 @@ namespace waPlanner.Services
                 if (org_id != 0)
                     search = search.Where(x => x.OrganizationId == org_id);
 
-                return new Answer<viCategory[]>(true, "", await search.ToArrayAsync());
+                return new Answer<List<viCategory>>(true, "", await search.ToListAsync());
             }
             catch (Exception e)
             {
                 logger.LogError($"InfoService.SearchCategory Error:{e.Message}");
-                return new Answer<viCategory[]>(false, "Ошибка программы", null);
+                return new Answer<List<viCategory>>(false, "Ошибка программы", null);
             }
         }
     }

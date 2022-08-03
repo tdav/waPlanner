@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using waPlanner.Database;
 using waPlanner.Database.Models;
@@ -15,11 +16,11 @@ namespace waPlanner.Services
     {
         Task<Answer<viSpecialization>> AddSpecializationAsync(viSpecialization spec);
         Task<Answer<viSpecialization>> UpdateSpecializationAsync(viSpecialization spec);
-        Task<Answer<spSpecialization[]>> GetSpecializationsAsync();
+        Task<Answer<List<spSpecialization>>> GetSpecializationsAsync();
         Task<Answer<spSpecialization>> GetSpecializationByIdAsync(int spec_id);
         Task<AnswerBasic> ChangeSpecializationStatus(viSetStatus status);
     }
-    public class SpecializationService: ISpecializationService, IAutoRegistrationScopedLifetimeService
+    public class SpecializationService : ISpecializationService, IAutoRegistrationScopedLifetimeService
     {
         private readonly MyDbContext db;
         private readonly IHttpContextAccessorExtensions accessor;
@@ -55,7 +56,7 @@ namespace waPlanner.Services
                 logger.LogError($"SpecializationService.AddSpecializationAsync Error:{e.Message} Model: {spec.ToJson()}");
                 return new Answer<viSpecialization>(false, "Ошибка программы", null);
             }
-            
+
         }
 
         public async Task<Answer<viSpecialization>> UpdateSpecializationAsync(viSpecialization spec)
@@ -80,24 +81,24 @@ namespace waPlanner.Services
                 logger.LogError($"SpecializationService.UpdateSpecializationAsync Error:{e.Message} Model: {spec.ToJson()}");
                 return new Answer<viSpecialization>(false, "Ошибка программы", null);
             }
-            
+
         }
 
-        public async Task<Answer<spSpecialization[]>> GetSpecializationsAsync()
+        public async Task<Answer<List<spSpecialization>>> GetSpecializationsAsync()
         {
             try
             {
                 var spec = await db.spSpecializations
                 .AsNoTracking()
-                .ToArrayAsync();
-                return new Answer<spSpecialization[]>(true, "", spec);
+                .ToListAsync();
+                return new Answer<List<spSpecialization>>(true, "", spec);
             }
             catch (Exception e)
             {
                 logger.LogError($"SpecializationService.GetSpecializationsAsync Error:{e.Message}");
-                return new Answer<spSpecialization[]>(false, "Ошибка программы", null);
+                return new Answer<List<spSpecialization>>(false, "Ошибка программы", null);
             }
-            
+
         }
 
         public async Task<Answer<spSpecialization>> GetSpecializationByIdAsync(int spec_id)
@@ -114,7 +115,7 @@ namespace waPlanner.Services
                 logger.LogError($"SpecializationService.GetSpecializationByIdAsync Error:{e.Message}");
                 return new Answer<spSpecialization>(false, "Ошибка программы", null);
             }
-            
+
         }
 
         public async Task<AnswerBasic> ChangeSpecializationStatus(viSetStatus status)
@@ -134,7 +135,7 @@ namespace waPlanner.Services
                 logger.LogError($"SpecializationService.ChangeSpecializationStatus Error:{e.Message}");
                 return new AnswerBasic(false, "Ошибка программы");
             }
-            
+
         }
     }
 }

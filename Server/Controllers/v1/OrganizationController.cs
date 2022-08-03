@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using waPlanner.Database.Models;
 using waPlanner.ModelViews;
@@ -46,7 +47,7 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpGet]
-        public Task<Answer<spOrganization[]>> GetAllAsync()
+        public Task<Answer<List<spOrganization>>> GetAllAsync()
         {
             return service.GetAllOrgsAsync();
         }

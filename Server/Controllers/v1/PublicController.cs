@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using waPlanner.ModelViews;
 using waPlanner.Services;
@@ -20,25 +21,25 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpGet("organizations/{spec_id}")]
-        public ValueTask<Answer<viOrganization[]>> GetOrganizationsBySpecAsync(int spec_id)
+        public ValueTask<Answer<List<viOrganization>>> GetOrganizationsBySpecAsync(int spec_id)
         {
             return service.GetOrganizationsBySpecId(spec_id);
         }
 
         [HttpGet("staffs/{organization_id}")]
-        public ValueTask<Answer<viStaff[]>> GetStaffsAsync(int organization_id)
+        public ValueTask<Answer<List<viStaff>>> GetStaffsAsync(int organization_id)
         {
             return service.GetStaffsByOrgId(organization_id);
         }
 
         [HttpGet("categories/{organization_id}")]
-        public ValueTask<Answer<viCategory[]>> GetCategoriesAsync(int organization_id)
+        public ValueTask<Answer<List<viCategory>>> GetCategoriesAsync(int organization_id)
         {
             return service.GetCategoriesByOrgId(organization_id);
         }
 
         [HttpGet("all_organizations")]
-        public ValueTask<Answer<viOrganization[]>> GetOrganizations()
+        public ValueTask<Answer<List<viOrganization>>> GetOrganizations()
         {
             return service.GetOrganizations();
         }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using waPlanner.ModelViews;
 using waPlanner.Services;
@@ -29,7 +30,7 @@ namespace waPlanner.Controllers.v1
 
         [AllowAnonymous]
         [HttpGet("all_categories")]
-        public async Task<Answer<viCategory[]>> GetAll()
+        public async Task<Answer<List<viCategory>>> GetAll()
         {
 
             return await service.GetAllCategoriesAsync();
@@ -55,7 +56,7 @@ namespace waPlanner.Controllers.v1
 
         [AllowAnonymous]
         [HttpGet("search/{name}")]
-        public async Task<Answer<viCategory[]>> SearchCategory(string name)
+        public async Task<Answer<List<viCategory>>> SearchCategory(string name)
         {
             return await service.SearchCategory(name);
         }

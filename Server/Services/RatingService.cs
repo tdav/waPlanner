@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using waPlanner.Database;
@@ -16,8 +17,8 @@ namespace waPlanner.Services
     {
         ValueTask<AnswerBasic> AddStaffRatingAsync(viRating rating);
         ValueTask<AnswerBasic> AddOrganizationRatingAsync(viRating rating);
-        ValueTask<Answer<viRating[]>> GetStaffRating(int staff_id);
-        ValueTask<Answer<viRating[]>> GetOrganizationRating(int organization_id);
+        ValueTask<Answer<List<viRating>>> GetStaffRating(int staff_id);
+        ValueTask<Answer<List<viRating>>> GetOrganizationRating(int organization_id);
     }
     public class RatingService : IRatingService, IAutoRegistrationScopedLifetimeService
     {
@@ -125,7 +126,7 @@ namespace waPlanner.Services
             }
         }
 
-        public async ValueTask<Answer<viRating[]>> GetStaffRating(int staff_id)
+        public async ValueTask<Answer<List<viRating>>> GetStaffRating(int staff_id)
         {
             try
             {
@@ -141,18 +142,18 @@ namespace waPlanner.Services
                     Comment = x.Comment,
                 })
                 .Take(50)
-                .ToArrayAsync();
+                .ToListAsync();
 
-                return new Answer<viRating[]>(true, "", rating);
+                return new Answer<List<viRating>>(true, "", rating);
             }
             catch (Exception ex)
             {
                 logger.LogError($"RatingService.GetStaffRating Error:{ex.Message}");
-                return new Answer<viRating[]>(false, "Ошибка программы", null);
+                return new Answer<List<viRating>>(false, "Ошибка программы", null);
             }
         }
 
-        public async ValueTask<Answer<viRating[]>> GetOrganizationRating(int organization_id)
+        public async ValueTask<Answer<List<viRating>>> GetOrganizationRating(int organization_id)
         {
             try
             {
@@ -167,14 +168,14 @@ namespace waPlanner.Services
                     Comment = x.Comment,
                 })
                 .Take(50)
-                .ToArrayAsync();
+                .ToListAsync();
 
-                return new Answer<viRating[]>(true, "", rating);
+                return new Answer<List<viRating>>(true, "", rating);
             }
             catch (Exception ex)
             {
                 logger.LogError($"RatingService.GetOrganizationRating Error:{ex.Message}");
-                return new Answer<viRating[]>(false, "Ошибка программы", null);
+                return new Answer<List<viRating>>(false, "Ошибка программы", null);
             }
         }
     }

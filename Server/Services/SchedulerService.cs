@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using waPlanner.Database;
@@ -17,10 +18,10 @@ namespace waPlanner.Services
         Task<Answer<int>> AddSchedulerAsync(viScheduler scheduler);
         Task<Answer<viScheduler>> UpdateSchedulerAsync(viScheduler scheduler);
         Task<AnswerBasic> UpdateSchedulerStatus(viSetStatus status);
-        Task<Answer<viScheduler[]>> GetSchedulerByUserIdAsync(int user_id);
-        Task<Answer<viEvents[]>> GetAllSchedulersByOrgAsync();
-        Task<Answer<TimeSpan[]>> GetStaffBusyTime(int staff_id, DateTime date);
-        Task<Answer<viEvents[]>> SearchScheduler(string staff_name);
+        Task<Answer<List<viScheduler>>> GetSchedulerByUserIdAsync(int user_id);
+        Task<Answer<List<viEvents>>> GetAllSchedulersByOrgAsync();
+        Task<Answer<List<TimeSpan>>> GetStaffBusyTime(int staff_id, DateTime date);
+        Task<Answer<List<viEvents>>> SearchScheduler(string staff_name);
 
     }
     public class SchedulerService : ISchedulerService, IAutoRegistrationScopedLifetimeService
@@ -116,7 +117,7 @@ namespace waPlanner.Services
 
         }
 
-        public async Task<Answer<viScheduler[]>> GetSchedulerByUserIdAsync(int user_id)
+        public async Task<Answer<List<viScheduler>>> GetSchedulerByUserIdAsync(int user_id)
         {
             try
             {
@@ -138,18 +139,18 @@ namespace waPlanner.Services
                                     AdInfo = x.AdInfo,
                                     Status = x.Status
                                 })
-                                .ToArrayAsync();
-                return new Answer<viScheduler[]>(true, "", scheduler);
+                                .ToListAsync();
+                return new Answer<List<viScheduler>>(true, "", scheduler);
             }
             catch (Exception e)
             {
                 logger.LogError($"SchedulerService.GetSchedulerByUserIdAsync Error:{e.Message}");
-                return new Answer<viScheduler[]>(false, "Ошибка программы", null);
+                return new Answer<List<viScheduler>>(false, "Ошибка программы", null);
             }
 
         }
 
-        public async Task<Answer<viEvents[]>> GetAllSchedulersByOrgAsync()
+        public async Task<Answer<List<viEvents>>> GetAllSchedulersByOrgAsync()
         {
             try
             {
@@ -170,18 +171,18 @@ namespace waPlanner.Services
                         End = x.AppointmentDateTime.AddMinutes(30),
                         AdInfo = x.AdInfo
                     })
-                    .ToArrayAsync();
-                return new Answer<viEvents[]>(true, "", events);
+                    .ToListAsync();
+                return new Answer<List<viEvents>>(true, "", events);
             }
             catch (Exception e)
             {
                 logger.LogError($"SchedulerService.GetAllSchedulersByOrgAsync Error:{e.Message}");
-                return new Answer<viEvents[]>(false, "Ошибка программы", null);
+                return new Answer<List<viEvents>>(false, "Ошибка программы", null);
             }
 
         }
 
-        public async Task<Answer<TimeSpan[]>> GetStaffBusyTime(int staff_id, DateTime date)
+        public async Task<Answer<List<TimeSpan>>> GetStaffBusyTime(int staff_id, DateTime date)
         {
             try
             {
@@ -190,17 +191,17 @@ namespace waPlanner.Services
                     .AsNoTracking()
                     .Where(x => x.OrganizationId == org_id && x.StaffId == staff_id && x.AppointmentDateTime.Date == date.Date)
                     .Select(x => x.AppointmentDateTime.TimeOfDay)
-                    .ToArrayAsync();
-                return new Answer<TimeSpan[]>(true, "", times);
+                    .ToListAsync();
+                return new Answer<List<TimeSpan>>(true, "", times);
             }
             catch (Exception e)
             {
                 logger.LogError($"SchedulerService.GetStaffBusyTime Error:{e.Message}");
-                return new Answer<TimeSpan[]>(false, "Ошибка программы", null);
+                return new Answer<List<TimeSpan>>(false, "Ошибка программы", null);
             }
         }
 
-        public async Task<Answer<viEvents[]>> SearchScheduler(string staff_name)
+        public async Task<Answer<List<viEvents>>> SearchScheduler(string staff_name)
         {
             try
             {
@@ -225,13 +226,13 @@ namespace waPlanner.Services
                                         End = x.AppointmentDateTime.AddMinutes(30),
                                         AdInfo = x.AdInfo
                                     })
-                                    .ToArrayAsync();
-                return new Answer<viEvents[]>(true, "", search);
+                                    .ToListAsync();
+                return new Answer<List<viEvents>>(true, "", search);
             }
             catch (Exception e)
             {
                 logger.LogError($"SchedulerService.SearchScheduler Error:{e.Message}");
-                return new Answer<viEvents[]>(false, "Ошибка программы", null);
+                return new Answer<List<viEvents>>(false, "Ошибка программы", null);
             }
         }
     }

@@ -53,7 +53,7 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpGet("search/{name}")]
-        public async Task<Answer<viPatient[]>> SearchAsync(string name)
+        public async Task<Answer<List<viPatient>>> SearchAsync(string name)
         {
             return await service.SearchUserAsync(name);
         }

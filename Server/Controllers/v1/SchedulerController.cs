@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using waPlanner.ModelViews;
 using waPlanner.Services;
@@ -40,25 +41,25 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpGet("{user_id}")]
-        public async Task<Answer<viScheduler[]>> GetSchedulerByUserId(int user_id)
+        public async Task<Answer<List<viScheduler>>> GetSchedulerByUserId(int user_id)
         {
             return await service.GetSchedulerByUserIdAsync(user_id);
         }
 
         [HttpGet("get_by_organization")]
-        public async Task<Answer<viEvents[]>> GetSchedulers()
+        public async Task<Answer<List<viEvents>>> GetSchedulers()
         {
             return await service.GetAllSchedulersByOrgAsync();
         }
 
         [HttpGet("busy_times/{staff_id}/{date}")]
-        public async Task<Answer<TimeSpan[]>> GetBusyTime(int staff_id, DateTime date)
+        public async Task<Answer<List<TimeSpan>>> GetBusyTime(int staff_id, DateTime date)
         {
             return await service.GetStaffBusyTime(staff_id, date);
         }
 
         [HttpGet("search/{name}")]
-        public async Task<Answer<viEvents[]>> SearchAsync(string name)
+        public async Task<Answer<List<viEvents>>> SearchAsync(string name)
         {
             return await service.SearchScheduler(name);
         }

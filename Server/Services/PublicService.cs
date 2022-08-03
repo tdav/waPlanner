@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using waPlanner.Database;
@@ -12,10 +13,10 @@ namespace waPlanner.Services
 {
     public interface IPublicService
     {
-        ValueTask<Answer<viOrganization[]>> GetOrganizationsBySpecId(int specId);
-        ValueTask<Answer<viStaff[]>> GetStaffsByOrgId(int orgId);
-        ValueTask<Answer<viCategory[]>> GetCategoriesByOrgId(int orgId);
-        ValueTask<Answer<viOrganization[]>> GetOrganizations();
+        ValueTask<Answer<List<viOrganization>>> GetOrganizationsBySpecId(int specId);
+        ValueTask<Answer<List<viStaff>>> GetStaffsByOrgId(int orgId);
+        ValueTask<Answer<List<viCategory>>> GetCategoriesByOrgId(int orgId);
+        ValueTask<Answer<List<viOrganization>>> GetOrganizations();
         ValueTask<Answer<viOrganization>> GetOrganizationById(int id);
         ValueTask<Answer<viPublicSearch>> PublicSearch(string param);
     }
@@ -30,7 +31,7 @@ namespace waPlanner.Services
             this.logger = logger;
         }
 
-        public async ValueTask<Answer<viOrganization[]>> GetOrganizationsBySpecId(int specId)
+        public async ValueTask<Answer<List<viOrganization>>> GetOrganizationsBySpecId(int specId)
         {
             try
             {
@@ -54,18 +55,18 @@ namespace waPlanner.Services
                         BreakTimeEnd = x.BreakTimeEnd,
                         Rating = x.Rating.Value
                     })
-                    .ToArrayAsync();
+                    .ToListAsync();
 
-                return new Answer<viOrganization[]>(true, "", orgs);
+                return new Answer<List<viOrganization>>(true, "", orgs);
             }
             catch (Exception ex)
             {
                 logger.LogError($"PublicService.GetOrganizationsBySpecId Error:{ex.Message}");
-                return new Answer<viOrganization[]>(false, "Ошибка программы", null);
+                return new Answer<List<viOrganization>>(false, "Ошибка программы", null);
             }
         }
 
-        public async ValueTask<Answer<viStaff[]>> GetStaffsByOrgId(int orgId)
+        public async ValueTask<Answer<List<viStaff>>> GetStaffsByOrgId(int orgId)
         {
             try
             {
@@ -92,18 +93,18 @@ namespace waPlanner.Services
                         OrganizationId = x.OrganizationId,
                         Organization = x.Organization.Name
                     })
-                    .ToArrayAsync();
+                    .ToListAsync();
 
-                return new Answer<viStaff[]>(true, "", staffs);
+                return new Answer<List<viStaff>>(true, "", staffs);
             }
             catch (Exception ex)
             {
                 logger.LogError($"PublicService.GetStaffsByOrgId Error:{ex.Message}");
-                return new Answer<viStaff[]>(false, "Ошибка программы", null);
+                return new Answer<List<viStaff>>(false, "Ошибка программы", null);
             }
         }
 
-        public async ValueTask<Answer<viCategory[]>> GetCategoriesByOrgId(int orgId)
+        public async ValueTask<Answer<List<viCategory>>> GetCategoriesByOrgId(int orgId)
         {
             try
             {
@@ -119,18 +120,18 @@ namespace waPlanner.Services
                         Organization = x.Organization.Name,
                         OrganizationId = x.OrganizationId
                     })
-                    .ToArrayAsync();
+                    .ToListAsync();
 
-                return new Answer<viCategory[]>(true, "", categories);
+                return new Answer<List<viCategory>>(true, "", categories);
             }
             catch (Exception ex)
             {
                 logger.LogError($"PublicService.GetCategoriesByOrgId Error:{ex.Message}");
-                return new Answer<viCategory[]>(false, "Ошибка программы", null);
+                return new Answer<List<viCategory>>(false, "Ошибка программы", null);
             }
         }
 
-        public async ValueTask<Answer<viOrganization[]>> GetOrganizations()
+        public async ValueTask<Answer<List<viOrganization>>> GetOrganizations()
         {
             try
             {
@@ -154,14 +155,14 @@ namespace waPlanner.Services
                         BreakTimeEnd = x.BreakTimeEnd,
                         Rating = x.Rating.Value
                     })
-                    .ToArrayAsync();
+                    .ToListAsync();
 
-                return new Answer<viOrganization[]>(true, "", orgs);
+                return new Answer<List<viOrganization>>(true, "", orgs);
             }
             catch (Exception ex)
             {
                 logger.LogError($"PublicService.GetOrganizations Error:{ex.Message}");
-                return new Answer<viOrganization[]>(false, "Ошибка программы", null);
+                return new Answer<List<viOrganization>>(false, "Ошибка программы", null);
             }
         }
 
@@ -231,7 +232,7 @@ namespace waPlanner.Services
                                             PhotoUrl = x.PhotoUrl,
                                             Gender = x.Gender
                                         })
-                                        .ToArrayAsync();
+                                        .ToListAsync();
 
                 var search_category = await (from s in db.spCategories
                                              where EF.Functions.ILike(s.NameLt, $"%{param}%")
@@ -249,7 +250,7 @@ namespace waPlanner.Services
                                            Organization = x.Organization.Name,
                                            OrganizationId = x.OrganizationId
                                        })
-                                       .ToArrayAsync();
+                                       .ToListAsync();
 
                 var search_org = await (from s in db.spOrganizations
                                         where EF.Functions.ILike(s.Name, $"%{param}%")
@@ -273,7 +274,7 @@ namespace waPlanner.Services
                                       BreakTimeEnd = x.BreakTimeEnd,
                                       Rating = x.Rating.Value
                                   })
-                                  .ToArrayAsync();
+                                  .ToListAsync();
 
                 var all = new viPublicSearch
                 {

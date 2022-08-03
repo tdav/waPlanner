@@ -1,35 +1,35 @@
-﻿using System.Threading.Tasks;
-using waPlanner.Database;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Collections.Generic;
-using waPlanner.ModelViews;
-using waPlanner.Database.Models;
-using waPlanner.TelegramBot;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.Extensions.Configuration;
-using waPlanner.Utils;
+using System.Threading.Tasks;
+using waPlanner.Database;
+using waPlanner.Database.Models;
 using waPlanner.Extensions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
 using waPlanner.Interfaces;
+using waPlanner.ModelViews;
+using waPlanner.TelegramBot;
+using waPlanner.Utils;
 
 namespace waPlanner.Services
 {
     public interface IStaffService
     {
-        Task<Answer<viStaff[]>> GetStaffsByOrganizationId();
-        ValueTask<Answer<viStaff[]>> GetStaffsByCategoryId(int categoryId);
+        Task<Answer<List<viStaff>>> GetStaffsByOrganizationId();
+        ValueTask<Answer<List<viStaff>>> GetStaffsByCategoryId(int categoryId);
         Task<Answer<viStaff>> AddStaffAsync(viStaff user);
         Task<Answer<List<IdValue>>> GetStuffList(int category_id);
         Task<AnswerBasic> SetStatusAsync(viSetStatus status);
         Task<Answer<viStaff>> UpdateStaff(viStaff staff);
         Task<Answer<viStaff>> GetStaffById(int staff_id);
-        ValueTask<Answer<viStaff[]>> SearchStaffAsync(string name);
+        ValueTask<Answer<List<viStaff>>> SearchStaffAsync(string name);
         ValueTask<Answer<string>> SetPhotoAsync(viSetPhoto staff);
         Task<AnswerBasic> SetActivity(int staff_id, bool online);
         //Task<viStaffAvailability> GetStaffAvailabilityAsync(int staff_id);
@@ -62,7 +62,7 @@ namespace waPlanner.Services
             }
         }
 
-        public async Task<Answer<viStaff[]>> GetStaffsByOrganizationId()
+        public async Task<Answer<List<viStaff>>> GetStaffsByOrganizationId()
         {
             try
             {
@@ -97,17 +97,17 @@ namespace waPlanner.Services
                 if (org_id != 0)
                     staffs = staffs.Where(s => s.OrganizationId == org_id);
 
-                return new Answer<viStaff[]>(true, "", await staffs.ToArrayAsync());
+                return new Answer<List<viStaff>>(true, "", await staffs.ToListAsync());
             }
             catch (Exception e)
             {
                 logger.LogError($"StaffService.GetStaffByOrganizationId Error:{e.Message}");
-                return new Answer<viStaff[]>(false, "Ошибка программы", null);
+                return new Answer<List<viStaff>>(false, "Ошибка программы", null);
             }
 
         }
 
-        public async ValueTask<Answer<viStaff[]>> GetStaffsByCategoryId(int categoryId)
+        public async ValueTask<Answer<List<viStaff>>> GetStaffsByCategoryId(int categoryId)
         {
             try
             {
@@ -139,12 +139,12 @@ namespace waPlanner.Services
                 if (org_id != 0)
                     staffs = staffs.Where(x => x.OrganizationId == org_id);
 
-                return new Answer<viStaff[]>(true, "", await staffs.ToArrayAsync());
+                return new Answer<List<viStaff>>(true, "", await staffs.ToListAsync());
             }
             catch (Exception ex)
             {
                 logger.LogError($"StaffService.GetStaffByCategoryId Error:{ex.Message}");
-                return new Answer<viStaff[]>(false, "Ошибка программы", null);
+                return new Answer<List<viStaff>>(false, "Ошибка программы", null);
             }
         }
 
@@ -362,7 +362,7 @@ namespace waPlanner.Services
 
         }
 
-        public async ValueTask<Answer<viStaff[]>> SearchStaffAsync(string name)
+        public async ValueTask<Answer<List<viStaff>>> SearchStaffAsync(string name)
         {
             try
             {
@@ -398,12 +398,12 @@ namespace waPlanner.Services
                 if (org_id != 0)
                     search = search.Where(x => x.OrganizationId == org_id);
 
-                return new Answer<viStaff[]>(false, "", await search.ToArrayAsync());
+                return new Answer<List<viStaff>>(false, "", await search.ToListAsync());
             }
             catch (Exception e)
             {
                 logger.LogError($"StaffService.SearchStaffAsync Error:{e.Message}");
-                return new Answer<viStaff[]>(false, "Ошибка программы", null);
+                return new Answer<List<viStaff>>(false, "Ошибка программы", null);
             }
         }
 

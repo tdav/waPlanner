@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using waPlanner.Database;
@@ -18,7 +19,7 @@ namespace waPlanner.Services
         Task<AnswerBasic> UpdateOrganizationAsync(spOrganization organziation);
         Task<AnswerBasic> UpdateOrganizationStatus(viSetStatus status);
         Task<Answer<spOrganization>> GetOrgByIdAsync(int id);
-        Task<Answer<spOrganization[]>> GetAllOrgsAsync();
+        Task<Answer<List<spOrganization>>> GetAllOrgsAsync();
     }
     public class OrganizationService : IOrganizationService, IAutoRegistrationScopedLifetimeService
     {
@@ -179,17 +180,17 @@ namespace waPlanner.Services
             }
         }
 
-        public async Task<Answer<spOrganization[]>> GetAllOrgsAsync()
+        public async Task<Answer<List<spOrganization>>> GetAllOrgsAsync()
         {
             try
             {
-                var organizations = await db.spOrganizations.AsNoTracking().Where(x => x.Status == 1).ToArrayAsync();
-                return new Answer<spOrganization[]>(true, "", organizations);
+                var organizations = await db.spOrganizations.AsNoTracking().Where(x => x.Status == 1).ToListAsync();
+                return new Answer<List<spOrganization>>(true, "", organizations);
             }
             catch (Exception e)
             {
                 logger.LogError($"OrganizationService.GetAllOrgsAsync Error: {e.Message}");
-                return new Answer<spOrganization[]>(false, "Ошибка в программе", null);
+                return new Answer<List<spOrganization>>(false, "Ошибка в программе", null);
             }
         }
     }

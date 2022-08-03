@@ -14,7 +14,7 @@ namespace waPlanner.Controllers.v1
     [ApiVersion("1.0")]
     [SwaggerTag("Персонал")]
     [Route("[controller]")]
-    public class StaffController: ControllerBase
+    public class StaffController : ControllerBase
     {
         private readonly IStaffService service;
 
@@ -31,14 +31,14 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpGet]
-        public Task<Answer<viStaff[]>> GetStuffs()
+        public Task<Answer<List<viStaff>>> GetStuffs()
         {
             return service.GetStaffsByOrganizationId();
         }
 
         [AllowAnonymous]
         [HttpGet("category/{category_id}")]
-        public async ValueTask<Answer<viStaff[]>> GetStaffByCategory(int category_id)
+        public async ValueTask<Answer<List<viStaff>>> GetStaffByCategory(int category_id)
         {
             return await service.GetStaffsByCategoryId(category_id);
         }
@@ -76,7 +76,7 @@ namespace waPlanner.Controllers.v1
 
         [AllowAnonymous]
         [HttpGet("search/{name}")]
-        public ValueTask<Answer<viStaff[]>> SearchStaff(string name)
+        public ValueTask<Answer<List<viStaff>>> SearchStaff(string name)
         {
             return service.SearchStaffAsync(name);
         }
@@ -112,5 +112,5 @@ namespace waPlanner.Controllers.v1
             return await service.SetPhotoAsync(photo);
         }
     }
-    
+
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using waPlanner.Database.Models;
 using waPlanner.ModelViews;
@@ -31,7 +32,7 @@ namespace waPlanner.Controllers.v1
         [HttpPost("change")]
         public async Task<Answer<viSpecialization>> UpdateSpecialization([FromBody] viSpecialization spec)
         {
-            return await service.UpdateSpecializationAsync( spec);
+            return await service.UpdateSpecializationAsync(spec);
         }
 
         [HttpPost("change_status")]
@@ -42,7 +43,7 @@ namespace waPlanner.Controllers.v1
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<Answer<spSpecialization[]>> GetAllSpecializations()
+        public async Task<Answer<List<spSpecialization>>> GetAllSpecializations()
         {
             return await service.GetSpecializationsAsync();
         }
