@@ -7,6 +7,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 using Telegram.Bot.Types.Enums;
 using waPlanner.ModelViews;
 using waPlanner.TelegramBot.Utils;
+using System.Globalization;
 
 namespace waPlanner.TelegramBot.keyboards
 {
@@ -69,7 +70,7 @@ namespace waPlanner.TelegramBot.keyboards
             // thirth row for month
             buttons = new List<InlineKeyboardButton>();
             buttons.Add(InlineKeyboardButton.WithCallbackData("◀", $"PREV-MONTH; {date.AddMonths(-1)}"));
-            buttons.Add(InlineKeyboardButton.WithCallbackData(Microsoft.VisualBasic.DateAndTime.MonthName(date.Month), IGNORE));
+            buttons.Add(InlineKeyboardButton.WithCallbackData(new DateTime(1,date.Month, 1).ToString("MMMM", CultureInfo.GetCultureInfo("ru-RU")), IGNORE));
             buttons.Add(InlineKeyboardButton.WithCallbackData("▶️", $"NEXT-MONTH; {date.AddMonths(1)}"));
             keyboards.Add(buttons);
             InlineKeyboardMarkup calendar = new(keyboards);

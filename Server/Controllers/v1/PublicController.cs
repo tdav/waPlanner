@@ -10,7 +10,7 @@ namespace waPlanner.Controllers.v1
     [ApiVersion("1.0")]
     [Route("[controller]")]
     [SwaggerTag("Публик")]
-    public class PublicController: ControllerBase
+    public class PublicController : ControllerBase
     {
         private readonly IPublicService service;
 
@@ -41,6 +41,18 @@ namespace waPlanner.Controllers.v1
         public ValueTask<Answer<viOrganization[]>> GetOrganizations()
         {
             return service.GetOrganizations();
+        }
+
+        [HttpGet("organization/{id}")]
+        public ValueTask<Answer<viOrganization>> GetOrganization(int id)
+        {
+            return service.GetOrganizationById(id);
+        }
+
+        [HttpGet("search/{param}")]
+        public ValueTask<Answer<viPublicSearch>> Search(string param)
+        {
+            return service.PublicSearch(param);
         }
     }
 }

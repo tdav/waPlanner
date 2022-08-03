@@ -329,11 +329,19 @@ namespace waPlanner.TelegramBot.Utils
             return cat.Id;
         }
 
+        public async Task<int> GetCategoryIdByOrgAndStuff(int org_id, string[] stuff_name)
+        {
+            var cat = await db.tbStaffs
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.OrganizationId == org_id && x.Surname == stuff_name[0] && x.Name == stuff_name[1] && x.Patronymic == stuff_name[2]);
+            return cat.CategoryId.Value;
+        }
+
         public async Task<viStaffInfo> GetStaffInfo(TelegramBotValuesModel value)
         {
             int org_id = await GetOrganizationId(value.Organization);
-            int category_id = await GetCategoryId(value.Category, org_id);
             var snp = value.Staff.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            int category_id = await GetCategoryIdByOrgAndStuff(org_id, snp);
             var stuff = await db.tbStaffs
                 .AsNoTracking()
                 .Where(x => x.Surname == snp[0] && x.Name == snp[1] && x.Patronymic == snp[2] && x.OrganizationId == org_id && x.CategoryId == category_id)

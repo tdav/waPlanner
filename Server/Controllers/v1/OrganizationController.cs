@@ -28,7 +28,7 @@ namespace waPlanner.Controllers.v1
         }
 
         [HttpPost("change")]
-        public async Task<AnswerBasic> UpdateOrganizationA([FromBody] viOrganization organziation)
+        public async Task<AnswerBasic> UpdateOrganizationA([FromBody] spOrganization organziation)
         {
             return await service.UpdateOrganizationAsync(organziation);
         }
@@ -39,7 +39,7 @@ namespace waPlanner.Controllers.v1
             return await service.UpdateOrganizationStatus(status);
         }
 
-        [HttpGet("Id")]
+        [HttpGet("{id}")]
         public Task<Answer<spOrganization>> GetOrganizationAsync(int id)
         {
             return service.GetOrgByIdAsync(id);

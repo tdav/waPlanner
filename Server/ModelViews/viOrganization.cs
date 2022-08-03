@@ -8,11 +8,10 @@ namespace waPlanner.ModelViews
         public long? ChatId { get; set; }
         public string Name { get; set; }
         public string Address { get; set; }
-        public DateTime? DinnerTimeStart { get; set; }
-        public DateTime? DinnerTimeEnd { get; set; }
-
-        public DateTime WorkTimeStart { get; set; }
-        public DateTime WorkTimeEnd { get; set; }
+        public DateTime? BreakTimeStart { get; set; }
+        public DateTime? BreakTimeEnd { get; set; }
+        public DateTime? WorkStart { get; set; }
+        public DateTime? WorkEnd { get; set; }
 
         public int? SpecializationId { get; set; }
         public string Specialization { get; set; }
@@ -25,5 +24,6 @@ namespace waPlanner.ModelViews
         public string MessageLt { get; set; }
         public string PhotoPath { get; set; }
         public string OrganizationInfo { get; set; }
+        public int? Rating { get; set; }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
@@ -16,7 +15,7 @@ namespace waPlanner.Services
     public interface IOrganizationService
     {
         Task<Answer<long>> InsertOrganizationAsync(viOrganization organization);
-        Task<AnswerBasic> UpdateOrganizationAsync(viOrganization organziation);
+        Task<AnswerBasic> UpdateOrganizationAsync(spOrganization organziation);
         Task<AnswerBasic> UpdateOrganizationStatus(viSetStatus status);
         Task<Answer<spOrganization>> GetOrgByIdAsync(int id);
         Task<Answer<spOrganization[]>> GetAllOrgsAsync();
@@ -46,15 +45,18 @@ namespace waPlanner.Services
                 if (organization.Longitude.HasValue)
                     addOrganization.Longitude = organization.Longitude.Value;
 
-                if (organization.DinnerTimeStart.HasValue)
-                    addOrganization.BreakTimeStart = organization.DinnerTimeStart.Value;
+                if (organization.BreakTimeStart.HasValue)
+                    addOrganization.BreakTimeStart = organization.BreakTimeStart.Value;
 
-                if (organization.DinnerTimeEnd.HasValue)
-                    addOrganization.BreakTimeEnd = organization.DinnerTimeEnd.Value;
+                if (organization.BreakTimeEnd.HasValue)
+                    addOrganization.BreakTimeEnd = organization.BreakTimeEnd.Value;
+
+                if (organization.Rating.HasValue)
+                    addOrganization.Rating = organization.Rating.Value;
 
                 addOrganization.SpecializationId = organization.SpecializationId.Value;
-                addOrganization.WorkStart = organization.WorkTimeStart;
-                addOrganization.WorkEnd = organization.WorkTimeEnd;
+                addOrganization.WorkStart = organization.WorkStart;
+                addOrganization.WorkEnd = organization.WorkEnd;
                 addOrganization.Name = organization.Name;
                 addOrganization.ChatId = 0;
                 addOrganization.CreateDate = DateTime.Now;
@@ -65,7 +67,7 @@ namespace waPlanner.Services
                 await db.SaveChangesAsync();
 
                 return new Answer<long>(true, "", addOrganization.Id);
-                }
+            }
 
             catch (Exception ee)
             {
@@ -74,33 +76,27 @@ namespace waPlanner.Services
             }
         }
 
-        public async Task<AnswerBasic> UpdateOrganizationAsync(viOrganization organization)
+        public async Task<AnswerBasic> UpdateOrganizationAsync(spOrganization organization)
         {
             try
             {
                 int user_id = accessor.GetId();
                 var updatedOrganization = await db.spOrganizations.FindAsync(organization.Id);
 
-                if (organization.ChatId.HasValue)
-                    updatedOrganization.ChatId = organization.ChatId.Value;
+                updatedOrganization.ChatId = organization.ChatId;
 
-                if (organization.Latitude.HasValue)
-                    updatedOrganization.Latitude = organization.Latitude.Value;
+                updatedOrganization.Latitude = organization.Latitude;
 
-                if (organization.Longitude.HasValue)
-                    updatedOrganization.Longitude = organization.Longitude.Value;
+                updatedOrganization.Longitude = organization.Longitude;
 
                 if (organization.SpecializationId.HasValue)
                     updatedOrganization.SpecializationId = organization.SpecializationId.Value;
 
-                if (organization.Status.HasValue)
-                    updatedOrganization.Status = organization.Status.Value;
+                updatedOrganization.Status = organization.Status;
 
-                if (organization.DinnerTimeStart.HasValue)
-                    updatedOrganization.BreakTimeStart = organization.DinnerTimeStart.Value;
+                updatedOrganization.BreakTimeStart = organization.BreakTimeStart;
 
-                if (organization.DinnerTimeEnd.HasValue)
-                    updatedOrganization.BreakTimeEnd = organization.DinnerTimeEnd.Value;
+                updatedOrganization.BreakTimeEnd = organization.BreakTimeEnd;
 
                 if (organization.Name is not null)
                     updatedOrganization.Name = organization.Name;
@@ -108,13 +104,36 @@ namespace waPlanner.Services
                 if (organization.PhotoPath is not null)
                     updatedOrganization.PhotoPath = organization.PhotoPath;
 
-                updatedOrganization.WorkStart = organization.WorkTimeStart;
-                updatedOrganization.WorkEnd = organization.WorkTimeEnd;
-                updatedOrganization.MessageRu = organization.MessageRu;
-                updatedOrganization.MessageLt = organization.MessageLt;
-                updatedOrganization.MessageUz = organization.MessageUz;
+                if (organization.SpecializationId.HasValue)
+                    updatedOrganization.SpecializationId = organization.SpecializationId.Value;
+
+                if (organization.Info is not null)
+                    updatedOrganization.Info = organization.Info;
+
+                if (organization.Address is not null)
+                    updatedOrganization.Address = organization.Address;
+
+                if (organization.WorkStart.HasValue)
+                    updatedOrganization.WorkStart = organization.WorkStart.Value;
+
+                if (organization.WorkEnd.HasValue)
+                    updatedOrganization.WorkEnd = organization.WorkEnd.Value;
+
+                if (organization.MessageLt is not null)
+                    updatedOrganization.MessageLt = organization.MessageLt;
+
+                if (organization.MessageRu is not null)
+                    updatedOrganization.MessageRu = organization.MessageRu;
+
+                if (organization.MessageUz is not null)
+                    updatedOrganization.MessageUz = organization.MessageUz;
+
+                if (organization.Rating.HasValue)
+                    updatedOrganization.Rating = organization.Rating.Value;
+
                 updatedOrganization.UpdateDate = DateTime.Now;
                 updatedOrganization.UpdateUser = user_id;
+                updatedOrganization.Status = 1;
                 await db.SaveChangesAsync();
 
                 return new AnswerBasic(true, "");
@@ -132,13 +151,13 @@ namespace waPlanner.Services
             {
                 int user_id = accessor.GetId();
                 var organiztion = await db.spOrganizations.FindAsync(status.Id);
-            
+
                 organiztion.Status = status.Status;
                 organiztion.UpdateDate = DateTime.Now;
                 organiztion.UpdateUser = user_id;
                 await db.SaveChangesAsync();
                 return new AnswerBasic(true, "");
-            } 
+            }
             catch (Exception e)
             {
                 logger.LogError($"OrganizationService.UpdateOrganizationStatus Error: {e.Message}");
@@ -150,7 +169,7 @@ namespace waPlanner.Services
         {
             try
             {
-                var organization = await db.spOrganizations.AsNoTracking().FirstAsync(x => x.Status == 1 && x.Id == organization_id);
+                var organization = await db.spOrganizations.AsNoTracking().FirstOrDefaultAsync(x => x.Status == 1 && x.Id == organization_id);
                 return new Answer<spOrganization>(true, "", organization);
             }
             catch (Exception e)

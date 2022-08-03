@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -34,13 +35,15 @@ namespace waPlanner.TelegramBot.Services
         private readonly IMemoryCache cache;
         private ITelegramBotClient bot;
         private readonly string choose_lang = "Выберите язык\nTilni tanlang";
+        private readonly ILogger<BotService> logger;
 
-        public BotService(IServiceProvider provider, IOptions<LangsModel> options, IOptions<Vars> voptions, IMemoryCache cache)
+        public BotService(IServiceProvider provider, IOptions<LangsModel> options, IOptions<Vars> voptions, IMemoryCache cache, ILogger<BotService> logger)
         {
             this.provider = provider;
             this.cache = cache;
             lang = options.Value;
             vars = voptions.Value;
+            this.logger = logger;
         }
 
         public static Task HandleErrorAsync(Exception exception)
@@ -120,25 +123,33 @@ namespace waPlanner.TelegramBot.Services
 
         private async Task GenerateQr(long chat_id, TelegramBotValuesModel cache, IDbManipulations db)
         {
-            var my_bot = await bot.GetMeAsync();
-            int user_role = await db.GetStaffRole(chat_id);
-            string url = $"https://t.me/{my_bot.Username}?start={chat_id}";
-
-            if (user_role != 0 && user_role == (int)UserRoles.ADMIN)
+            try
             {
-                var admin_org = await db.GetAdminOrganization(chat_id);
-                url = $"https://t.me/{my_bot.Username}?start=o{admin_org}";
-            }
+                var my_bot = await bot.GetMeAsync();
+                int user_role = await db.GetStaffRole(chat_id);
+                string url = $"https://t.me/{my_bot.Username}?start={chat_id}";
 
-            using (var scope = provider.CreateScope())
+                if (user_role != 0 && user_role == (int)UserRoles.ADMIN)
+                {
+                    var admin_org = await db.GetAdminOrganization(chat_id);
+                    url = $"https://t.me/{my_bot.Username}?start=o{admin_org}";
+                }
+
+                using (var scope = provider.CreateScope())
+                {
+                    var qrs = scope.ServiceProvider.GetService<IGenerateQrCodeService>();
+                    var data = qrs.Run(url);
+                    InputOnlineFile photo = new InputOnlineFile(new MemoryStream(data));
+
+                    await bot.SendPhotoAsync(chat_id, photo);
+                    cache.State = PlannerStates.MAIN_MENU;
+                }
+            }
+            catch (Exception ex)
             {
-                var qrs = scope.ServiceProvider.GetService<IGenerateQrCodeService>();
-                var data = qrs.Run(url);
-                InputOnlineFile photo = new InputOnlineFile(new MemoryStream(data));
-
-                await bot.SendPhotoAsync(chat_id, photo);
-                cache.State = PlannerStates.MAIN_MENU;
+                logger.LogError($"BotService.GenerateQr Error:{ex.Message}");
             }
+            
         }
 
         private async Task BotOnCallbackQueryReceivedAsync(CallbackQuery call, IDbManipulations db, TelegramBotValuesModel cache)
@@ -251,7 +262,7 @@ namespace waPlanner.TelegramBot.Services
                             break;
                         }
                         await bot.SendTextMessageAsync(chat_id, lang[cache.Lang]["WRONG_INFO"]);
-                        return;
+                        break;
                     }
                 case PlannerStates.CHECK_PASSWORD:
                     {
@@ -292,7 +303,8 @@ namespace waPlanner.TelegramBot.Services
                 case PlannerStates.SELECT_STAFF_FAVORITES:
                     {
                         string staff_name = msg.Substring(msg.LastIndexOf(')') + 2);
-                        
+                        string org_name = msg[(msg.IndexOf('(') + 1)..msg.LastIndexOf(')')];
+                        cache.Organization = msg != lang[cache.Lang]["back"] ? org_name : cache.Organization;
                         cache.Staff = msg != lang[cache.Lang]["back"] ? staff_name : cache.Staff;
                         viStaffInfo staffInfo = await DbManipulations.GetStaffInfo(cache);
                         if (staffInfo is not null)
