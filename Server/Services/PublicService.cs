@@ -283,8 +283,6 @@ namespace waPlanner.Services
                 };
 
                 return new Answer<viPublicSearch>(true, "", all);
-
-                //return new Answer<(viStaff[], viCategory[], viOrganization[])>(true, "", (search_staffs, search_category, search_org));
             }
             catch (Exception ex)
             {
